@@ -59,23 +59,15 @@
           بررسی
         </a>
       </div>
-
-      <!-- تریگر اسکرول -->
-
       <div ref="loadMoreTrigger" class="scroll-trigger"></div>
     </div>
-
-    <!-- اگر هیچ خبری نبود -->
     <div v-else class="none-cart-error">
       خبری در محدوده شما وجود ندارد
     </div>
-
-    <!-- Toast -->
     <div v-if="toastMsg" class="toast">
       {{ toastMsg }}
     </div>
-
-    <!-- مودال تقویم -->
+    <AddNewsForm />
     <CalendarModal
       v-if="showModal"
       @close="showModal = false"
@@ -83,7 +75,6 @@
     />
   </div>
 </template>
-
 <script setup>
     import { ref, onMounted , computed } from 'vue'
     import { useNewsStore } from '@/stores/news'
@@ -92,6 +83,7 @@
     import CalendarModal from '@/components/tooles/news/CalendarModal.vue'
     import { usePollingWithCompare } from '@/composables/usePollingWithCompare'
     import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+    import AddNewsForm from '@/components/dashboard/pagesContent/AddNewsForm.vue'
     import router from '@/router'
     const newsStore = useNewsStore()
     const toastMsg = ref('')
