@@ -113,23 +113,33 @@
   }
   textarea {
     border-radius: 5px;
-    width: 100%;
-    padding: 0.5rem;
+    width: auto;
+    padding: .5rem;
     box-sizing: border-box;
+    height: 45px;
+    position: fixed;
+    bottom: 0;
+    z-index: 9999;
+    left: 45px;
+    right: 45px;
   }
   label{
     margin-bottom: 0.5rem;
     display: block;
   }
   button {
-    padding: 0.5rem 1rem;
+    padding: .5rem;
     background-color: #10b981;
     color: white;
     border: none;
     border-radius: 0.375rem;
     cursor: pointer;
-    width: 100%;
-    margin-top: 1rem;
+    position: fixed;
+    transition: background-color .2s ease, opacity .2s ease;
+    bottom: 0;
+    right: 0;
+    width: 45px;
+    height: 45px;
     transition: background-color 0.2s ease, opacity 0.2s ease;
   }
 

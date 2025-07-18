@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="inner-posts">
     <!-- حالت بارگذاری اولیه -->
     <div class="loading" v-if="!newsStore.isLoaded">
       در حال بارگذاری...
@@ -67,13 +67,13 @@
     <div v-if="toastMsg" class="toast">
       {{ toastMsg }}
     </div>
-    <AddNewsForm />
     <CalendarModal
-      v-if="showModal"
-      @close="showModal = false"
-      @submit="onCalendarSubmit"
+    v-if="showModal"
+    @close="showModal = false"
+    @submit="onCalendarSubmit"
     />
   </div>
+  <AddNewsForm />
 </template>
 <script setup>
     import { ref, onMounted , computed } from 'vue'
@@ -151,12 +151,22 @@
     })
 </script>
 <style scoped>
+  .inner-posts{
+    position: fixed;
+    left: 0%;
+    right: 0%;
+    top: 65px;
+    bottom: 50px;
+    width: auto;
+    height: auto;
+    overflow-y: auto;
+  }
     .scroll-trigger {
         height: 1px;
     }
     .toast {
         position: fixed;
-        bottom: 20px;
+        bottom: 50px;
         left: 20px;
         background: #2ecc71;
         color: white;

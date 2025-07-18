@@ -1,6 +1,6 @@
 <template>
   <div class="drop-area" @click="fileInput.click()" @dragover.prevent @dragenter.prevent @drop.prevent="handleDrop">
-    <svg fill="currentColor" viewBox="0 0 97.6 77.3" width="96">
+    <svg fill="currentColor" viewBox="0 0 97.6 77.3">
         <title>
           فایل‌ها را بکشید و رها کنید یا کلیک کنید
         </title>
@@ -11,7 +11,7 @@
     <p>در حال آماده‌سازی فایل‌ها برای ارسال...</p>
     <progress :value="progress" min="0" max="100" class="progress-bar"></progress>
   </div>
-  <div v-if="mediaList.length > 0" class="preview-box">
+  <div v-if="mediaList.length > 0">
     <p>پیش‌نمایش</p>
     <div class="preview-list">
       <div v-for="(item, i) in mediaList" :key="item.id || i" class="preview-item">
@@ -114,11 +114,15 @@
 </script>
 <style scoped>
     .drop-area {
-        border: 2px dashed #d1d5db;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        text-align: center;
-        cursor: pointer;
+      padding-top: 4px;
+      box-sizing: border-box;
+      position: fixed;
+      text-align: center;
+      cursor: pointer;
+      bottom: 0;
+      left: 0;
+      width: 45px;
+      height: 45px;
     }
     .hidden-input {
         display: none;
@@ -134,29 +138,32 @@
     .progress-bar {
         width: 100%;
     }
-    .preview-box {
-        margin-top: 1rem;
-        direction: rtl;
-    }
     .preview-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        justify-content: center;
-        width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      position: fixed;
+      bottom: 45px;
+      left: 0;
+      z-index: 9999;
+      right: 0;
+      overflow-y: auto;
+      background: #dee1ff;
+      align-items: stretch;
+      align-content: flex-start;
     }
     .preview-item {
-        display: flex;
-        position: relative;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        padding: 0.5rem;
-        width: 40%;
-        height: auto;
-        background-color: #f9fafb;
+      display: flex;
+      position: relative;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid #d1d5db;
+      border-radius: .5rem;
+      padding: 0.5rem;
+      width: 20%;
+      height: 60px;
+      background-color: #f9fafb;
+      justify-content: center;
     }
     .preview-image {
         max-width: 100%;
@@ -196,10 +203,5 @@
         line-height: 20px;
         text-align: center;
         cursor: pointer;
-    }
-    @media screen and (max-width:600px){
-      .preview-item {
-        width: 100%;
-      }
     }
 </style>
