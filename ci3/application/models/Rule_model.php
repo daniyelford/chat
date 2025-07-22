@@ -24,8 +24,8 @@ class Rule_model extends CI_Model {
         $categories = $this->db->get()->result();
         $this->db->select('uar.user_account_id');
         $this->db->from('rule_hierarchy rh');
-        $this->db->join('user_account_relations uar', 'uar.id = rh.child_rule_relation_id');
-        $this->db->where('rh.parent_rule_relation_id', $relation_id);
+        $this->db->join('user_account_relations uar', 'uar.id = rh.child_user_account_relation_id');
+        $this->db->where('rh.parent_user_account_relation_id', $relation_id);
         $accessible_users = $this->db->get()->result();
         return [
             'rule_id' => $rule_id,

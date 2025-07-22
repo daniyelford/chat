@@ -9,14 +9,13 @@ class News_model extends CI_Model
 	}
 	private $tbl="news";
     private $report="report_list";
-    private $category_relation='category_news';
-    public $user_lat=0;
-    public $user_lon=0;
+    private ?float $user_lat = null;
+    private ?float $user_lon = null;
+    private ?int $user_account_id = 0;
+    private ?int $rule_id = 0;
+
     private function select_where_array_table($tbl,$arr){
 	    return (!empty($tbl) && is_string($tbl) && !empty($arr) && is_array($arr)?$this->db->get_where($tbl,$arr)->result_array():false);
-	}
-	private function select_where_id_table($tbl,$id){
-	    return (!empty($tbl) && is_string($tbl) && !empty($id) && intval($id)>0?$this->select_where_array_table($tbl,['id'=>intval($id)]):false);
 	}
     private function add_to_table_return_id($tbl,$arr){
         return (!empty($tbl) && is_string($tbl) && !empty($arr) && is_array($arr) && $this->db->insert($tbl,$arr)?$this->db->insert_id():false);
@@ -26,78 +25,340 @@ class News_model extends CI_Model
     }
     // costum
     // news
-    public function get_private_checking_news_by_category($ids, $limit = 10, $offset = 0) {
-        $this->db->from('news n');
-        $this->db->join('category_relation cr', 'cr.target_id = n.id AND cr.target_table = "news"');
-        $this->db->where_in('cr.category_id', $ids);
-        $this->db->where('n.status', 'checking');
-        $this->db->where('n.privacy', 'private');
-        $total = $this->db->count_all_results();
-        $this->db->select('
-            n.*,
-            a.city AS city,
-            a.address AS address,
-            a.lat AS address_lat,
-            a.lon AS address_lon,
-            c.title AS category_title,
-            uar.user_account_id,
-            um.phone AS user_phone,
-            u.name AS user_name,
-            u.family AS user_family,
-            user_img.url AS user_image_url
-        ');
-        if ($this->user_lat !== null && $this->user_lon !== null) {
-            $this->db->select("(
-                6371 * acos(
-                    cos(radians($this->user_lat)) *
-                    cos(radians(a.lat)) *
-                    cos(radians(a.lon) - radians($this->user_lon)) +
-                    sin(radians($this->user_lat)) *
-                    sin(radians(a.lat))
-                )
-            ) AS distance");
-            $this->db->order_by('distance', 'ASC');
+    // costum sql function
+    private function apply_private_news_filters(array $category_ids): void {
+        $this->db->flush_cache();
+        $this->db->start_cache();
+        $category_ids = array_filter($category_ids, fn($id) => is_numeric($id));
+        if (empty($category_ids)) {
+            $this->db->where('1', '0', false);
+            return;
         }
+        $this->db->distinct();
+        $this->db->select('n.*');
         $this->db->from('news n');
-        $this->db->join('address_relation ar', 'ar.target_id = n.id AND ar.target_table = "news"', 'left');
-        $this->db->join('addresses a', 'a.id = ar.address_id', 'left');
-        $this->db->join('category_relation cr', 'cr.target_id = n.id AND cr.target_table = "news"');
-        $this->db->join('category c', 'c.id = cr.category_id');
-        $this->db->join('user_account_relations uar', 'uar.target_id = n.id AND uar.target_table = "news"', 'left');
-        $this->db->join('user_account ua', 'ua.id = uar.user_account_id', 'left');
-        $this->db->join('user_mobile um', 'um.id = ua.user_mobile_id', 'left');
-        $this->db->join('media user_img', 'user_img.id = um.image_id', 'left');
-        $this->db->join('users u', 'u.id = um.user_id', 'left');
-        $this->db->where_in('cr.category_id', $ids);
-        $this->db->where('n.status', 'checking');
-        $this->db->where('n.privacy', 'private');
-        $this->db->order_by('cr.category_id', 'ASC');
-        $this->db->order_by('n.created_at', 'DESC');
-        $this->db->limit($limit, $offset);
-        $news = $this->db->get()->result_array();
-        $news_ids = array_column($news, 'id');
-        if (!empty($news_ids)) {
-            $this->db->select('mr.target_id AS news_id, m.url, m.type');
-            $this->db->from('media_relation mr');
-            $this->db->join('media m', 'm.id = mr.media_id');
-            $this->db->where('mr.target_table', 'news');
-            $this->db->where_in('mr.target_id', $news_ids);
-            $media = $this->db->get()->result_array();
-            $media_map = [];
-            foreach ($media as $m) {
-                $media_map[$m['news_id']][] = $m;
-            }
-            foreach ($news as &$n) {
-                $n['media'] = $media_map[$n['id']] ?? [];
-            }
+        $this->db->join('category_relation cr', 'cr.target_id = n.id AND cr.target_table = \'news\'', 'left');
+        if ($this->user_account_id > 0) {
+            $this->db->join('user_account_relations uar',
+             'uar.target_id = n.id AND uar.target_table = \'news\' AND uar.user_account_id = ' . intval($this->user_account_id), 'left');
+            $this->db->group_start();
+                $this->db->group_start();
+                    $this->db->where_in('cr.category_id', $category_ids);
+                    if($this->rule_id !== 1){
+                        $this->db->where('n.privacy', 'private');
+                    }
+                $this->db->group_end();
+                $this->db->or_where('uar.user_account_id IS NOT NULL', null, false);
+            $this->db->group_end();
+        } else {
+            $this->db->where_in('cr.category_id', $category_ids);
+            $this->db->where('n.privacy', 'private');
         }
-        return ['data' => $news, 'count_all' => $total];
+        $this->db->group_by('n.id');
+        $this->db->stop_cache();
     }
-    // public function get_public_checking_news($limit = 10, $offset = 0) {
-    //     $this->db->from('news n');
-    //     $this->db->where('n.status', 'checking');
-    //     $this->db->where('n.privacy', 'public');
-    //     $total = $this->db->count_all_results();
+    private function apply_public_news_filters(): void {
+        $this->db->flush_cache();
+        $this->db->start_cache();
+        $this->db->distinct();
+        $this->db->select('n.*');
+        $this->db->from('news n');
+        if ($this->user_account_id > 0) {
+            $this->db->join(
+                'user_account_relations uar',
+                'uar.target_id = n.id AND uar.target_table = \'news\' AND uar.user_account_id = ' . intval($this->user_account_id),
+                'left'
+            );
+            $this->db->group_start();
+                $this->db->group_start();
+                    $this->db->where('n.status', 'checking');
+                    $this->db->where('n.privacy', 'public');
+                $this->db->group_end();
+                $this->db->or_where('uar.user_account_id IS NOT NULL', null, false);
+            $this->db->group_end();
+        } else {
+            $this->db->where('n.status', 'checking');
+            $this->db->where('n.privacy', 'public');
+        }
+        $this->db->group_by('n.id');
+        $this->db->stop_cache();
+    }
+    // costum sql function
+    // costum relations function
+    private function get_categories_for_target(string $target_table, array $target_ids): array {
+        if (empty($target_ids)) return [];
+        $this->db->select('cr.target_id, c.id AS category_id, c.title AS category_title');
+        $this->db->distinct();
+        $this->db->from('category_relation cr');
+        $this->db->join('category c', 'c.id = cr.category_id');
+        $this->db->where('cr.target_table', $target_table);
+        $this->db->where_in('cr.target_id', $target_ids);
+        $result = $this->db->get()->result();
+        $map = [];
+        foreach ($result as $row) {
+            $category = [
+                'id' => $row->category_id,
+                'title' => $row->category_title,
+            ];
+            if (!in_array($category, $map[$row->target_id] ?? [])) {
+                $map[$row->target_id][] = $category;
+            }
+        }
+        return $map;
+    }
+    private function get_media_for_targets(string $target_table, array $target_ids): array {
+        if (empty($target_ids)) return [];
+        $this->db->select('mr.target_id,m.id AS media__id, m.url, m.type');
+        $this->db->distinct();
+        $this->db->from('media_relation mr');
+        $this->db->join('media m', 'm.id = mr.media_id');
+        $this->db->where('mr.target_table', $target_table);
+        $this->db->where_in('mr.target_id', $target_ids);
+        $results = $this->db->get()->result();
+        $map = [];
+        foreach ($results as $row) {
+            $media = [
+                'id' => $row->media__id,
+                'url' => $row->url,
+                'type' => $row->type,
+            ];
+            if (!in_array($media, $map[$row->target_id] ?? [])) {
+                $map[$row->target_id][] = $media;
+            }
+        }
+        return $map;
+    }
+    private function get_user_accounts_for_targets(string $target_table, array $target_ids): array {
+        if (empty($target_ids)) return [];
+        $this->db->select('uar.target_id,ua.id AS user_account_id,um.phone,u.name,u.family,m.url AS user_image_url');
+        $this->db->distinct();
+        $this->db->from('user_account_relations uar');
+        $this->db->join('user_account ua', 'ua.id = uar.user_account_id');
+        $this->db->join('user_mobile um', 'um.id = ua.user_mobile_id');
+        $this->db->join('users u', 'u.id = um.user_id');
+        $this->db->join('media m', 'm.id = um.image_id', 'left');
+        $this->db->where('uar.target_table', $target_table);
+        $this->db->where_in('uar.target_id', $target_ids);
+        $results = $this->db->get()->result();
+        $map = [];
+        foreach ($results as $row) {
+            $map[$row->target_id] = [
+                'self'=>$this->user_account_id==$row->user_account_id,
+                'user_account_id' => $row->user_account_id,
+                'phone' => $row->phone,
+                'name'  => $row->name,
+                'family' => $row->family,
+                'user_image_url' => $row->user_image_url,
+            ];
+        }
+        return $map;
+    }
+    private function get_addresses_for_targets(string $target_table, array $target_ids): array {
+        if (empty($target_ids)) return [];
+        $this->db->select('ar.target_id, a.city, a.address, a.lat, a.lon', false);
+        if ($this->user_lat !== null && $this->user_lon !== null) {
+            $this->db->select("
+                (
+                    6371 * acos(
+                        cos(radians({$this->user_lat})) *
+                        cos(radians(a.lat)) *
+                        cos(radians(a.lon) - radians({$this->user_lon})) +
+                        sin(radians({$this->user_lat})) *
+                        sin(radians(a.lat))
+                    )
+                ) AS distance
+            ", false);
+        }
+        $this->db->distinct();
+        $this->db->from('address_relation ar');
+        $this->db->join('addresses a', 'a.id = ar.address_id', 'left');
+        $this->db->where('ar.target_table', $target_table);
+        $this->db->where_in('ar.target_id', $target_ids);
+        $results = $this->db->get()->result();
+        $map = [];
+        foreach ($results as $row) {
+            $map[$row->target_id] = [
+                'city'    => $row->city,
+                'address' => $row->address,
+                'lat'     => $row->lat,
+                'lon'     => $row->lon,
+            ];
+            if (isset($row->distance)) {
+                $map[$row->target_id]['distance'] = floatval($row->distance);
+            }
+        }
+        return $map;
+    }
+    // costum relations function
+    // costum helper function
+    protected function get_news_details_by_ids(array $news_rows): array {
+        $news_ids = array_column($news_rows, 'id');
+        if (empty($news_ids)) return [];
+        $address_map = $this->get_addresses_for_targets('news', $news_ids);
+        $user_map = $this->get_user_accounts_for_targets('news', $news_ids);
+        $result = [];
+        foreach ($news_rows as $item) {
+            $id = $item['id'];
+            $item = array_merge($item, $address_map[$id] ?? []);
+            $item = array_merge($item, $user_map[$id] ?? []);
+            $result[$id] = $item;
+        }
+        return $result;
+    }
+    protected function get_news_reports(array $news_ids): array {
+        if (empty($news_ids)) return [];
+        $this->db->select('rl.*');
+        $this->db->distinct();
+        $this->db->from('report_list rl');
+        $this->db->where_in('rl.news_id', $news_ids);
+        $report_list = $this->db->get()->result_array();
+        return $this->build_report_data($report_list);
+    }
+    // costum helper function
+    // costum build function
+    protected function build_news_data(array $news_rows): array {
+        if (empty($news_rows)) return [];
+        $news_ids = array_column($news_rows, 'id');
+        $details_map = $this->get_news_details_by_ids($news_rows);
+        $categories_map = $this->get_categories_for_target('news',$news_ids);
+        $media_map = $this->get_media_for_targets('news', $news_ids);
+        $reports_map = $this->get_news_reports($news_ids);
+        foreach (array_reverse($details_map) as &$item) {
+            $id = $item['id'];
+            $item['categories']   = $categories_map[$id] ?? [];
+            $item['media']        = $media_map[$id] ?? [];
+            $item['report_list']  = $reports_map[$id] ?? [];
+        }
+        return $details_map;
+    }
+    protected function build_report_data(array $report_list): array{
+        $report_ids = array_column($report_list, 'id');
+        if (empty($report_ids)) return [];
+        $address_map = $this->get_addresses_for_targets('report_list', $report_ids);
+        $media_map     = $this->get_media_for_targets('report_list', $report_ids);
+        $reporters_map = $this->get_user_accounts_for_targets('report_list', $report_ids);
+        $result = [];
+        foreach ($report_list as $r) {
+            $addr = $address_map[$r['id']] ?? [];
+            $result[$r['news_id']][] = [
+                'id' => $r['id'],
+                'report_info' => $r,
+                'location' => [
+                    'city'    => $addr['city']    ?? null,
+                    'address' => $addr['address'] ?? null,
+                    'lat'     => $addr['lat']     ?? null,
+                    'lon'     => $addr['lon']     ?? null,
+                ],
+                'report_media' => $media_map[$r['id']] ?? [],
+                'reporter'     => $reporters_map[$r['id']] ?? [],
+            ];
+        }
+        return $result;
+    }
+    // costum build function
+    public function setUserLocation(?int $user_account_id,?int $rule_id,?float $lat, ?float $lon): void {
+        $this->user_account_id = $user_account_id;
+        $this->rule_id = $rule_id;
+        $this->user_lat = $lat;
+        $this->user_lon = $lon;
+    }
+    public function get_private_checking_news_by_category(array $category_ids, int $limit = 10, int $offset = 0): array {
+        $this->apply_private_news_filters($category_ids);
+        $this->db->order_by('n.id', 'DESC');
+        $this->db->limit($limit+1, $offset);
+        $news_rows = $this->db->get()->result_array();
+        $this->db->flush_cache();
+        if (empty($news_rows)) {
+            return ['data' => [], 'has_more' => false];
+        }
+        $has_more = count($news_rows) > $limit;
+        $news_rows = array_slice($news_rows, 0, $limit);
+        $news_data = $this->build_news_data($news_rows);
+        return ['data' => $news_data, 'has_more' => $has_more,'type'=>1];
+    }
+    public function get_public_checking_news(int $limit = 10, int $offset = 0): array {
+        $this->apply_public_news_filters();
+        $this->db->order_by('n.id', 'DESC');
+        $this->db->limit($limit+1, $offset);
+        $news_rows =$this->db->get()->result_array();
+        $this->db->flush_cache();
+        if (empty($news_rows)) {
+            return ['data' => [], 'has_more' => false];
+        }
+        $has_more = count($news_rows) > $limit;
+        $news_rows = array_slice($news_rows, 0, $limit);
+        $news_data = $this->build_news_data($news_rows);
+        return ['data' => $news_data, 'has_more' => $has_more,'type'=>2];
+    }
+    public function get_news_by_id(int $id,int $user_account_id) {
+        $news=$this->select_where_array_table($this->tbl,['id'=>intval($id)]);
+        $this->user_account_id=intval($user_account_id);
+        return array_values($this->build_news_data($news))['0'];
+    }
+    public function get_news_by_user_account_id(int $user_account_id) {
+        $this->db->select('n.*');
+        $this->db->distinct();
+        $this->db->from('news n');
+        $this->db->join('user_account_relations uar', 'uar.target_id = n.id AND uar.target_table = \'news\' AND uar.user_account_id = ' . intval($user_account_id), 'inner');
+        $news = $this->db->get()->result_array();
+        $this->user_account_id=intval($user_account_id);
+        return $this->build_news_data($news);
+    }
+    // extera
+    public function select_news(){
+        return $this->db->get($this->tbl)->result_array();
+    }
+    public function select_news_where_user_account_id($id){
+	    return (!empty($id) && intval($id)?$this->select_where_array_table($this->tbl,['user_account_id'=>intval($id)]):false);
+	}
+    public function select_news_where_public_status_checking(){
+	    return $this->select_where_array_table($this->tbl,['status'=>'checking','privacy'=>'public']);
+	}
+    public function select_news_where_status_seen(){
+	    return $this->select_where_array_table($this->tbl,['status'=>'seen']);
+	}
+    public function add_return_id($arr){
+        return (!empty($arr) && is_array($arr)?$this->add_to_table_return_id($this->tbl,$arr):false);
+    }
+    public function seen_weher_id($id){
+        return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['status'=>'seen'],['id'=>intval($id)]));
+    }
+    public function seen_weher_id_and_user_account_id($id){
+        return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['status'=>'seen'],['id'=>intval($id)]));
+    }
+    public function checking_weher_id_and_user_account_id($id){
+        return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['status'=>'checking'],['id'=>intval($id)]));
+    }
+    public function select_report_where_news_id($id){
+	    return (!empty($id) && intval($id)?$this->select_where_array_table($this->report,['news_id'=>intval($id)]):false);
+	}
+    public function select_report_where_user_account_id($id){
+	    return (!empty($id) && intval($id)?$this->select_where_array_table($this->report,['user_account_id'=>intval($id)]):false);
+	}
+    public function get_reports_by_account_or_news_ids($user_account_id, $news_array){
+        if (empty($news_array)) {
+            $news_array = [0];
+        }
+        $this->db->from($this->report);
+        $this->db->group_start();
+        $this->db->where('user_account_id', $user_account_id);
+        $this->db->or_where_in('news_id', $news_array);
+        $this->db->group_end();
+        return $this->db->get()->result_array();
+    }
+}
+
+    // public function get_news_by_user_account_ids(array $user_account_ids){
+    //     if (empty($user_account_ids)) return [];
+    //     $this->db->select('target_id');
+    //     $this->db->from('user_account_relations');
+    //     $this->db->where_in('user_account_id', $user_account_ids);
+    //     $this->db->where('target_table', 'news');
+    //     $news_ids_relation = $this->db->get()->result_array();
+    //     if (empty($news_ids_relation)) {
+    //         return [];
+    //     }
+    //     $news_ids = array_unique(array_column($news_ids_relation, 'target_id'));
     //     $this->db->select('
     //         n.*,
     //         a.city AS city,
@@ -110,18 +371,6 @@ class News_model extends CI_Model
     //         u.family AS user_family,
     //         user_img.url AS user_image_url
     //     ');
-    //     if ($this->user_lat !== null && $this->user_lon !== null) {
-    //         $this->db->select("(
-    //             6371 * acos(
-    //                 cos(radians($this->user_lat)) *
-    //                 cos(radians(a.lat)) *
-    //                 cos(radians(a.lon) - radians($this->user_lon)) +
-    //                 sin(radians($this->user_lat)) *
-    //                 sin(radians(a.lat))
-    //             )
-    //         ) AS distance");
-    //         $this->db->order_by('distance', 'ASC');
-    //     }
     //     $this->db->from('news n');
     //     $this->db->join('address_relation ar', 'ar.target_id = n.id AND ar.target_table = "news"', 'left');
     //     $this->db->join('addresses a', 'a.id = ar.address_id', 'left');
@@ -130,239 +379,9 @@ class News_model extends CI_Model
     //     $this->db->join('user_mobile um', 'um.id = ua.user_mobile_id', 'left');
     //     $this->db->join('media user_img', 'user_img.id = um.image_id', 'left');
     //     $this->db->join('users u', 'u.id = um.user_id', 'left');
-    //     $this->db->where('n.status', 'checking');
-    //     $this->db->where('n.privacy', 'public');
-    //     $this->db->order_by('n.created_at', 'DESC');
-    //     $this->db->limit($limit, $offset);
-    //     $newsList = $this->db->get()->result_array();
-    //     $newsIds = array_column($newsList, 'id');
-    //     $categoryMap = $mediaList = [];
-    //     if (!empty($newsIds)) {
-    //         $this->db->select('cr.target_id AS news_id, c.id AS category_id, c.title AS category_title');
-    //         $this->db->from('category_relation cr');
-    //         $this->db->join('category c', 'c.id = cr.category_id');
-    //         $this->db->where('cr.target_table', 'news');
-    //         $this->db->where_in('cr.target_id', $newsIds);
-    //         $categories = $this->db->get()->result();
-    //         foreach ($categories as $cat) {
-    //             $categoryMap[$cat->news_id][] = [
-    //                 'id' => $cat->category_id,
-    //                 'title' => $cat->category_title
-    //             ];
-    //         }
-    //         $this->db->select('mr.target_id AS news_id, m.url, m.type');
-    //         $this->db->from('media_relation mr');
-    //         $this->db->join('media m', 'm.id = mr.media_id');
-    //         $this->db->where('mr.target_table', 'news');
-    //         $this->db->where_in('mr.target_id', $newsIds);
-    //         $results = $this->db->get()->result();
-    //         foreach ($results as $media) {
-    //             $mediaList[$media->news_id][] = [
-    //                 'url' => $media->url,
-    //                 'type' => $media->type,
-    //             ];
-    //         }
-    //     }
-    //     foreach ($newsList as &$news) {
-    //         $news['category'] = $categoryMap[$news['id']] ?? [];
-    //         $news['media'] = $mediaList[$news['id']] ?? [];
-    //     }
-    //     return ['data' => $newsList, 'count_all' => $total];
-    // }
-    public function get_public_checking_news($limit = 10, $offset = 0)
-    {
-        // 1. فقط id ها و created_at بگیر
-        $this->db->select('id');
-        $this->db->from('news');
-        $this->db->where('status', 'checking');
-        $this->db->where('privacy', 'public');
-        $this->db->order_by('id', 'DESC');
-        $this->db->limit($limit, $offset);
-        $newsRaw = $this->db->get()->result_array();
-
-        $newsIds = array_column($newsRaw, 'id');
-
-        if (empty($newsIds)) {
-            return ['data' => [], 'count_all' => 0];
-        }
-
-        // 2. حالا اطلاعات کامل برای idها بگیر (bulk)
-        $newsDetails = $this->get_news_details_by_ids($newsIds);
-
-        // 3. دسته‌بندی و مدیا رو جدا بگیر
-        $categories = $this->get_news_categories($newsIds);
-        $media = $this->get_news_media($newsIds);
-
-        // 4. ترکیب نهایی
-        foreach ($newsDetails as &$n) {
-            $n['category'] = $categories[$n['id']] ?? [];
-            $n['media'] = $media[$n['id']] ?? [];
-        }
-
-        // 5. شمارش کل برای صفحه اول
-        // $count_all = null;
-        // if ($offset === 0) {
-            $this->db->from('news');
-            $this->db->where('status', 'checking');
-            $this->db->where('privacy', 'public');
-            $count_all = $this->db->count_all_results();
-        // }
-
-        return ['data' => array_reverse(array_values($newsDetails)), 'count_all' => $count_all];
-    }
-    protected function get_news_details_by_ids(array $newsIds): array
-    {
-        $this->db->select('
-            n.id,
-            n.description,
-            n.created_at,
-            a.city,
-            a.address,
-            a.lat AS address_lat,
-            a.lon AS address_lon,
-            uar.user_account_id,
-            um.phone AS user_phone,
-            u.name AS user_name,
-            u.family AS user_family,
-            user_img.url AS user_image_url
-        ');
-        $this->db->from('news n');
-        $this->db->join('address_relation ar', 'ar.target_id = n.id AND ar.target_table = "news"', 'left');
-        $this->db->join('addresses a', 'a.id = ar.address_id', 'left');
-        $this->db->join('user_account_relations uar', 'uar.target_id = n.id AND uar.target_table = "news"', 'left');
-        $this->db->join('user_account ua', 'ua.id = uar.user_account_id', 'left');
-        $this->db->join('user_mobile um', 'um.id = ua.user_mobile_id', 'left');
-        $this->db->join('media user_img', 'user_img.id = um.image_id', 'left');
-        $this->db->join('users u', 'u.id = um.user_id', 'left');
-        $this->db->where_in('n.id', $newsIds);
-        $result = $this->db->get()->result_array();
-
-        $map = [];
-        foreach ($result as $r) {
-            $map[$r['id']] = $r;
-        }
-
-        return $map;
-    }
-    protected function get_news_categories(array $newsIds): array
-    {
-        if (empty($newsIds)) return [];
-
-        $this->db->select('cr.target_id AS news_id, c.id AS category_id, c.title AS category_title');
-        $this->db->from('category_relation cr');
-        $this->db->join('category c', 'c.id = cr.category_id');
-        $this->db->where('cr.target_table', 'news');
-        $this->db->where_in('cr.target_id', $newsIds);
-        $result = $this->db->get()->result();
-
-        $map = [];
-        foreach ($result as $row) {
-            $map[$row->news_id][] = [
-                'id' => $row->category_id,
-                'title' => $row->category_title
-            ];
-        }
-
-        return $map;
-    }
-    protected function get_news_media(array $newsIds): array
-    {
-        if (empty($newsIds)) return [];
-
-        $this->db->select('mr.target_id AS news_id, m.url, m.type');
-        $this->db->from('media_relation mr');
-        $this->db->join('media m', 'm.id = mr.media_id');
-        $this->db->where('mr.target_table', 'news');
-        $this->db->where_in('mr.target_id', $newsIds);
-        $result = $this->db->get()->result();
-
-        $map = [];
-        foreach ($result as $row) {
-            $map[$row->news_id][] = [
-                'url' => $row->url,
-                'type' => $row->type
-            ];
-        }
-
-        return $map;
-    }
-
-
-    public function get_news_by_id($id) {
-        $this->db->select('
-            n.*,
-            a.id AS address_id,
-            a.city AS city,
-            a.address AS address,
-            a.lat AS address_lat,
-            a.lon AS address_lon
-        ');
-        $this->db->from('news n');
-        $this->db->join('address_relation ar', 'ar.target_id = n.id AND ar.target_table = "news"', 'left');
-        $this->db->join('addresses a', 'a.id = ar.address_id', 'left');
-        $this->db->where('n.id', $id);
-        $news = $this->db->get()->row_array();
-        if (!$news) return null;
-        $this->db->select('user_account_id');
-        $this->db->from('user_account_relations');
-        $this->db->where('target_table', 'news');
-        $this->db->where('target_id', $id);
-        $relation = $this->db->get()->row_array();
-        if ($relation && isset($relation['user_account_id'])) {
-            $user_account_id = $relation['user_account_id'];
-            $this->db->select('
-                ua.id AS user_account_id,
-                um.phone AS user_phone,
-                u.name AS user_name,
-                u.family AS user_family,
-                media.url AS user_image_url
-            ');
-            $this->db->from('user_account ua');
-            $this->db->join('user_mobile um', 'um.id = ua.user_mobile_id', 'left');
-            $this->db->join('users u', 'u.id = um.user_id', 'left');
-            $this->db->join('media', 'media.id = um.image_id', 'left');
-            $this->db->where('ua.id', $user_account_id);
-            $user_info = $this->db->get()->row_array();
-            $news = array_merge($news, $user_info ?? []);
-        } else {
-            $news = array_merge($news, [
-                'user_account_id' => null,
-                'user_phone' => null,
-                'user_name' => null,
-                'user_family' => null,
-                'user_image_url' => null,
-            ]);
-        }
-        $this->db->select('c.id, c.title');
-        $this->db->from('category_relation cr');
-        $this->db->join('category c', 'c.id = cr.category_id');
-        $this->db->where('cr.target_table', 'news');
-        $this->db->where('cr.target_id', $id);
-        $news['categories'] = $this->db->get()->result_array();
-        $this->db->select('m.id, m.url, m.type');
-        $this->db->from('media_relation mr');
-        $this->db->join('media m', 'm.id = mr.media_id');
-        $this->db->where('mr.target_table', 'news');
-        $this->db->where('mr.target_id', $id);
-        $news['media'] = $this->db->get()->result_array();
-        return $news;
-    }
-    // public function get_news_by_user_account_id($user_account_id) {
-    //     $this->db->select('target_id AS news_id');
-    //     $this->db->from('user_account_relations');
-    //     $this->db->where('user_account_id', $user_account_id);
-    //     $this->db->where('target_table', 'news');
-    //     $news_ids_result = $this->db->get()->result_array();
-    //     if (empty($news_ids_result)) return [];
-    //     $news_ids = array_column($news_ids_result, 'news_id');
-    //     $this->db->select('
-    //         n.*,
-    //         a.id AS address_id,
-    //         a.city AS city,
-    //         a.address AS address,
-    //         a.lat AS address_lat,
-    //         a.lon AS address_lon
-    //     ');
+    //     $this->db->where_in('n.id', $news_ids);
+    //     $news_list = $this->db->get()->result_array();
+    //     if (empty($news_list)) return [];
     //     $this->db->select('cr.target_id AS news_id, c.id, c.title');
     //     $this->db->from('category_relation cr');
     //     $this->db->join('category c', 'c.id = cr.category_id');
@@ -382,243 +401,39 @@ class News_model extends CI_Model
     //     $this->db->where('mr.target_table', 'news');
     //     $this->db->where_in('mr.target_id', $news_ids);
     //     $medias = $this->db->get()->result_array();
-    //     $this->db->from('news n');
-    //     $this->db->join('address_relation ar', 'ar.target_id = n.id AND ar.target_table = "news"', 'left');
-    //     $this->db->join('addresses a', 'a.id = ar.address_id', 'left');
-    //     $this->db->where_in('n.id', $news_ids);
-    //     $news_list = $this->db->get()->result_array();
     //     $mediaMap = [];
-    //     if(!empty($medias))
-    //         foreach ($medias as $media) {
-    //             $mediaMap[$media['news_id']][] = [
-    //                 'id' => $media['id'],
-    //                 'url' => $media['url'],
-    //                 'type' => $media['type']
-    //             ];
-    //         }
-    //     if(!empty($news_list))
-    //         foreach ($news_list as &$news) {
-    //             $id = $news['id'];
-    //             $news['category'] = $categoryMap[$id] ?? [];
-    //             $news['media'] = $mediaMap[$id] ?? [];
-    //         }
+    //     foreach ($medias as $media) {
+    //         $mediaMap[$media['news_id']][] = [
+    //             'id' => $media['id'],
+    //             'url' => $media['url'],
+    //             'type' => $media['type']
+    //         ];
+    //     }
+    //     foreach ($news_list as &$news) {
+    //         $id = $news['id'];
+    //         $news['category'] = $categoryMap[$id] ?? [];
+    //         $news['media'] = $mediaMap[$id] ?? [];
+    //     }
     //     return $news_list;
     // }
-    public function get_news_by_user_account_id($user_account_id) {
-        // گام اول: گرفتن لیست خبرها با آدرس‌ها
-        $this->db->select('
-            n.*,
-            a.id AS address_id,
-            a.city AS city,
-            a.address AS address,
-            a.lat AS address_lat,
-            a.lon AS address_lon
-        ');
-        $this->db->from('news n');
-        $this->db->join('user_account_relations uar', 'uar.target_id = n.id AND uar.target_table = "news"', 'inner');
-        $this->db->join('address_relation ar', 'ar.target_id = n.id AND ar.target_table = "news"', 'left');
-        $this->db->join('addresses a', 'a.id = ar.address_id', 'left');
-        $this->db->where('uar.user_account_id', $user_account_id);
-        $news_list = $this->db->get()->result_array();
-
-        if (empty($news_list)) {
-            return [];
-        }
-
-        // گام دوم: گرفتن IDهای خبر برای category و media
-        $news_ids = array_column($news_list, 'id');
-
-        // گام سوم: گرفتن دسته‌بندی‌ها با تقسیم‌بندی برای جلوگیری از حجم زیاد
-        $categories = [];
-        foreach (array_chunk($news_ids, 500) as $chunk) {
-            $result = $this->db
-                ->select('cr.target_id AS news_id, c.id, c.title')
-                ->from('category_relation cr')
-                ->join('category c', 'c.id = cr.category_id')
-                ->where('cr.target_table', 'news')
-                ->where_in('cr.target_id', $chunk)
-                ->get()
-                ->result_array();
-            $categories = array_merge($categories, $result);
-        }
-
-        // مپ کردن categoryها
-        $categoryMap = [];
-        foreach ($categories as $cat) {
-            $categoryMap[$cat['news_id']][] = [
-                'id' => $cat['id'],
-                'title' => $cat['title']
-            ];
-        }
-
-        // گام چهارم: گرفتن رسانه‌ها با batching
-        $medias = [];
-        foreach (array_chunk($news_ids, 500) as $chunk) {
-            $result = $this->db
-                ->select('mr.target_id AS news_id, m.id, m.url, m.type')
-                ->from('media_relation mr')
-                ->join('media m', 'm.id = mr.media_id')
-                ->where('mr.target_table', 'news')
-                ->where_in('mr.target_id', $chunk)
-                ->get()
-                ->result_array();
-            $medias = array_merge($medias, $result);
-        }
-
-        // مپ کردن mediaها
-        $mediaMap = [];
-        foreach ($medias as $media) {
-            $mediaMap[$media['news_id']][] = [
-                'id' => $media['id'],
-                'url' => $media['url'],
-                'type' => $media['type']
-            ];
-        }
-
-        // گام پنجم: ترکیب همه اطلاعات در خروجی نهایی
-        foreach ($news_list as &$news) {
-            $id = $news['id'];
-            $news['category'] = $categoryMap[$id] ?? [];
-            $news['media'] = $mediaMap[$id] ?? [];
-        }
-
-        return $news_list;
-    }
-    public function get_news_by_user_account_ids(array $user_account_ids){
-        if (empty($user_account_ids)) return [];
-        $this->db->select('target_id');
-        $this->db->from('user_account_relations');
-        $this->db->where_in('user_account_id', $user_account_ids);
-        $this->db->where('target_table', 'news');
-        $news_ids_relation = $this->db->get()->result_array();
-        if (empty($news_ids_relation)) {
-            return [];
-        }
-        $news_ids = array_unique(array_column($news_ids_relation, 'target_id'));
-        $this->db->select('
-            n.*,
-            a.city AS city,
-            a.address AS address,
-            a.lat AS address_lat,
-            a.lon AS address_lon,
-            uar.user_account_id,
-            um.phone AS user_phone,
-            u.name AS user_name,
-            u.family AS user_family,
-            user_img.url AS user_image_url
-        ');
-        $this->db->from('news n');
-        $this->db->join('address_relation ar', 'ar.target_id = n.id AND ar.target_table = "news"', 'left');
-        $this->db->join('addresses a', 'a.id = ar.address_id', 'left');
-        $this->db->join('user_account_relations uar', 'uar.target_id = n.id AND uar.target_table = "news"', 'left');
-        $this->db->join('user_account ua', 'ua.id = uar.user_account_id', 'left');
-        $this->db->join('user_mobile um', 'um.id = ua.user_mobile_id', 'left');
-        $this->db->join('media user_img', 'user_img.id = um.image_id', 'left');
-        $this->db->join('users u', 'u.id = um.user_id', 'left');
-        $this->db->where_in('n.id', $news_ids);
-        $news_list = $this->db->get()->result_array();
-        if (empty($news_list)) return [];
-        $this->db->select('cr.target_id AS news_id, c.id, c.title');
-        $this->db->from('category_relation cr');
-        $this->db->join('category c', 'c.id = cr.category_id');
-        $this->db->where('cr.target_table', 'news');
-        $this->db->where_in('cr.target_id', $news_ids);
-        $categories = $this->db->get()->result_array();
-        $categoryMap = [];
-        foreach ($categories as $cat) {
-            $categoryMap[$cat['news_id']][] = [
-                'id' => $cat['id'],
-                'title' => $cat['title']
-            ];
-        }
-        $this->db->select('mr.target_id AS news_id, m.id, m.url, m.type');
-        $this->db->from('media_relation mr');
-        $this->db->join('media m', 'm.id = mr.media_id');
-        $this->db->where('mr.target_table', 'news');
-        $this->db->where_in('mr.target_id', $news_ids);
-        $medias = $this->db->get()->result_array();
-        $mediaMap = [];
-        foreach ($medias as $media) {
-            $mediaMap[$media['news_id']][] = [
-                'id' => $media['id'],
-                'url' => $media['url'],
-                'type' => $media['type']
-            ];
-        }
-        foreach ($news_list as &$news) {
-            $id = $news['id'];
-            $news['category'] = $categoryMap[$id] ?? [];
-            $news['media'] = $mediaMap[$id] ?? [];
-        }
-        return $news_list;
-    }
-    // extera
-    public function select_news(){
-        return $this->db->get($this->tbl)->result_array();
-    }
-    public function select_news_where_user_account_id($id){
-	    return (!empty($id) && intval($id)?$this->select_where_array_table($this->tbl,['user_account_id'=>intval($id)]):false);
-	}
-    public function select_news_where_public_status_checking(){
-	    return $this->select_where_array_table($this->tbl,['status'=>'checking','privacy'=>'public']);
-	}
-    public function select_news_where_category_id_status_checking_private($id){
-        if (!empty($id) && is_numeric($id)) {
-            $news=$this->select_where_array_table($this->category_relation,['category_id'=>$id]);
-            $news_array_id=[];
-            if(!empty($news))
-                foreach($news as $a){
-                    if(!empty($a) && !empty($a['news_id']) && intval($a['news_id'])>0)
-                        $news_array_id[]=intval($a['news_id']);
-                }
-            if(!empty($news_array_id)){
-                $this->db->from($this->tbl);
-                $this->db->group_start();
-                $this->db->where('status', 'checking');
-                $this->db->where('privacy', 'private');
-                $this->db->where_in('id', $news_array_id);
-                $this->db->group_end();
-                return $this->db->get()->result_array();
-            }
-        }
-        return [];
-	}
-    public function select_news_where_status_seen(){
-	    return $this->select_where_array_table($this->tbl,['status'=>'seen']);
-	}
-    public function add_return_id($arr){
-        return (!empty($arr) && is_array($arr)?$this->add_to_table_return_id($this->tbl,$arr):false);
-    }
-    public function seen_weher_id($id){
-        return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['status'=>'seen'],['id'=>intval($id)]));
-    }
-    public function seen_weher_id_and_user_account_id($id){
-        return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['status'=>'seen'],['id'=>intval($id)]));
-    }
-    public function checking_weher_id_and_user_account_id($id){
-        return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['status'=>'checking'],['id'=>intval($id)]));
-    }
-
-
-
-
-
-
-    public function select_report_where_news_id($id){
-	    return (!empty($id) && intval($id)?$this->select_where_array_table($this->report,['news_id'=>intval($id)]):false);
-	}
-    public function select_report_where_user_account_id($id){
-	    return (!empty($id) && intval($id)?$this->select_where_array_table($this->report,['user_account_id'=>intval($id)]):false);
-	}
-    public function get_reports_by_account_or_news_ids($user_account_id, $news_array){
-        if (empty($news_array)) {
-            $news_array = [0];
-        }
-        $this->db->from($this->report);
-        $this->db->group_start();
-        $this->db->where('user_account_id', $user_account_id);
-        $this->db->or_where_in('news_id', $news_array);
-        $this->db->group_end();
-        return $this->db->get()->result_array();
-    }
-}
+    // public function select_news_where_category_id_status_checking_private($id){
+    //     if (!empty($id) && is_numeric($id)) {
+    //         $news=$this->select_where_array_table($this->category_relation,['category_id'=>$id]);
+    //         $news_array_id=[];
+    //         if(!empty($news))
+    //             foreach($news as $a){
+    //                 if(!empty($a) && !empty($a['news_id']) && intval($a['news_id'])>0)
+    //                     $news_array_id[]=intval($a['news_id']);
+    //             }
+    //         if(!empty($news_array_id)){
+    //             $this->db->from($this->tbl);
+    //             $this->db->group_start();
+    //             $this->db->where('status', 'checking');
+    //             $this->db->where('privacy', 'private');
+    //             $this->db->where_in('id', $news_array_id);
+    //             $this->db->group_end();
+    //             return $this->db->get()->result_array();
+    //         }
+    //     }
+    //     return [];
+	// }

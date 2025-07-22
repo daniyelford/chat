@@ -1,5 +1,4 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-
 export function usePollingWithCompare(fetchFn, {
     intervalMs = 6000,
     runOnStart = true,
@@ -8,7 +7,6 @@ export function usePollingWithCompare(fetchFn, {
 } = {}) {
     const intervalId = ref(null)
     const lastData = ref(null)
-
     const poll = async () => {
         try {
             const result = await fetchFn()
@@ -20,21 +18,18 @@ export function usePollingWithCompare(fetchFn, {
             console.error('Polling error:', err)
         }
     }
-
     const startPolling = () => {
         stopPolling()
         intervalId.value = setInterval(() => {
             poll()
         }, intervalMs)
     }
-
     const stopPolling = () => {
         if (intervalId.value) {
             clearInterval(intervalId.value)
             intervalId.value = null
         }
     }
-
     const handleVisibilityChange = () => {
         if (document.visibilityState === 'visible') {
             if (runOnStart) poll()
@@ -43,18 +38,15 @@ export function usePollingWithCompare(fetchFn, {
             stopPolling()
         }
     }
-
     onMounted(() => {
         if (runOnStart) poll()
         startPolling()
         document.addEventListener('visibilitychange', handleVisibilityChange)
     })
-
     onBeforeUnmount(() => {
         stopPolling()
         document.removeEventListener('visibilitychange', handleVisibilityChange)
     })
-
     return {
         startPolling,
         stopPolling,

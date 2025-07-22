@@ -8,21 +8,20 @@ class Notification_model extends CI_Model
         return (!empty($arr) && is_array($arr) && $this->db->insert($this->table,$arr)?$this->db->insert_id():false);
     }
     public function get_unread_by_user_account_id($user_id, $limit = 10, $offset = 0) {
-        $this->db->from('notifications n');
-        $this->db->join('user_account_relations uar', 'uar.target_id = n.id AND uar.target_table = "notification"', 'inner');
-        $this->db->where('uar.user_account_id', $user_id);
-        $this->db->where('n.is_read', 'dont');
-        $total = $this->db->count_all_results();
         $this->db->select('n.*');
         $this->db->from('notifications n');
         $this->db->join('user_account_relations uar', 'uar.target_id = n.id AND uar.target_table = "notification"', 'inner');
         $this->db->where('uar.user_account_id', $user_id);
-        // $this->db->where('n.is_read', 'dont');
         $this->db->order_by('n.created_at', 'DESC');
-        $this->db->limit($limit, $offset);
+        $this->db->limit($limit+1, $offset);
         $data = $this->db->get()->result_array();
+        if (empty($data)) {
+            return ['data' => [], 'has_more' => false];
+        }
+        $has_more = count($data) > $limit;
+        $data = array_slice($data, 0, $limit);
         return [
-            'total' => $total,
+            'has_more' => $has_more,
             'data' => $data
         ];
     }

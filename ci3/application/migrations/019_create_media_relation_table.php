@@ -43,6 +43,7 @@ class Migration_Create_media_relation_table extends CI_Migration {
         $this->db->query("ALTER TABLE media_relation MODIFY created_at DATETIME DEFAULT CURRENT_TIMESTAMP");
         $this->db->query("ALTER TABLE media_relation MODIFY updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
         $this->db->query("ALTER TABLE media_relation ADD CONSTRAINT fk_media_relation_media FOREIGN KEY (media_id) REFERENCES media(id) ON DELETE CASCADE ON UPDATE CASCADE");
+        $this->db->query("CREATE INDEX IF NOT EXISTS idx_mr_target ON media_relation(target_table, target_id, media_id)");
     }
 
     public function down() {

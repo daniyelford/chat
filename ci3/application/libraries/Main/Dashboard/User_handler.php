@@ -105,8 +105,10 @@ class User_handler
         return ['status'=>'error'];
     }
     public function get_notifications($data){
-        if(!empty($data) && $this->get_user_account_id() && ($a=$this->notification_model->get_unread_by_user_account_id($this->get_user_account_id(),$data['limit']??5,$data['offset']??0))!==false)
-            return ['status'=>'success','data'=>(!empty($a)?$a:[]),'counts'=>count($a)];
+        if(!empty($data) && $this->get_user_account_id() && ($a=$this->notification_model->get_unread_by_user_account_id($this->get_user_account_id(),$data['limit']??5,$data['offset']??0))!==false){
+            $a['status']='success';
+            return $a;
+        }
         return ['status'=>'error'];
     }
     public function read_notifications($id){

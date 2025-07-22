@@ -97,34 +97,37 @@
     overflow: hidden;
   }
   input[type="file"] {
-      width: 100%;
-      top: -25px;
-      box-sizing: border-box;
-      height: calc(100% + 25px);
-      z-index: 999;
-      color: transparent;
-      position: relative;
-      background: transparent;
+    width: 100%;
+    top: -25px;
+    box-sizing: border-box;
+    height: calc(100% + 25px);
+    z-index: 999;
+    color: transparent;
+    position: relative;
+    background: transparent;
+  }
+  svg{
+    position: relative;
+    top: -360px;
   }
   p{
-      position: relative;
-      top: -220px;
-      text-align: center;
-      color: white;
-      font-size: 20px;
+    position: relative;
+    top: -420px;
+    text-align: center;
+    color: #17171c;
+    font-size: 20px;
   }
   .preview {
       width: 100%;
       height: 100%;
       position: relative;
-      top: -388px;
+      top: -720px;
       padding: 20px;
       box-sizing: border-box;
   }
   img{
       width: 100%;
       height: 100%;
-      border-radius: 150px;
   }
   .progress-bar {
       width: 96%;

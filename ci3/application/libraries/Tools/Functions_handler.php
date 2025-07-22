@@ -2,22 +2,22 @@
 class Functions_handler
 {
     public $category=[];
-    public $category_news=[];
-    public $media=[];
-    public $report_media=[];
-    public $product_media=[];
-    public $address=[];
-    public $all_news=[];
-    public $cartables=[];
-    public $news_manager=[];
-    public $result_cartables=[];
-    private User_handler $user;
+    // public $category_news=[];
+    // public $media=[];
+    // public $report_media=[];
+    // public $product_media=[];
+    // public $address=[];
+    // public $all_news=[];
+    // public $cartables=[];
+    // public $news_manager=[];
+    // public $result_cartables=[];
     private Wallet_model $wallet_model;
-    private Category_model $category_model;
     private Media_model $media_model;
+    private News_model $news_model;
+    private User_handler $user;
+    private Category_model $category_model;
     private Users_model $users_model;
     private Notification_model $notification_model;
-    private News_model $news_model;
     private Rule_model $rule_model;
     private Send_handler $send_handler;
     public function __construct(
@@ -46,132 +46,6 @@ class Functions_handler
     }
     public function get_all_category_active(){
         $this->category = $this->category_model->select_category_where_active();
-    }
-    public function get_all_media_used_news(){
-        $this->media = $this->media_model->select_where_news_used();
-    }
-    public function get_all_media_used_report(){
-        $this->report_media = $this->media_model->select_where_report_used();
-    }
-    public function get_all_category_news_relation(){
-        $this->category_news=$this->category_model->select_all_relation();
-    }
-    public function get_all_address_news(){
-        $this->address = $this->users_model->select_address_where_news();
-    }
-    public function get_all_my_news(){
-        $this->news_manager=$this->news_model->select_news_where_user_account_id($this->user->get_user_account_id());
-    }
-    public function get_all_news(){
-        $this->all_news=$this->news_model->select_news();
-    }
-    public function haversine_distance($lat1, $lon1, $lat2, $lon2) {
-        $earth_radius = 6371;
-        $dLat = deg2rad($lat2 - $lat1);
-        $dLon = deg2rad($lon2 - $lon1);
-        $a = sin($dLat/2) * sin($dLat/2) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon/2) * sin($dLon/2);
-        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
-        return $earth_radius * $c;
-    }
-    public function set_data_user_location($arr){
-        if(($userLocation = $this->user->get_user_location()) !== false && $userLocation && 
-        ($userCoordinate = $this->user->get_user_cordinates())!==false && $userCoordinate &&
-        !empty($arr)){
-            $user_lat = $userCoordinate['lat'];
-            $user_lon = $userCoordinate['lon'];
-            usort($arr, function($a, $b) use ($userLocation, $user_lat, $user_lon) {
-                $a_city = $a['city'] ?? '';
-                $b_city = $b['city'] ?? '';
-                $a_lat = $a['address_lat'] ?? 0;
-                $a_lon = $a['address_lon'] ?? 0;
-                $b_lat = $b['address_lat'] ?? 0;
-                $b_lon = $b['address_lon'] ?? 0;
-                $aMatch = ($a_city === $userLocation) ? 0 : 1;
-                $bMatch = ($b_city === $userLocation) ? 0 : 1;
-                if ($aMatch !== $bMatch) return $aMatch - $bMatch;
-                $distanceA = $this->haversine_distance($user_lat, $user_lon, $a_lat, $a_lon);
-                $distanceB = $this->haversine_distance($user_lat, $user_lon, $b_lat, $b_lon);
-                return $distanceA <=> $distanceB;
-            });
-        }
-    }
-    public function search_array($data,$key,$value){
-        $result=[];
-        if(!empty($data) && !empty($key) && !empty($value)){
-            $result=$data[array_search($value, array_column($data, $key))];
-        }
-        return $result;
-    }
-    public function search_id_return_value_in_key($data,$id,$key,$key_array){
-        $a = (!empty($data) && !empty($id) && !empty($key)?$this->search_array($data,$key,$id):'');
-        if(!empty($key_array) && !empty($a)){
-            if(is_string($key_array) && !empty($a[$key_array])) return $a[$key_array];
-            $res=[];
-            if(is_array($key_array))
-                foreach($key_array as $k){
-                    if(!empty($k) && !empty($a[$k]))
-                        $res[$k]=$a[$k];
-                }
-            if(!empty($res)) return $res;
-        }
-        return '';
-    }
-    public function search_ids_return_value_in_key($data,$ids,$key,$key_wanted){
-        $ids=(!empty($ids)?explode(',',$ids):[]);
-        return $this->search_ids_array_return_value_in_key($data,$ids,$key,$key_wanted);
-    }
-    public function search_ids_array_return_value_in_key($data,$ids,$key,$key_wanted){
-        $result=[];
-        if(!empty($data) && !empty($ids) && !empty($key) && !empty($key_wanted))
-            foreach ($ids as $id) {
-                if(!empty($id) && intval($id)>0) $result[]=$this->search_id_return_value_in_key($data,intval($id),$key,$key_wanted);
-            }
-        return (!empty($key_wanted) && is_string($key_wanted)?implode(',',$result):$result);
-    }
-    public function get_cartables_data(){
-        $this->get_all_category_active();
-        $this->get_all_category_news_relation();
-        $this->get_all_media_used_news();
-        $this->get_all_media_used_report();
-        $this->get_all_address_news();
-        $this->get_all_news();
-        $this->get_all_my_news();
-        $my_seenIds = array_column($this->news_manager, 'id');
-        if(!empty($my_seenIds))
-            $this->cartables=$this->news_model->get_reports_by_account_or_news_ids($this->user->get_user_account_id(),$my_seenIds);
-        else
-            $this->cartables=$this->news_model->select_report_where_user_account_id($this->user->get_user_account_id());
-    }
-    public function set_cartables_data(){
-        if(!empty($this->cartables))
-            foreach($this->cartables as $a){
-                if(!empty($a) && !empty($a['id']) && intval($a['id'])>0 && !empty($a['news_id']) && intval($a['news_id'])>0 && !empty($a['user_account_id']) && intval($a['user_account_id'])>0){
-                    $news=$this->search_array($this->all_news,'id',intval($a['news_id']));
-                    if(!empty($news) && !empty($news['user_account_id']) && intval($news['user_account_id'])>0){
-                        $arr=[];
-                        $arr['id']=intval($a['id']);
-                        if($this->has_category_id() && intval($a['user_account_id'])===intval($this->user->get_user_account_id())){
-                            $arr['user']=$this->user->get_user_info_where_user_account(intval($news['user_account_id']));
-                            $arr['has_rule']=true;
-                        }else{
-                            $arr['user']=$this->user->get_user_info_where_user_account(intval($a['user_account_id']));
-                            $arr['has_rule']=false;
-                        }
-                        $report_result=$news_result=[];
-                        $news_result['id']=$news['id']??'';
-                        $news_result['description']=$news['description']??'';
-                        $news_result['media']=$this->search_ids_return_value_in_key($this->media,$news['media_id']??'','id',['url','type']);
-                        $news_result['address']=$this->search_id_return_value_in_key($this->address,$news['user_address_id']??0,'id',['id','city','lat','lon','address']);
-                        $report_result['description']=$a['description']??'';
-                        $report_result['media']=$this->search_ids_return_value_in_key($this->report_media,$a['media_id']??'','id',['id','url','type']);
-                        $report_result['run_time']=$a['run_time']??'';
-                        $report_result['created_at']=$a['created_at']??'';
-                        $arr['report']=$report_result;
-                        $arr['news']=$news_result;
-                        $this->result_cartables[]=$arr;
-                    }
-                }
-            }
     }
     public function send_add_news_notification($category,$news_id){
         if(!empty($category) && is_array($category)){
@@ -211,38 +85,166 @@ class Functions_handler
             }
         return true;
     }
-    public function find_order($ids){
+    public function search_array($data,$key,$value){
         $result=[];
-        if(!empty($ids) && is_string($ids) && ($a=explode(',',$ids))!==false &&
-        !empty($a) && ($b=$this->wallet_model->select_orders_where_in_order_ids($a))!==false && !empty($b))
-            foreach ($b as $c) {
-                if(!empty($c) && !empty($c['product_id']) && intval($c['product_id'])>0){
-                $arr=[];  
-                $arr['total_price']=$c['amount']??0;
-                $arr['product_count']=$c['product_count']??1;
-                $arr['created_at']=$c['created_at']??'';
-                $arr['updated_at']=$c['updated_at']??'';
-                $arr['report']=$this->find_report_info($c['report_list_id']??0);
-                $arr['product_info']=$this->find_product_info(intval($c['product_id']));
-                $result[]=$arr;
-                }
-            }
-        return $result;
-    }
-    public function find_product_info($id){
-        $result=[];
-        if(!empty($id) && intval($id)>0 && 
-        ($a=$this->wallet_model->select_product_where_id(intval($id)))!==false &&
-        !empty($a) && !empty(end($a))){
-            $result=end($a);
-            $result['media']=$this->search_ids_return_value_in_key($this->product_media,end($a)['media_id']??'','id',['url','type']);
+        if(!empty($data) && !empty($key) && !empty($value)){
+            $result=$data[array_search($value, array_column($data, $key))];
         }
         return $result;
     }
-    public function find_report_info($id){
-        return (!empty($id) && intval($id)>0?$this->search_array($this->result_cartables,'id',intval($id)):[]);
+    public function search_id_return_value_in_key($data,$id,$key,$key_array){
+        $a = (!empty($data) && !empty($id) && !empty($key)?$this->search_array($data,$key,$id):'');
+        if(!empty($key_array) && !empty($a)){
+            if(is_string($key_array) && !empty($a[$key_array])) return $a[$key_array];
+            $res=[];
+            if(is_array($key_array))
+                foreach($key_array as $k){
+                    if(!empty($k) && !empty($a[$k]))
+                        $res[$k]=$a[$k];
+                }
+            if(!empty($res)) return $res;
+        }
+        return '';
     }
 }
+    // public function get_all_media_used_news(){
+    //     $this->media = $this->media_model->select_where_news_used();
+    // }
+    // public function get_all_media_used_report(){
+    //     $this->report_media = $this->media_model->select_where_report_used();
+    // }
+    // public function get_all_category_news_relation(){
+    //     $this->category_news=$this->category_model->select_all_relation();
+    // }
+    // public function get_all_address_news(){
+    //     $this->address = $this->users_model->select_address_where_news();
+    // }
+    // public function get_all_my_news(){
+    //     $this->news_manager=$this->news_model->select_news_where_user_account_id($this->user->get_user_account_id());
+    // }
+    // public function get_all_news(){
+    //     $this->all_news=$this->news_model->select_news();
+    // }
+    // public function haversine_distance($lat1, $lon1, $lat2, $lon2) {
+    //     $earth_radius = 6371;
+    //     $dLat = deg2rad($lat2 - $lat1);
+    //     $dLon = deg2rad($lon2 - $lon1);
+    //     $a = sin($dLat/2) * sin($dLat/2) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon/2) * sin($dLon/2);
+    //     $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+    //     return $earth_radius * $c;
+    // }
+    // public function set_data_user_location($arr){
+    //     if(($userLocation = $this->user->get_user_location()) !== false && $userLocation && 
+    //     ($userCoordinate = $this->user->get_user_cordinates())!==false && $userCoordinate &&
+    //     !empty($arr)){
+    //         $user_lat = $userCoordinate['lat'];
+    //         $user_lon = $userCoordinate['lon'];
+    //         usort($arr, function($a, $b) use ($userLocation, $user_lat, $user_lon) {
+    //             $a_city = $a['city'] ?? '';
+    //             $b_city = $b['city'] ?? '';
+    //             $a_lat = $a['address_lat'] ?? 0;
+    //             $a_lon = $a['address_lon'] ?? 0;
+    //             $b_lat = $b['address_lat'] ?? 0;
+    //             $b_lon = $b['address_lon'] ?? 0;
+    //             $aMatch = ($a_city === $userLocation) ? 0 : 1;
+    //             $bMatch = ($b_city === $userLocation) ? 0 : 1;
+    //             if ($aMatch !== $bMatch) return $aMatch - $bMatch;
+    //             $distanceA = $this->haversine_distance($user_lat, $user_lon, $a_lat, $a_lon);
+    //             $distanceB = $this->haversine_distance($user_lat, $user_lon, $b_lat, $b_lon);
+    //             return $distanceA <=> $distanceB;
+    //         });
+    //     }
+    // }
+
+    // public function search_ids_return_value_in_key($data,$ids,$key,$key_wanted){
+    //     $ids=(!empty($ids)?explode(',',$ids):[]);
+    //     return $this->search_ids_array_return_value_in_key($data,$ids,$key,$key_wanted);
+    // }
+    // public function search_ids_array_return_value_in_key($data,$ids,$key,$key_wanted){
+    //     $result=[];
+    //     if(!empty($data) && !empty($ids) && !empty($key) && !empty($key_wanted))
+    //         foreach ($ids as $id) {
+    //             if(!empty($id) && intval($id)>0) $result[]=$this->search_id_return_value_in_key($data,intval($id),$key,$key_wanted);
+    //         }
+    //     return (!empty($key_wanted) && is_string($key_wanted)?implode(',',$result):$result);
+    // }
+
+    // public function get_cartables_data(){
+    //     $this->get_all_category_active();
+    //     $this->get_all_category_news_relation();
+    //     $this->get_all_media_used_news();
+    //     $this->get_all_media_used_report();
+    //     $this->get_all_address_news();
+    //     $this->get_all_news();
+    //     $this->get_all_my_news();
+    //     $my_seenIds = array_column($this->news_manager, 'id');
+    //     if(!empty($my_seenIds))
+    //         $this->cartables=$this->news_model->get_reports_by_account_or_news_ids($this->user->get_user_account_id(),$my_seenIds);
+    //     else
+    //         $this->cartables=$this->news_model->select_report_where_user_account_id($this->user->get_user_account_id());
+    // }
+    // public function set_cartables_data(){
+    //     if(!empty($this->cartables))
+    //         foreach($this->cartables as $a){
+    //             if(!empty($a) && !empty($a['id']) && intval($a['id'])>0 && !empty($a['news_id']) && intval($a['news_id'])>0 && !empty($a['user_account_id']) && intval($a['user_account_id'])>0){
+    //                 $news=$this->search_array($this->all_news,'id',intval($a['news_id']));
+    //                 if(!empty($news) && !empty($news['user_account_id']) && intval($news['user_account_id'])>0){
+    //                     $arr=[];
+    //                     $arr['id']=intval($a['id']);
+    //                     if($this->has_category_id() && intval($a['user_account_id'])===intval($this->user->get_user_account_id())){
+    //                         $arr['user']=$this->user->get_user_info_where_user_account(intval($news['user_account_id']));
+    //                         $arr['has_rule']=true;
+    //                     }else{
+    //                         $arr['user']=$this->user->get_user_info_where_user_account(intval($a['user_account_id']));
+    //                         $arr['has_rule']=false;
+    //                     }
+    //                     $report_result=$news_result=[];
+    //                     $news_result['id']=$news['id']??'';
+    //                     $news_result['description']=$news['description']??'';
+    //                     $news_result['media']=$this->search_ids_return_value_in_key($this->media,$news['media_id']??'','id',['url','type']);
+    //                     $news_result['address']=$this->search_id_return_value_in_key($this->address,$news['user_address_id']??0,'id',['id','city','lat','lon','address']);
+    //                     $report_result['description']=$a['description']??'';
+    //                     $report_result['media']=$this->search_ids_return_value_in_key($this->report_media,$a['media_id']??'','id',['id','url','type']);
+    //                     $report_result['run_time']=$a['run_time']??'';
+    //                     $report_result['created_at']=$a['created_at']??'';
+    //                     $arr['report']=$report_result;
+    //                     $arr['news']=$news_result;
+    //                     $this->result_cartables[]=$arr;
+    //                 }
+    //             }
+    //         }
+    // }
+    // public function find_order($ids){
+    //     $result=[];
+    //     if(!empty($ids) && is_string($ids) && ($a=explode(',',$ids))!==false &&
+    //     !empty($a) && ($b=$this->wallet_model->select_orders_where_in_order_ids($a))!==false && !empty($b))
+    //         foreach ($b as $c) {
+    //             if(!empty($c) && !empty($c['product_id']) && intval($c['product_id'])>0){
+    //             $arr=[];  
+    //             $arr['total_price']=$c['amount']??0;
+    //             $arr['product_count']=$c['product_count']??1;
+    //             $arr['created_at']=$c['created_at']??'';
+    //             $arr['updated_at']=$c['updated_at']??'';
+    //             $arr['report']=$this->find_report_info($c['report_list_id']??0);
+    //             $arr['product_info']=$this->find_product_info(intval($c['product_id']));
+    //             $result[]=$arr;
+    //             }
+    //         }
+    //     return $result;
+    // }
+    // public function find_product_info($id){
+    //     $result=[];
+    //     if(!empty($id) && intval($id)>0 && 
+    //     ($a=$this->wallet_model->select_product_where_id(intval($id)))!==false &&
+    //     !empty($a) && !empty(end($a))){
+    //         $result=end($a);
+    //         $result['media']=$this->search_ids_return_value_in_key($this->product_media,end($a)['media_id']??'','id',['url','type']);
+    //     }
+    //     return $result;
+    // }
+    // public function find_report_info($id){
+    //     return (!empty($id) && intval($id)>0?$this->search_array($this->result_cartables,'id',intval($id)):[]);
+    // }
     // public $news=[];
     // public $report=[];
     // public $news_seen=[];

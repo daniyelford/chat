@@ -27,13 +27,6 @@ const routes = [
     props: { view: 'dashboard' } 
   },
   {
-    path: '/wallet',
-    name: 'wallet',
-    component: MainDashboard,
-    meta: { requiresAuth: true },
-    props: { view: 'wallet' } 
-  },
-  {
     path: '/add-news',
     name: 'add-news',
     component: MainDashboard,

@@ -1,6 +1,7 @@
 <script>
   import { sendApi } from '@/utils/api'
   import { useNotificationStore } from '@/stores/notification'
+  import { useNewsStore } from '@/stores/news'
   export default {
     name: 'LogOutUser',
     methods: {
@@ -11,6 +12,8 @@
           sessionStorage.clear()
           window.dispatchEvent(new Event("storage"))
           this.isLoggedIn = false
+          const NewsStore = useNewsStore()
+          NewsStore.reset()
           const notificationStore = useNotificationStore()
           notificationStore.$reset()
           this.$router.push("/")

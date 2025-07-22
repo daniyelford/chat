@@ -57,12 +57,12 @@ class Security_handler
         return null;
     }
     public function string_security_check($str){
-        $str = preg_replace('/[^a-zA-Z0-9\/]/', '', $str);
+        $str = preg_replace('/[^a-zA-Z0-9\/]/', ' ', $str);
         $str = trim($str);
         return $str;
     }
     public function string_secutory_week_check($str){
-        $str = preg_replace('/[^\p{Arabic}a-zA-Z0-9]/u', '', $str);
+        $str = preg_replace('/[^\p{Arabic}a-zA-Z0-9]/u', ' ', $str);
         $str = trim($str);
         return $str;
     }

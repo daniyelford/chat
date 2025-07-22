@@ -5,7 +5,6 @@
     <div class="content" :style="contentStyle">
         <NewsCards v-if="props.view === 'dashboard'" />
         <AddNewsForm v-else-if="props.view === 'add-news'"/>
-        <WalletCards v-else-if="props.view === 'wallet'"/>
         <ReportList v-else-if="props.view === 'report-list'" />
         <ManageNews v-else-if="props.view === 'manage-news'" />
         <UserSetting v-else-if="props.view === 'user-setting'" />
@@ -19,7 +18,6 @@
             <button class="close-btn" @click="menu.close">×</button>
             <ExteraMenu v-if="props.view === 'dashboard'" :cartable="true" :wallet="true" :list="true" :add="true" :manage="true" :setting="true"/>
             <ExteraMenu v-else-if="props.view === 'add-news'" :cartable="true" :wallet="true" :list="true" :add="false" :manage="true" :setting="true"/>
-            <ExteraMenu v-else-if="props.view === 'wallet'" :cartable="true" :wallet="false" :list="true" :add="true" :manage="true" :setting="true"/>
             <ExteraMenu v-else-if="props.view === 'report-list'" :cartable="true" :wallet="true" :list="false" :add="true" :manage="true" :setting="true"/>
             <ExteraMenu v-else-if="props.view === 'manage-news'" :cartable="true" :wallet="true" :list="true" :add="true" :manage="false" :setting="true"/>
             <ExteraMenu v-else-if="props.view === 'show-news'" :cartable="true" :wallet="true" :list="true" :add="true" :manage="false" :setting="true"/>
@@ -41,7 +39,6 @@
     import ShowCartable from '@/components/dashboard/pagesContent/ShowCartable.vue';
     import ShowNews from '@/components/dashboard/pagesContent/ShowNews.vue';
     import UserSetting from '@/components/dashboard/pagesContent/UserSetting.vue';
-    import WalletCards from '@/components/dashboard/pagesContent/WalletCards.vue';
     import { defineProps , ref , computed , onMounted } from 'vue'
     import { useMenuStore } from '@/stores/menu'
     import { subscribeToPush } from '@/utils/pushService';

@@ -15,10 +15,6 @@
   onBeforeUnmount(() => {
     if (pollingInterval) clearInterval(pollingInterval)
   })
-  // function formatPrice(price) {
-  //   if (!price && price !== 0) return '-'
-  //   return new Intl.NumberFormat('fa-IR').format(price) + ' تومان'
-  // }
 </script>
 <template>
   <div class="nav">
@@ -31,8 +27,6 @@
       </div>
       <div class="other-info">
         <span>{{ user.fullName }}</span>
-        <br />
-        <!-- <span style="font-size: 10px;">{{ formatPrice(user.wallet) }}</span> -->
       </div>
       <NotificationMenu v-if="user.isLoggedIn" />
     </div>
@@ -63,7 +57,7 @@
     flex-direction: row-reverse;
     flex-wrap: nowrap;
     justify-content: space-between;
-    align-items: stretch;
+    align-items: center;
     gap: 7px;
     padding: 4px 5px 0 5px;
     box-sizing: border-box;

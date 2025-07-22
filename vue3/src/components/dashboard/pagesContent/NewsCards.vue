@@ -1,15 +1,10 @@
 <template>
   <div class="inner-posts">
-    <!-- حالت بارگذاری اولیه -->
     <div class="loading" v-if="!newsStore.isLoaded">
       در حال بارگذاری...
     </div>
-
-    <!-- نمایش کارت‌ها -->
-    <div class="card-inner" v-else-if="visibleNews.length > 0">
-      <div v-for="card in visibleNews" :key="card.id" class="card">
-        
-        <!-- اطلاعات کاربر -->
+    <div class="card-inner" v-else-if="newsStore.cards.length > 0">
+      <div v-for="card in newsStore.cards" :key="card.id" class="card" :class="{ 'my-news': card.self }">
         <div class="user-info">
           <img v-if="card.user?.image" :src="card.user.image" alt="user" />
           <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#000000" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g><rect fill="none" height="24" width="24"/></g><g><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20z"/></g></svg>
@@ -17,47 +12,52 @@
             {{ card.user.name }} {{ card.user.family }}
           </p>
         </div>
-
-        <!-- مدیا -->
         <div class="media-inner">
           <MediaSlider v-if="card.medias.length > 0" :medias="card.medias" />
         </div>
-
-        <!-- دسته‌بندی -->
         <div class="card-category" v-if="!newsStore.hasRule && card.category.length">
           <span class="category" v-for="category in card.category" :key="category.id">
             {{ category.title }}
           </span>
         </div>
-
-        <!-- توضیحات -->
         <div class="description" v-if="card.description">
           {{ card.description }}
         </div>
-
-        <!-- موقعیت مکانی -->
         <div class="location" v-if="card.location?.city">
           📍 {{ card.location.city }}
         </div>
-
-        <!-- زمان ایجاد -->
         <div class="time">
           {{ moment(card.created_at).format('jYYYY/jMM/jDD') }}
         </div>
-
-        <!-- دکمه مشاهده -->
         <RouterLink class="c-d" :to="{ path: `/show-news/${card.id}` }">
           مشاهده
         </RouterLink>
-
-        <!-- دکمه ثبت در تقویم -->
+        <a
+          class="choose"
+          v-if="newsStore.hasRule"
+          @click="handleReply(card.id)"
+        >
+          پاسخ
+        </a>
         <a
           class="choose"
           v-if="newsStore.hasRule"
           @click="openCalendarModal(card.id)"
         >
-          بررسی
+          قرار ملاقات
         </a>
+        <div class="report-block" v-if="card.reports && card.reports.length">
+          <h4>گزارش‌ها:</h4>
+          <div class="single-report" v-for="report in card.reports" :key="report.id">
+            <p>📄 {{ report.description }}</p>
+            <p>📅 {{ moment(report.created_at).format('jYYYY/jMM/jDD HH:mm') }}</p>
+            <p>🧑‍💼 گزارش‌دهنده: {{ report.reporter.name }} {{ report.reporter.family }}</p>
+            <div class="media-inner" v-if="report.media.length">
+              <MediaSlider :medias="report.media" />
+            </div>
+          </div>
+        </div>
+
       </div>
       <div ref="loadMoreTrigger" class="scroll-trigger"></div>
     </div>
@@ -73,10 +73,10 @@
     @submit="onCalendarSubmit"
     />
   </div>
-  <AddNewsForm />
+  <AddNewsForm :reply-to-id="replyToId" />
 </template>
 <script setup>
-    import { ref, onMounted , computed } from 'vue'
+    import { ref, onMounted } from 'vue'
     import { useNewsStore } from '@/stores/news'
     import moment from 'moment-jalaali'
     import MediaSlider from '@/components/tooles/media/MediaSlider.vue'
@@ -93,42 +93,55 @@
         toastMsg.value = msg
         setTimeout(() => (toastMsg.value = ''), 3000)
     }
-
-    // 📌 Composable: fetch با limit و offset
-    const fetchNews = async ({ limit, offset }) => {
-      const res = await newsStore.fetchNews({ limit, offset, append: true })
-      return Array.isArray(res) ? res : []
+    const replyToId = ref(0)
+    function handleReply(newsId) {
+      replyToId.value = newsId
     }
-
-
-    // 📌 استفاده از useInfiniteScroll
-    const total = computed(() => newsStore.total)
+    const fetchNews = async () => {
+      const ok = await newsStore.fetchNews({
+        limit: 10,
+        offset: newsStore.cards.length,
+        append: true,
+      })
+      if (ok) {
+        return {
+          items: newsStore.cards,
+          has_more: newsStore.more,
+        }
+      }
+      return {
+        items: newsStore.cards,
+        has_more: false,
+      }
+    }
     const {
-        items: visibleNews,
         loadMoreTrigger,
         setupObserver,
-    } = useInfiniteScroll(fetchNews, { limit: 10,total: total, immediate: true })
-
-    // 📌 استفاده از usePollingWithCompare
+    } = useInfiniteScroll(fetchNews, { limit: 10, immediate: true })
     usePollingWithCompare( 
-        () => newsStore.fetchLatestNewsRaw(5, 0), {
-        intervalMs: 6000,
-        isDifferent: (oldData, newData) => {
-            const oldIds = (oldData || []).map(i => i.id)
-            const newIds = (newData || []).map(i => i.id)
-            return JSON.stringify(oldIds) !== JSON.stringify(newIds)
-        },
-        onChange: (newCards) => {
-            const filtered = newCards.filter(item => !newsStore.cards.some(card => card.id === item.id))
-            if (filtered.length) {
-                newsStore.cards = [...filtered, ...newsStore.cards]
-                newsStore.total += filtered.length
-                showToast('خبر جدید رسید!')
-            }
+      () => newsStore.fetchLatestNewsRaw(5, 0), {
+      intervalMs: 6000,
+      isDifferent: (oldData, newData) => {
+        const oldIds = Array.isArray(oldData) ? oldData.map(i => i.id) : []
+        const newIds = Array.isArray(newData) ? newData.map(i => i.id) : []
+        return JSON.stringify(oldIds) !== JSON.stringify(newIds)
+      },
+      onChange: async (newCards) => {
+        const filtered = newCards.filter(item => !newsStore.cards.some(card => card.id === item.id))
+        if (filtered.length) {
+          if (filtered.length > 10) {
+            const scrollTop = window.scrollY
+            await newsStore.fetchNews({ limit: 10, offset: 0, append: false })
+            showToast('خبر جدید رسید!')
+            window.scrollTo(0, scrollTop)
+          } else {
+            newsStore.cards = [...filtered, ...newsStore.cards]
+            showToast('خبر جدید رسید!')
+          }
         }
-    })
+      }
 
-    // 📌 Modal کنترل
+    })
     function openCalendarModal(id) {
         selectedNewsId.value = id
         showModal.value = true
@@ -151,148 +164,119 @@
     })
 </script>
 <style scoped>
-  .inner-posts{
+  .inner-posts {
+    padding: 10px;
     position: fixed;
-    left: 0%;
-    right: 0%;
-    top: 65px;
-    bottom: 50px;
-    width: auto;
-    height: auto;
-    overflow-y: auto;
+    top: 60px;
+    bottom: 45px;
+    overflow: auto;
+    left: 0;
+    right: 0;
   }
-    .scroll-trigger {
-        height: 1px;
-    }
-    .toast {
-        position: fixed;
-        bottom: 50px;
-        left: 20px;
-        background: #2ecc71;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-    }
-    .loading,.none-cart-error{
-        text-align: center;
-        padding: 20px;
-        color: white;
-        font-size: 20px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px grey;
-        font-weight: bold;
-    }
-    .loading{
-        background: rgb(16, 16, 143);
-    }
-    .none-cart-error {
-        background: rgb(128, 12, 12);
-    }
-    .media-inner {
-        background: white;
-        padding: 5px;
-    }
-    .location {
-        margin: 5px;
-        gap: 5px;
-        display: flex;
-        font-size: 11px;
-        align-items: center;
-    }
-    .location svg{
-        height: 20px;
-        width: 20px;
-    }
-    .user-info svg,.user-info img{
-        width: 50px;
-        height: 50px;
-        border-radius: 50px;
-        display: inline-block;
-    }
-    .user-info p{
-        display: inline-block;
-    }
-    .user-info{
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px;
-    }
-    .card-category {
-        text-align: center;
-        padding: 10px;
-        background: floralwhite;
-    }
-    .card-inner {
-        width: 100%;
-        direction: rtl;
-        height: 100%;
-        display: flex;
-        flex-direction: row-reverse;
-        flex-wrap: wrap;
-        align-content: flex-start;
-        justify-content: center;
-        align-items: stretch;
-    }
-    .card {
-        background: #f5f5f5;
-        width: 49%;
-        min-height: 300px;
-        margin: 0 0.5% 10px 0.5%;
-        border-radius: 10px;
-        box-shadow: 0 0 5px grey;
-    }
-    .media {
-        height: 150px;
-        width: auto;
-        margin: auto;
-    }
-    .media img,
-    .media video {
-        width: 100%;
-        height: 100%;
-    }
-    .card-header {
-        display: flex;
-        flex-direction: row-reverse;
-        flex-wrap: nowrap;
-        justify-content: space-between;
-        align-items: stretch;
-        padding: 6px;
-    }
-    .description {
-        min-height: 50px;
-        padding: 10px;
-        width: 95%;
-        text-align: center;
-        word-wrap: break-word;
-    }
-    .time {
-        font-size: 10px;
-        padding-left: 10px;
-        text-align: end;
-        margin: 5px;
-    }
-    .choose ,.c-d {
-        width: 95%;
-        /* height: 30px; */
-        background: rgb(7, 71, 11);
-        margin: 5px auto;
-        text-align: center;
-        border-radius: 10px;
-        color: white;
-        display: block;
-        padding: 10px;
-        box-sizing: border-box;
-    }
-    .c-d {
-        background: #071847;
-        text-decoration: none;
-    }
-    @media screen and (max-width: 600px) {
-        .card {
-            width: 99%;
-        }
-    }
+  .card-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .card {
+    max-width: 75%;
+    padding: 1rem;
+    border-radius: 1.2rem;
+    background-color: #f1f1f1;
+    align-self: flex-start;
+    position: relative;
+    direction: rtl;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  .card .user-info.my-news {
+    text-align: right;
+  }
+  .card.my-news {
+    align-self: flex-end;
+    background-color: #d0f0ff;
+  }
+  .card.my-news::before {
+    content: "";
+    position: absolute;
+    top: 12px;
+    right: -10px;
+    border-width: 10px;
+    border-style: solid;
+    border-color: transparent transparent transparent #d0f0ff;
+  }
+  .card:not(.my-news)::before {
+    content: "";
+    position: absolute;
+    top: 12px;
+    left: -10px;
+    border-width: 10px;
+    border-style: solid;
+    border-color: transparent #f1f1f1 transparent transparent;
+  }
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .user-info img ,.user-info svg {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+  .card-category {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+  .card-category .category {
+    background: #eee;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+  }
+  .description {
+    margin-top: 0.5rem;
+    line-height: 1.6;
+  }
+  .time {
+    font-size: 0.75rem;
+    color: #777;
+    margin-top: 0.5rem;
+  }
+  .c-d {
+    display: inline-block;
+    margin-top: 0.5rem;
+    color: #007bff;
+    font-weight: bold;
+  }
+  .choose {
+    display: inline-block;
+    margin-right: 0.5rem;
+    margin-top: 0.5rem;
+    background: #007bff;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .choose:hover {
+    background: #0056b3;
+  }
+  .report-block {
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #ccc;
+  }
+  .single-report {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    background: #fafafa;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+  }
 </style>
