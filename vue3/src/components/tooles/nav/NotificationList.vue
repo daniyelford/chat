@@ -24,7 +24,6 @@
       نوتیفیکیشنی وجود ندارد.
     </div>
     <div v-if="canLoadMore" ref="loadMoreDiv" class="scroll-trigger">
-       <div class="tiny-loader"></div>
     </div>
   </div>
 </template>
@@ -83,17 +82,5 @@
     gap: 15px;
     text-align: center;
     text-decoration: none;
-  }
-  .tiny-loader {
-    width: 20px;
-    height: 20px;
-    border: 2px solid #ccc;
-    border-top-color: #333;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 10px auto;
-  }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
   }
 </style>

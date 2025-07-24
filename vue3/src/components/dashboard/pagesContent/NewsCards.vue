@@ -1,7 +1,7 @@
 <template>
   <div class="inner-posts">
     <div class="loading" v-if="!newsStore.isLoaded">
-      در حال بارگذاری...
+      <div class="tiny-loader"></div>
     </div>
     <div class="card-inner" v-else-if="newsStore.cards.length > 0">
       <div v-for="card in newsStore.cards" :key="card.id" class="card" :class="{ 'my-news': card.self }">
@@ -13,9 +13,9 @@
           </p>
         </div>
         <div class="media-inner">
-          <MediaSlider v-if="card.medias.length > 0" :medias="card.medias" />
+          <MediaSlider v-if="Array.isArray(card.medias) && card.medias.length > 0" :medias="card.medias" />
         </div>
-        <div class="card-category" v-if="!newsStore.hasRule && card.category.length">
+        <div class="card-category" v-if="!newsStore.hasRule && Array.isArray(card.category) && card.category.length">
           <span class="category" v-for="category in card.category" :key="category.id">
             {{ category.title }}
           </span>
@@ -29,35 +29,49 @@
         <div class="time">
           {{ moment(card.created_at).format('jYYYY/jMM/jDD') }}
         </div>
-        <RouterLink class="c-d" :to="{ path: `/show-news/${card.id}` }">
+        <RouterLink class="choose" :to="{ path: `/show-news/${card.id}` }">
           مشاهده
         </RouterLink>
         <a
           class="choose"
-          v-if="newsStore.hasRule"
+          v-if="newsStore.hasRule && !card.self"
           @click="handleReply(card.id)"
         >
           پاسخ
         </a>
         <a
           class="choose"
-          v-if="newsStore.hasRule"
-          @click="openCalendarModal(card.id)"
+          v-if="newsStore.hasRule && !card.self"
+          @click="openCalendarModal(card.id,0)"
         >
           قرار ملاقات
         </a>
         <div class="report-block" v-if="card.reports && card.reports.length">
-          <h4>گزارش‌ها:</h4>
+          <h4 style="text-align: center;">گزارش‌ها</h4>
           <div class="single-report" v-for="report in card.reports" :key="report.id">
-            <p>📄 {{ report.description }}</p>
-            <p>📅 {{ moment(report.created_at).format('jYYYY/jMM/jDD HH:mm') }}</p>
-            <p>🧑‍💼 گزارش‌دهنده: {{ report.reporter.name }} {{ report.reporter.family }}</p>
-            <div class="media-inner" v-if="report.media.length">
+            <div class="reporter-user">
+              <img v-if="report.reporter.image" :src="report.reporter.image" alt="reporter image">
+              <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#000000" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g><rect fill="none" height="24" width="24"/></g><g><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20z"/></g></svg>
+              <p>{{ report.reporter.name }} {{ report.reporter.family }}</p>
+            </div>
+            <div class="media-inner" v-if="Array.isArray(report.media) && report.media.length > 0">
               <MediaSlider :medias="report.media" />
             </div>
+            <p v-if="report.description">📄 {{ report.description }}</p>
+            <p>📅 تاریخ ثبت {{ moment(report.created_at).format('jYYYY/jMM/jDD') }}</p>
+            <p v-if="report.run_time">📅 تاریخ ملاقات {{ moment(report.run_time).format('jYYYY/jMM/jDD') }}</p>
+            <RouterLink class="choose" :to="{ path: `/show-cartable/${report.id}` }">
+              مشاهده
+            </RouterLink>
+            <a
+              class="choose"
+              v-if="report.reporter.self && !report.run_time"
+              @click="openCalendarModal(card.id,report.id)"
+            >
+              قرار ملاقات
+            </a>
           </div>
         </div>
-
       </div>
       <div ref="loadMoreTrigger" class="scroll-trigger"></div>
     </div>
@@ -73,7 +87,7 @@
     @submit="onCalendarSubmit"
     />
   </div>
-  <AddNewsForm :reply-to-id="replyToId" />
+  <AddNewsForm :reply-to-id="replyToId" @clearReplyId="replyToId = 0"/>
 </template>
 <script setup>
     import { ref, onMounted } from 'vue'
@@ -84,10 +98,10 @@
     import { usePollingWithCompare } from '@/composables/usePollingWithCompare'
     import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
     import AddNewsForm from '@/components/dashboard/pagesContent/AddNewsForm.vue'
-    import router from '@/router'
     const newsStore = useNewsStore()
     const toastMsg = ref('')
     const selectedNewsId = ref(null)
+    const selectedReportId = ref(null)
     const showModal = ref(false)
     function showToast(msg) {
         toastMsg.value = msg
@@ -142,17 +156,23 @@
       }
 
     })
-    function openCalendarModal(id) {
+    function openCalendarModal(id,reportId) {
         selectedNewsId.value = id
+        selectedReportId.value=reportId
         showModal.value = true
     }
     async function onCalendarSubmit({ date }) {
-        const jsDate = date ? moment(date, 'jYYYY/jMM/jDD').toDate() : null
-        const success = await newsStore.scheduleNewsRunTime(selectedNewsId.value, jsDate)
+        const jsDate = date ? moment(date, 'jYYYY/jMM/jDD').hour(12).minute(0).second(0).toDate() : null
+        const success = await newsStore.scheduleNewsRunTime(selectedNewsId.value,selectedReportId.value,jsDate)
         if (success) {
             showModal.value = false
-            await newsStore.fetchNews()
-            router.push({ path:'/cartable' })
+            const updated = await newsStore.fetchNewsById(selectedNewsId.value)
+            if (updated) {
+              const index = newsStore.cards.findIndex(c => c.id === selectedNewsId.value)
+              if (index !== -1) {
+                newsStore.cards[index] = updated
+              }
+            }
         } else {
             alert('خطا در ثبت تاریخ اجرا')
         }
@@ -245,17 +265,13 @@
   .time {
     font-size: 0.75rem;
     color: #777;
-    margin-top: 0.5rem;
-  }
-  .c-d {
-    display: inline-block;
-    margin-top: 0.5rem;
-    color: #007bff;
-    font-weight: bold;
+    float: left;
+    margin-right: 10px;
+    margin-top: 0.8rem;
   }
   .choose {
     display: inline-block;
-    margin-right: 0.5rem;
+    margin-right: 0.2rem;
     margin-top: 0.5rem;
     background: #007bff;
     color: white;
@@ -263,6 +279,7 @@
     border-radius: 6px;
     font-size: 0.8rem;
     cursor: pointer;
+    text-decoration: none;
   }
   .choose:hover {
     background: #0056b3;
@@ -278,5 +295,27 @@
     background: #fafafa;
     padding: 0.5rem;
     border-radius: 0.5rem;
+  }
+  .reporter-user {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .reporter-user img, .reporter-user svg {
+    width: 35px;
+    height: 35px;
+    border-radius: 50px;
+  }
+  .tiny-loader {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ccc;
+    border-top-color: #333;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 10px auto;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
 </style>

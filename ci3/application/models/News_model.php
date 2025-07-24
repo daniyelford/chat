@@ -223,13 +223,17 @@ class News_model extends CI_Model
         $categories_map = $this->get_categories_for_target('news',$news_ids);
         $media_map = $this->get_media_for_targets('news', $news_ids);
         $reports_map = $this->get_news_reports($news_ids);
-        foreach (array_reverse($details_map) as &$item) {
-            $id = $item['id'];
-            $item['categories']   = $categories_map[$id] ?? [];
-            $item['media']        = $media_map[$id] ?? [];
-            $item['report_list']  = $reports_map[$id] ?? [];
+        $result=[]; 
+        foreach ($details_map as $item) {
+            $arr=[];
+            $id= $item['id'];
+            $arr=$item;
+            $arr['categories']   = $categories_map[$id] ?? [];
+            $arr['media']        = $media_map[$id] ?? [];
+            $arr['report_list']  = $reports_map[$id] ?? [];
+            $result[]=$arr;
         }
-        return $details_map;
+        return $result;
     }
     protected function build_report_data(array $report_list): array{
         $report_ids = array_column($report_list, 'id');

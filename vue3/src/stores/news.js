@@ -6,6 +6,7 @@ export const useNewsStore = defineStore('news', ()=> {
   const more = ref(false)
   const lastUpdate = ref(null)
   const isLoaded = ref(false)
+  const hasRule = ref(false)
   const fetchNews = async ({ limit = 10, offset = 0, append = false } = {}) => {
     const res = await sendApi({
       action: 'get_news',
@@ -14,7 +15,7 @@ export const useNewsStore = defineStore('news', ()=> {
     })
     if (res.status === 'success') {
       const newsObj = res.data || {}
-      const items = Object.values(newsObj)
+      const items = Array.isArray(newsObj) ? newsObj : Object.values(newsObj)
       const newCards = items.map(item => ({
         id: item.id,
         description: item.description,
@@ -58,6 +59,7 @@ export const useNewsStore = defineStore('news', ()=> {
           },
           reporter: {
             id: report.reporter?.user_account_id ?? null,
+            self: report.reporter?.self ?? false,
             name: report.reporter?.name ?? '',
             family: report.reporter?.family ?? '',
             phone: report.reporter?.phone ?? '',
@@ -74,6 +76,7 @@ export const useNewsStore = defineStore('news', ()=> {
       more.value = res.has_more
       lastUpdate.value = new Date().toISOString()
       isLoaded.value = true
+      hasRule.value=res.rule === true
       return true
     }
     return false
@@ -86,6 +89,7 @@ export const useNewsStore = defineStore('news', ()=> {
     })
     if (res.status === 'success') {
       const item = res.data
+      hasRule.value=res.rule === true
       return {
         id: item.id,
         description: item.description,
@@ -129,6 +133,7 @@ export const useNewsStore = defineStore('news', ()=> {
           },
           reporter: {
             id: report.reporter?.user_account_id ?? null,
+            self: report.reporter?.self ?? false,
             name: report.reporter?.name ?? '',
             family: report.reporter?.family ?? '',
             phone: report.reporter?.phone ?? '',
@@ -151,12 +156,13 @@ export const useNewsStore = defineStore('news', ()=> {
     })
     return res.status === 'success' ? res.data : []
   }
-  const scheduleNewsRunTime = async (news_id, run_time) => {
+  const scheduleNewsRunTime = async (news_id, report_id, run_time) => {
     const res = await sendApi({
       action: 'add_news_to_list',
       control: 'news',
       data: {
         news_id,
+        report_id: report_id ?? null,
         run_time: run_time ?? null,
       }
     })
@@ -174,26 +180,52 @@ export const useNewsStore = defineStore('news', ()=> {
     if (res.status === 'success') {
       const newCard = await fetchNewsById(res.id)
       if (newCard) {
-        cards.value.unshift(newCard)
+        const index = cards.value.findIndex(card => card.id === newCard.id)
+        if (index !== -1) {
+          cards.value[index] = newCard
+        } else {
+          cards.value.unshift(newCard)
+        }
       }
     }
     return res
+  }
+  const fetchAddNewsData = async () => {
+    const res = await sendApi({
+      control: 'news',
+      action: 'add_data'
+    })
+    if (res.status === 'success') {
+      return {
+        address: res.address,
+        rule: res.rule,
+        coordinate: {
+          lat: res.coordinate?.lat,
+          lon: res.coordinate?.lon,
+        },
+        category: res.category ?? []
+      }
+    }
+    return null
   }
   const reset = () => {
     cards.value = []
     more.value = false
     isLoaded.value = false
+    hasRule.value=false
   }
   return {
     cards,
     more,
     lastUpdate,
     isLoaded,
+    hasRule,
     fetchNews,
     fetchNewsById,
     fetchLatestNewsRaw,
     scheduleNewsRunTime,
     addNews,
-    reset
+    reset,
+    fetchAddNewsData
   }
 })

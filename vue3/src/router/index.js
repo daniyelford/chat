@@ -27,11 +27,11 @@ const routes = [
     props: { view: 'dashboard' } 
   },
   {
-    path: '/add-news',
-    name: 'add-news',
+    path: '/places',
+    name: 'places',
     component: MainDashboard,
     meta: { requiresAuth: true },
-    props: { view: 'add-news' } 
+    props: { view: 'places' } 
   },
   {
     path: '/report-list',

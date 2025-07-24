@@ -12,7 +12,6 @@
     <progress :value="progress" min="0" max="100" class="progress-bar"></progress>
   </div>
   <div v-if="mediaList.length > 0">
-    <p>پیش‌نمایش</p>
     <div class="preview-list">
       <div v-for="(item, i) in mediaList" :key="item.id || i" class="preview-item">
         <button @click="deleteMedia(item, i)" class="delete-button">×</button>
@@ -23,7 +22,7 @@
   </div>
 </template>
 <script setup>
-  import { ref, defineProps, defineEmits, watch } from 'vue'
+  import { ref, defineProps, defineEmits, watch , defineExpose } from 'vue'
   import { sendApi } from '@/utils/api'
   const fileInput = ref(null)
   const selectedFilesBase64 = ref([])
@@ -108,100 +107,110 @@
       alert('خطا در حذف: ' + err.message)
     }
   }
+  const reset = () => {
+    selectedFilesBase64.value = []
+    progress.value = 0
+    uploading.value = false
+    if (fileInput.value) {
+      fileInput.value.value = null
+    }
+    mediaList.value = []
+    emit('update:modelValue', [])
+    emit('done', [])
+  }
+  defineExpose({
+    reset,
+  })
   watch(() => props.modelValue, (val) => {
     mediaList.value = [...val]
   }, { immediate: true })
 </script>
 <style scoped>
-    .drop-area {
-      padding-top: 4px;
-      box-sizing: border-box;
-      position: fixed;
-      text-align: center;
-      cursor: pointer;
-      bottom: 0;
-      left: 0;
-      width: 45px;
-      height: 45px;
-    }
-    .hidden-input {
-        display: none;
-    }
-    .select-button {
-        margin-top: 0.5rem;
-        padding: 0.4rem 0.8rem;
-        cursor: pointer;
-    }
-    .uploading-box {
-        margin-top: 1rem;
-    }
-    .progress-bar {
-        width: 100%;
-    }
-    .preview-list {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      position: fixed;
-      bottom: 45px;
-      left: 0;
-      z-index: 9999;
-      right: 0;
-      overflow-y: auto;
-      background: #dee1ff;
-      align-items: stretch;
-      align-content: flex-start;
-    }
-    .preview-item {
-      display: flex;
-      position: relative;
-      flex-direction: column;
-      align-items: center;
-      border: 1px solid #d1d5db;
-      border-radius: .5rem;
-      padding: 0.5rem;
-      width: 20%;
-      height: 60px;
-      background-color: #f9fafb;
-      justify-content: center;
-    }
-    .preview-image {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-        border: 1px solid #ccc;
-    }
-    .preview-video {
-        max-width: 100%;
-        max-height: 100%;
-    }
-    .file-label {
-        font-size: 0.875rem;
-        color: #4b5563;
-    }
-    .file-name {
-        font-size: 0.75rem;
-        color: #9ca3af;
-        max-width: 100px;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-    .delete-button {
-        position: absolute;
-        top: 4px;
-        z-index: 9;
-        right: 4px;
-        background-color: #ef4444;
-        color: white;
-        border: none;
-        border-radius: 9999px;
-        width: 20px;
-        height: 20px;
-        font-size: 12px;
-        line-height: 20px;
-        text-align: center;
-        cursor: pointer;
-    }
+  .drop-area {
+    box-sizing: border-box;
+    position: fixed;
+    text-align: center;
+    cursor: pointer;
+    bottom: 0;
+    left: 0;
+    width: 45px;
+    height: 45px;
+    padding-top: 4px;
+  }
+  .hidden-input {
+    display: none;
+  }
+  .select-button {
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+  }
+  .uploading-box {
+    margin-top: 1rem;
+  }
+  .progress-bar {
+    width: 100%;
+  }
+  .preview-list {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    display: flex;
+    overflow-y: auto;
+    background: #dee1ff;
+    align-items: stretch;
+    align-content: flex-start;
+    z-index: 9999;
+  }
+  .preview-item {
+    position: relative;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid #d1d5db;
+    border-radius: .5rem;
+    padding: 0.5rem;
+    width: 20%;
+    height: 60px;
+    background-color: #f9fafb;
+    justify-content: center;
+    display: flex;
+  }
+  .preview-image {
+    max-height: 100%;
+    object-fit: contain;
+    border: 1px solid #ccc;
+    max-width: 100%;
+  }
+  .preview-video {
+    max-height: 100%;
+    max-width: 100%;
+  }
+  .file-label {
+    color: #4b5563;
+    font-size: 0.875rem;
+  }
+  .file-name {
+    color: #9ca3af;
+    max-width: 100px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.75rem;
+  }
+  .delete-button {
+    top: 4px;
+    z-index: 9;
+    right: 4px;
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 9999px;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: center;
+    cursor: pointer;
+    position: absolute;
+  }
 </style>

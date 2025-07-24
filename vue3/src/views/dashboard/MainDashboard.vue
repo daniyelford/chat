@@ -4,8 +4,8 @@
     </div>
     <div class="content" :style="contentStyle">
         <NewsCards v-if="props.view === 'dashboard'" />
-        <AddNewsForm v-else-if="props.view === 'add-news'"/>
         <ReportList v-else-if="props.view === 'report-list'" />
+        <PlacesList v-else-if="props.view === 'places'" />
         <ManageNews v-else-if="props.view === 'manage-news'" />
         <UserSetting v-else-if="props.view === 'user-setting'" />
         <AllCartables v-else-if="props.view === 'cartable'" />
@@ -16,14 +16,14 @@
     <div v-if="menu.isOpen" class="menu-modal" @click.self="menu.close">
         <div class="menu-content">
             <button class="close-btn" @click="menu.close">×</button>
-            <ExteraMenu v-if="props.view === 'dashboard'" :cartable="true" :wallet="true" :list="true" :add="true" :manage="true" :setting="true"/>
-            <ExteraMenu v-else-if="props.view === 'add-news'" :cartable="true" :wallet="true" :list="true" :add="false" :manage="true" :setting="true"/>
-            <ExteraMenu v-else-if="props.view === 'report-list'" :cartable="true" :wallet="true" :list="false" :add="true" :manage="true" :setting="true"/>
-            <ExteraMenu v-else-if="props.view === 'manage-news'" :cartable="true" :wallet="true" :list="true" :add="true" :manage="false" :setting="true"/>
-            <ExteraMenu v-else-if="props.view === 'show-news'" :cartable="true" :wallet="true" :list="true" :add="true" :manage="false" :setting="true"/>
-            <ExteraMenu v-else-if="props.view === 'user-setting'" :cartable="true" :wallet="true" :list="true" :add="true" :manage="true" :setting="false"/>
-            <ExteraMenu v-else-if="props.view === 'cartable'" :cartable="false" :wallet="true" :list="true" :add="true" :manage="true" :setting="true"/>
-            <ExteraMenu v-else-if="props.view === 'show-cartable'" :cartable="false" :wallet="true" :list="true" :add="true" :manage="true" :setting="true"/>
+            <ExteraMenu v-if="props.view === 'dashboard'" :cartable="true" :wallet="true" :list="true" :places="true" :manage="true" :setting="true"/>
+            <ExteraMenu v-else-if="props.view === 'places'" :cartable="true" :wallet="true" :list="true" :places="false" :manage="true" :setting="true"/>
+            <ExteraMenu v-else-if="props.view === 'report-list'" :cartable="true" :wallet="true" :list="false" :places="true" :manage="true" :setting="true"/>
+            <ExteraMenu v-else-if="props.view === 'manage-news'" :cartable="true" :wallet="true" :list="true" :places="true" :manage="false" :setting="true"/>
+            <ExteraMenu v-else-if="props.view === 'show-news'" :cartable="true" :wallet="true" :list="true" :places="true" :manage="false" :setting="true"/>
+            <ExteraMenu v-else-if="props.view === 'user-setting'" :cartable="true" :wallet="true" :list="true" :places="true" :manage="true" :setting="false"/>
+            <ExteraMenu v-else-if="props.view === 'cartable'" :cartable="false" :wallet="true" :list="true" :places="true" :manage="true" :setting="true"/>
+            <ExteraMenu v-else-if="props.view === 'show-cartable'" :cartable="false" :wallet="true" :list="true" :places="true" :manage="true" :setting="true"/>
             <p v-else>نمایش مشخصی یافت نشد</p>
         </div>
     </div>
@@ -31,7 +31,7 @@
 <script setup>
     import TopNav from '@/components/dashboard/menus/TopNav.vue';
     import ExteraMenu from '@/components/dashboard/menus/ExteraMenu.vue';
-    import AddNewsForm from '@/components/dashboard/pagesContent/AddNewsForm.vue';
+    import PlacesList from '@/components/dashboard/pagesContent/PlacesList.vue';
     import AllCartables from '@/components/dashboard/pagesContent/AllCartables.vue';
     import NewsCards from '@/components/dashboard/pagesContent/NewsCards.vue';
     import ManageNews from '@/components/dashboard/pagesContent/ManageNews.vue';
