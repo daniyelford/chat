@@ -276,17 +276,19 @@ class News_handler
         ['status'=>'success']:
         ['status'=>'error']);
     }
-    public function get_cartables(){
-        return (!empty($this->user->get_user_account_id()) && intval($this->user->get_user_account_id())>0?
-        ['status'=>'success','data'=>array_reverse($this->report_model->get_reports_by_user_account_id($this->user->get_user_account_id())),'rule'=>(!empty($this->function->has_category_id()))]:
+    public function get_cartables($data){
+        return (!empty($data) && !empty($this->user->get_user_account_id()) && intval($this->user->get_user_account_id())>0 &&
+        ($a=$this->news_model->get_user_reports_with_news($this->user->get_user_account_id(),intval($data['limit']??10),intval($data['offset']??0)))!==false?
+        ['status'=>'success',
+        'data'=>$a['data']??[],
+        'has_more'=>$a['has_more']??false,
+        'rule'=>(!empty($this->function->has_category_id()))]:
         ['status'=>'error']);
     }
     public function get_cartable_by_id($data){
-        if(!empty($data) && !empty($data['id']) && intval($data['id'])>0 && !empty($this->user->get_user_account_id()) && intval($this->user->get_user_account_id())>0){
-            $my_report=$this->report_model->get_reports_by_id(intval($data['id']));
-            return ['status'=>'success','data'=>$my_report,'rule'=>(!empty($this->function->has_category_id()))];
-        }
-        return ['status'=>'error'];
+        return (!empty($data) && !empty($data['id']) && intval($data['id'])>0 && !empty($this->user->get_user_account_id()) && intval($this->user->get_user_account_id())>0?
+        ['status'=>'success','data'=>$this->news_model->get_report_with_news_by_report_id(intval($data['id']),intval($this->user->get_user_account_id())),'rule'=>(!empty($this->function->has_category_id()))]:
+        ['status'=>'error']);
     }
     public function edit_report($data){
         if (!empty($data) && !empty($data['id']) && intval($data['id'])>0){

@@ -5,129 +5,110 @@ export const useCartableStore = defineStore('cartable', () => {
   const allItems = ref([])
   const rule = ref(true)
   const loading = ref(true)
-  const simplifyNews = (items) => Array.isArray(items) ? items.map(item => ({
-    id: item.id,
-    status: item.status,
-    updated_at: item.updated_at
-  })): []
-  const fetchCartables = async () => {
+  const normalizeCartableEntry = ({ report, news }) => {
+    const reportInfo = report?.report_info || {}
+    return {
+      id: news?.id || null,
+      description: news?.description || '',
+      created_at: news?.created_at || '',
+      updated_at: news?.updated_at || '',
+      status: news?.status || '',
+      privacy: news?.privacy || '',
+      self: news?.self || false,
+      location: {
+        city: news?.city || null,
+        lat: news?.lat || null,
+        lon: news?.lon || null,
+        address: news?.address || null,
+      },
+      category: Array.isArray(news?.categories)
+        ? news.categories.map(c => ({
+            id: c.id,
+            title: c.title,
+          }))
+        : [],
+      user: {
+        id: news?.user_account_id || null,
+        name: news?.name || '',
+        family: news?.family || '',
+        phone: news?.phone || '',
+        image: news?.user_image_url || null,
+      },
+      medias: Array.isArray(news?.media)
+        ? news.media.map(m => ({
+            type: m.type,
+            url: m.url,
+          }))
+        : [],
+      reports: [
+        {
+          id: report?.id || null,
+          news_id: reportInfo?.news_id || news?.id || null,
+          description: reportInfo?.description || '',
+          run_time: reportInfo?.run_time || null,
+          created_at: reportInfo?.created_at || '',
+          updated_at: reportInfo?.updated_at || '',
+          status: reportInfo?.status || '',
+          location: {
+            city: report?.location?.city || null,
+            address: report?.location?.address || null,
+            lat: report?.location?.lat || null,
+            lon: report?.location?.lon || null,
+          },
+          reporter: {
+            id: report?.reporter?.user_account_id || null,
+            self: report?.reporter?.self || false,
+            name: report?.reporter?.name || '',
+            family: report?.reporter?.family || '',
+            phone: report?.reporter?.phone || '',
+            image: report?.reporter?.user_image_url || null,
+          },
+          media: Array.isArray(report?.report_media)
+            ? report.report_media.map(m => ({
+                type: m.type,
+                url: m.url,
+              }))
+            : [],
+        },
+      ],
+    }
+  }
+  const fetchCartables = async ({ limit = 10, offset = 0 } = {}) => {
+    loading.value = true
     try {
-      const res = await sendApi({ control: 'news', action: 'get_cartables' })
-      if (res.status === 'success') {
-        const rawGroups = res.data || []
-        allItems.value = rawGroups.map(group => {
-          const news = group.news
-          const reports = group.report_list || []
-          return {
-            id: news.id,
-            status: news.status,
-            updated_at: news.updated_at || '',
-            news: {
-              title: news.title || '',
-              description: news.description || '',
-              media: (news.news_media || []).map(m => ({
-                id: m.id,
-                url: m.url,
-                type: m.type
-              })),
-              address: {
-                address: news.address?.address || '',
-                lat: news.address?.lat || null,
-                long: news.address?.lon || null
-              },
-              news_user_name: news.user_name || '',
-              news_user_family: news.user_family || '',
-              news_user_phone: news.user_phone || '',
-              news_user_image_url: news.user_image_url || null,
-              category: news.category || []
-            },
-            reports: reports.map(r => ({
-              id: r.id,
-              description: r.description || '',
-              media: (r.report_media || []).map(m => ({
-                id: m.id,
-                url: m.url,
-                type: m.type
-              })),
-              user: {
-                name: r.user_name || '',
-                family: r.user_family || '',
-                phone: r.user_phone || '',
-                image: r.user_image_url || null
-              }
-            }))
-          }
-        })
+      const res = await sendApi({ control: 'news' , action: 'get_cartables' , data: { limit, offset } })
+      if (res.status === 'success'&& Array.isArray(res.data)) {
+        allItems.value = res.data.map(item => normalizeCartableEntry(item))
         rule.value = !!res.rule
+        return
       } else {
         alert('خطا در دریافت اطلاعات: ' + res.message)
       }
     } catch (e) {
       alert('خطا در ارتباط با سرور: ' + e.message)
+    } finally {
+      loading.value = false
     }
-    loading.value = false
   }
   const getCartableById = async (id) => {
+    loading.value = true
     try {
       const res = await sendApi({
         control: 'news',
         action: 'get_cartable_by_id',
-        data: { id }
+        data: { id : id }
       })
       if (res.status === 'success' && res.data) {
-        const item = res.data
-        return {
-          id: item.id,
-          has_rule: res.rule ?? false,
-          user: {
-            name: item.reporter_name || '',
-            family: item.reporter_family || '',
-            phone: item.reporter_phone || '',
-            image: item.reporter_user_image_url || null
-          },
-          news: {
-            description: item.news_description || '',
-            media: (item.news_media || []).map(m => ({
-              id: m.id,
-              url: m.url,
-              type: m.type
-            })),
-            address: {
-              address: item.address || '',
-              lat: item.address_lat || null,
-              long: item.address_lon || null
-            },
-            news_user_name: item.news_user_name || '',
-            news_user_family: item.news_user_family || '',
-            news_user_phone: item.news_user_phone || '',
-            news_user_image_url: item.news_user_image_url || null
-          },
-          report: {
-            description: item.report_description || '',
-            media: (item.report_media || []).map(m => ({
-              id: m.id,
-              url: m.url,
-              type: m.type
-            })),
-            created_at: item.created_at || '',
-            run_time: item.run_time || ''
-          },
-          category: (item.category || []).map(c => ({
-            id: c.id,
-            title: c.title
-          })),
-          status: item.status || '',
-          run_time: item.run_time || '',
-          created_at: item.created_at || '',
-          updated_at: item.updated_at || ''
-        }
+        return normalizeCartableEntry(res.data)
       } else {
         alert('خطا در دریافت جزئیات: ' + res.message)
-        return null
+        return []
       }
     } catch (e) {
       alert('خطا در ارتباط با سرور: ' + e.message)
-      return null
+      return []
+    } finally {
+      loading.value = false
     }
   }
   const updateReport = async (id, description, mediaIds = []) => {
@@ -143,7 +124,7 @@ export const useCartableStore = defineStore('cartable', () => {
       })
 
       if (res.status === 'success') {
-        await fetchCartables() // رفرش لیست
+        await fetchCartables()
         return true
       } else {
         alert('خطا: ' + res.message)
@@ -160,7 +141,6 @@ export const useCartableStore = defineStore('cartable', () => {
     rule,
     fetchCartables,
     getCartableById,
-    updateReport,
-    simplifyNews
+    updateReport
   }
 })

@@ -14,6 +14,7 @@ class News_model extends CI_Model
     private ?int $user_account_id = 0;
     private ?int $rule_id = 0;
     private ?bool $just_run_time_report = false;
+    private ?bool $just_news = false;
     private function select_where_array_table($tbl,$arr){
 	    return (!empty($tbl) && is_string($tbl) && !empty($arr) && is_array($arr)?$this->db->get_where($tbl,$arr)->result_array():false);
 	}
@@ -225,7 +226,9 @@ class News_model extends CI_Model
         $details_map = $this->get_news_details_by_ids($news_rows);
         $categories_map = $this->get_categories_for_target('news',$news_ids);
         $media_map = $this->get_media_for_targets('news', $news_ids);
-        $reports_map = $this->get_news_reports($news_ids);
+        if(!$this->just_news){
+            $reports_map = $this->get_news_reports($news_ids);
+        }
         $result=[]; 
         foreach ($details_map as $item) {
             $arr=[];
@@ -233,7 +236,9 @@ class News_model extends CI_Model
             $arr=$item;
             $arr['categories']   = $categories_map[$id] ?? [];
             $arr['media']        = $media_map[$id] ?? [];
-            $arr['report_list']  = $reports_map[$id] ?? [];
+            if(!$this->just_news){
+                $arr['report_list']  = $reports_map[$id] ?? [];
+            }
             $result[]=$arr;
         }
         return $result;
@@ -340,6 +345,54 @@ class News_model extends CI_Model
         $result=$this->get_news_by_ids($news_ids, $user_account_id);
         $this->just_run_time_report = false;
         return $result;
+    }
+    public function get_user_reports_with_news(int $user_account_id, int $limit = 10, int $offset = 0): array {
+        if ($user_account_id <= 0) return ['data' => [], 'has_more' => false];
+        $this->db->select('rl.*');
+        $this->db->distinct();
+        $this->db->from('report_list rl');
+        $this->db->join('user_account_relations uar',
+            'uar.target_table = \'report_list\' AND uar.target_id = rl.id AND uar.user_account_id = ' . intval($user_account_id),
+            'inner'
+        );
+        $this->db->order_by('rl.id', 'DESC');
+        $this->db->limit($limit + 1, $offset);
+        $all_reports = $this->db->get()->result_array();
+        if (empty($all_reports)) return ['data' => [], 'has_more' => false];
+        $has_more = count($all_reports) > $limit;
+        $all_reports = array_slice($all_reports, 0, $limit);
+        $news_ids = array_unique(array_column($all_reports, 'news_id'));
+        $this->just_news = true;
+        $news_data_map = $this->get_news_by_ids($news_ids, $user_account_id);
+        $this->just_news = false;
+        $news_data_map = array_column($news_data_map, null, 'id');
+        $report_data_map = $this->build_report_data($all_reports);
+        $result = [];
+        foreach ($all_reports as $report) {
+            $result[] = [
+                'report' => $report_data_map[$report['news_id']][0] ?? [],
+                'news'   => $news_data_map[$report['news_id']] ?? null,
+            ];
+        }
+        return [
+            'data' => $result,
+            'has_more' => $has_more
+        ];
+    }
+    public function get_report_with_news_by_report_id(int $report_id, int $user_account_id): array {
+        if ($report_id <= 0) return [];
+        $report = $this->select_where_array_table($this->report, ['id' => $report_id]);
+        if (empty($report)) return [];
+        $report = $report[0];
+        $news_id = $report['news_id'];
+        $report_data = $this->build_report_data([$report]);
+        $this->just_news = true;
+        $news_data = $this->get_news_by_ids([$news_id], $user_account_id);
+        $this->just_news = false;
+        return [
+            'report' => $report_data[$news_id][0] ?? [],
+            'news' => $news_data[0] ?? null
+        ];
     }
     // extera
     public function select_news(){
