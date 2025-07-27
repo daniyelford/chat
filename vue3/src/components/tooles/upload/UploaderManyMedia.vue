@@ -1,10 +1,6 @@
 <template>
   <div class="drop-area" @click="fileInput.click()" @dragover.prevent @dragenter.prevent @drop.prevent="handleDrop">
-    <svg fill="currentColor" viewBox="0 0 97.6 77.3">
-        <title>
-          فایل‌ها را بکشید و رها کنید یا کلیک کنید
-        </title>
-        <path d="M16.3 24h.3c2.8-.2 4.9-2.6 4.8-5.4-.2-2.8-2.6-4.9-5.4-4.8s-4.9 2.6-4.8 5.4c.1 2.7 2.4 4.8 5.1 4.8zm-2.4-7.2c.5-.6 1.3-1 2.1-1h.2c1.7 0 3.1 1.4 3.1 3.1 0 1.7-1.4 3.1-3.1 3.1-1.7 0-3.1-1.4-3.1-3.1 0-.8.3-1.5.8-2.1z" fill="currentColor"></path><path d="M84.7 18.4 58 16.9l-.2-3c-.3-5.7-5.2-10.1-11-9.8L12.9 6c-5.7.3-10.1 5.3-9.8 11L5 51v.8c.7 5.2 5.1 9.1 10.3 9.1h.6l21.7-1.2v.6c-.3 5.7 4 10.7 9.8 11l34 2h.6c5.5 0 10.1-4.3 10.4-9.8l2-34c.4-5.8-4-10.7-9.7-11.1zM7.2 10.8C8.7 9.1 10.8 8.1 13 8l34-1.9c4.6-.3 8.6 3.3 8.9 7.9l.2 2.8-5.3-.3c-5.7-.3-10.7 4-11 9.8l-.6 9.5-9.5 10.7c-.2.3-.6.4-1 .5-.4 0-.7-.1-1-.4l-7.8-7c-1.4-1.3-3.5-1.1-4.8.3L7 49 5.2 17c-.2-2.3.6-4.5 2-6.2zm8.7 48c-4.3.2-8.1-2.8-8.8-7.1l9.4-10.5c.2-.3.6-.4 1-.5.4 0 .7.1 1 .4l7.8 7c.7.6 1.6.9 2.5.9.9 0 1.7-.5 2.3-1.1l7.8-8.8-1.1 18.6-21.9 1.1zm76.5-29.5-2 34c-.3 4.6-4.3 8.2-8.9 7.9l-34-2c-4.6-.3-8.2-4.3-7.9-8.9l2-34c.3-4.4 3.9-7.9 8.4-7.9h.5l34 2c4.7.3 8.2 4.3 7.9 8.9z" fill="currentColor"></path><path d="M78.2 41.6 61.3 30.5c-2.1-1.4-4.9-.8-6.2 1.3-.4.7-.7 1.4-.7 2.2l-1.2 20.1c-.1 2.5 1.7 4.6 4.2 4.8h.3c.7 0 1.4-.2 2-.5l18-9c2.2-1.1 3.1-3.8 2-6-.4-.7-.9-1.3-1.5-1.8zm-1.4 6-18 9c-.4.2-.8.3-1.3.3-.4 0-.9-.2-1.2-.4-.7-.5-1.2-1.3-1.1-2.2l1.2-20.1c.1-.9.6-1.7 1.4-2.1.8-.4 1.7-.3 2.5.1L77 43.3c1.2.8 1.5 2.3.7 3.4-.2.4-.5.7-.9.9z" fill="currentColor"></path></svg>
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0,0,256,256"><g fill="#031c66" fill-rule="evenodd" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(0.05905,0.05905)"><path d="M161,824h192v192v1209v1209h3735v-2418h-2490v-192h2490h192v0v2610v192h-192h-3735h-192v0v-2610zM1333,3280l1277,-1125l503,359l646,-479l192,186v1060h-2618zM611,643v1093v181v199c0,0 26,312 346,312c321,0 381,-251 381,-359v-292v-934c0,-34 28,-61 61,-61v0c34,0 61,28 61,61v934v296c0,0 0,4 0,11c0,267 -159,487 -467,487c-482,0 -504,-460 -504,-482v-173h-1v-1235v-101c0,-5 1,-9 2,-14v0c0,0 44,-316 312,-328c227,-10 365,192 365,398v474v772c0,66 -4,135 -4,206c0,0 -17,156 -181,156c-229,0 -233,-161 -224,-332v0v-988c0,-34 28,-61 61,-61v0c34,0 61,28 61,61v679v309c0,60 -9,197 79,197c74,0 85,-78 85,-193v-160v-721v-454c0,0 -9,-213 -201,-213c-192,0 -232,145 -232,276z"></path></g></g></svg>
     <input type="file" multiple ref="fileInput" class="hidden-input" @change="handleFiles" />
   </div>
   <div v-if="uploading" class="uploading-box">
@@ -64,6 +60,7 @@
     }
     await uploadFiles()
     uploading.value = false
+    fileInput.value.value = null
   }
   const uploadFiles = async () => {
     try {
@@ -134,8 +131,10 @@
     bottom: 0;
     left: 0;
     width: 45px;
+    padding: 3px;
     height: 45px;
-    padding-top: 4px;
+    border-radius: 4px;
+    background: #e9e9a8;
   }
   .hidden-input {
     display: none;
@@ -156,7 +155,7 @@
     justify-content: flex-end;
     display: flex;
     overflow-y: auto;
-    background: #dee1ff;
+    background: lightgrey;
     align-items: stretch;
     align-content: flex-start;
     z-index: 9999;

@@ -13,7 +13,7 @@ class News_model extends CI_Model
     private ?float $user_lon = null;
     private ?int $user_account_id = 0;
     private ?int $rule_id = 0;
-
+    private ?bool $just_run_time_report = false;
     private function select_where_array_table($tbl,$arr){
 	    return (!empty($tbl) && is_string($tbl) && !empty($arr) && is_array($arr)?$this->db->get_where($tbl,$arr)->result_array():false);
 	}
@@ -211,6 +211,9 @@ class News_model extends CI_Model
         $this->db->distinct();
         $this->db->from('report_list rl');
         $this->db->where_in('rl.news_id', $news_ids);
+        if($this->just_run_time_report){
+            $this->db->where('rl.run_time IS NOT NULL', null, false);
+        }
         $report_list = $this->db->get()->result_array();
         return $this->build_report_data($report_list);
     }
@@ -307,6 +310,36 @@ class News_model extends CI_Model
         $news = $this->db->get()->result_array();
         $this->user_account_id=intval($user_account_id);
         return $this->build_news_data($news);
+    }
+    public function get_news_by_ids(array $news_ids, int $user_account_id): array {
+        if (empty($news_ids)) return [];
+        $this->db->where_in('id', $news_ids);
+        $news_rows = $this->db->get('news')->result_array();
+        $this->user_account_id = intval($user_account_id);
+        return $this->build_news_data($news_rows);
+    }
+    public function get_all_runtime_reports_by_user(int $user_account_id): array {
+        if ($user_account_id <= 0) return [];
+        $this->db->select('rl.*');
+        $this->db->distinct();
+        $this->db->from('report_list rl');
+        $this->db->join('user_account_relations uar', 
+            '(' .
+                'uar.user_account_id = ' . intval($user_account_id) . ' AND (' .
+                    "(uar.target_table = 'report_list' AND uar.target_id = rl.id) OR " .
+                    "(uar.target_table = 'news' AND uar.target_id = rl.news_id)" .
+                ')' .
+            ')',
+            'inner'
+        );
+        $this->db->where('rl.run_time IS NOT NULL', null, false);
+        $reports = $this->db->get()->result_array();
+        $news_ids = array_unique(array_column($reports, 'news_id'));
+        if (empty($news_ids)) return [];
+        $this->just_run_time_report=true;
+        $result=$this->get_news_by_ids($news_ids, $user_account_id);
+        $this->just_run_time_report = false;
+        return $result;
     }
     // extera
     public function select_news(){

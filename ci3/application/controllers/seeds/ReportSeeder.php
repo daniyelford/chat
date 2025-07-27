@@ -21,6 +21,7 @@ class ReportSeeder extends CI_Controller {
     private function media(){
         $mediadata = [];
         for ($i = 1; $i <= 4; $i++) {
+            // $i=$i+4;
             $mediadata[] = [
                 'target_table'=>'report_list',
                 'target_id'=>$i,
@@ -32,6 +33,7 @@ class ReportSeeder extends CI_Controller {
     private function user(){
         $user_account = [];
         for ($i = 1; $i <= 4; $i++) {
+            // $i=$i+4;
             $user_account[] = [
                 'target_table'=>'report_list',
                 'target_id'=>$i,
@@ -43,6 +45,7 @@ class ReportSeeder extends CI_Controller {
     private function address(){
         $address_news = [];
         for ($i = 1; $i <= 4; $i++) {
+            // $i=$i+4;
             $address_news[] = [
                 'target_table'=>'report_list',
                 'target_id'=>$i,

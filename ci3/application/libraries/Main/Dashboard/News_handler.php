@@ -58,6 +58,18 @@ class News_handler
         }
         return ['status'=>'error'];
     }
+    public function get_news_by_id($data){
+        return (!empty($this->user->get_user_account_id()) && 
+        intval($this->user->get_user_account_id())>0 && 
+        !empty($data) && !empty($data['id']) && intval($data['id'])>0 ? [
+            'status'=>'success',
+            'data'=>$this->news_model->get_news_by_id(
+                intval($data['id']),
+                intval($this->user->get_user_account_id())
+            ),
+            'rule'=>$this->function->has_category_id()
+        ]:['status'=>'error']);
+    }
     public function add_news($data){
         if(!empty($data) && $this->user->get_user_account_id() && 
         !empty($data['category_id']) && 
@@ -231,18 +243,6 @@ class News_handler
         }
         return ['status'=>'error' ];    
     }
-    public function get_news_by_id($data){
-        return (!empty($this->user->get_user_account_id()) && 
-        intval($this->user->get_user_account_id())>0 && 
-        !empty($data) && !empty($data['id']) && intval($data['id'])>0 ? [
-            'status'=>'success',
-            'data'=>$this->news_model->get_news_by_id(
-                intval($data['id']),
-                intval($this->user->get_user_account_id())
-            ),
-            'rule'=>$this->function->has_category_id()
-        ]:['status'=>'error']);
-    }
     public function add_data(){
         $this->function->get_all_category_active();
         if($this->user->get_user_account_id()){
@@ -261,75 +261,10 @@ class News_handler
         ['status'=>'success','data'=>$this->news_model->get_news_by_user_account_id(intval($this->user->get_user_account_id()))]:
         ['status'=>'error']);
     }
-    private function group_reports_by_news(array $flat_reports) {
-        $grouped = [];
-
-        foreach ($flat_reports as $item) {
-            $news_id = $item['news_id'];
-
-            if (!isset($grouped[$news_id])) {
-                $grouped[$news_id] = [
-                    'news' => [
-                        'id' => $news_id,
-                        'title' => $item['title'] ?? null,
-                        'description' => $item['news_description'] ?? $item['description'] ?? null,
-                        'status' => $item['news_status'] ?? $item['status'] ?? null,
-                        'privacy' => $item['news_privacy'] ?? null,
-                        'user_account_id' => $item['user_account_id'] ?? $this->user->get_user_account_id(),
-                        'user_name' => $item['user_name'] ?? null,
-                        'user_family' => $item['user_family'] ?? null,
-                        'user_phone' => $item['user_phone'] ?? null,
-                        'user_image_url' => $item['user_image_url'] ?? null,
-                        'address' => $item['address'] ?? [],
-                        'category' => $item['category'] ?? [],
-                        'news_media' => $item['news_media'] ?? [],
-                    ],
-                    'report_list' => [],
-                ];
-            }
-
-            $grouped[$news_id]['report_list'][] = [
-                'id' => $item['report_id'] ?? $item['id'],
-                'description' => $item['report_description'] ?? $item['description'] ?? null,
-                'status' => $item['status'] ?? null,
-                'run_time' => $item['run_time'] ?? null,
-                'created_at' => $item['created_at'] ?? null,
-                'updated_at' => $item['updated_at'] ?? null,
-                'report_media' => $item['report_media'] ?? [],
-                'reporter' => [
-                    'user_account_id' => $item['reporter']['user_account_id'] ?? null,
-                    'name' => $item['reporter']['name'] ?? null,
-                    'family' => $item['reporter']['family'] ?? null,
-                    'phone' => $item['reporter']['phone'] ?? null,
-                    'user_image_url' => $item['reporter']['user_image_url'] ?? null,
-                ],
-            ];
-        }
-
-        return array_values($grouped);
-    }
-
-
     public function get_news_for_month(){
-        if(!empty($this->user->get_user_account_id()) && intval($this->user->get_user_account_id())>0){
-            $my_report=$this->report_model->get_reports_by_user_account_id($this->user->get_user_account_id());
-            $my_news=$this->report_model->get_reports_by_news_user_account_id($this->user->get_user_account_id());
-            $arr=$this->group_reports_by_news($my_news)+$my_report;
-            foreach ($arr as &$newsBlock) {
-                foreach ($newsBlock['report_list'] as &$report) {
-                    $start = new DateTime($report['run_time'] ?? 'now');
-                    $status = $report['status'] ?? 'unknown';
-                    $end = $status === 'done'
-                        ? new DateTime($report['updated_at'] ?? 'now')
-                        : (($start > new DateTime()) ? (clone $start)->modify('+2 hours') : new DateTime());
-
-                    $report['start'] = $start->format(DateTime::ATOM);
-                    $report['end'] = $end->format(DateTime::ATOM);
-                }
-            }
-            return ['status'=>'success','data'=>$arr];
-        }
-        return ['status'=>'error'];
+        return (!empty($this->user->get_user_account_id()) && intval($this->user->get_user_account_id())>0?
+        ['status'=>'success','data'=>$this->news_model->get_all_runtime_reports_by_user(intval($this->user->get_user_account_id()))]:
+        ['status'=>'error']);
     }
     public function delete_news($data){
         return (!empty($data) && !empty($data['id']) && intval($data['id'])>0 && ($a=$this->user->get_user_account_id())!==false && !empty($a) && intval($a)>0 && $this->news_model->seen_weher_id_and_user_account_id(intval($data['id']))?
@@ -366,4 +301,66 @@ class News_handler
         return ['status'=>'error'];
     }
 }
+    // private function group_reports_by_news(array $flat_reports) {
+    //     $grouped = [];
+
+    //     foreach ($flat_reports as $item) {
+    //         $news_id = $item['news_id'];
+
+    //         if (!isset($grouped[$news_id])) {
+    //             $grouped[$news_id] = [
+    //                 'news' => [
+    //                     'id' => $news_id,
+    //                     'title' => $item['title'] ?? null,
+    //                     'description' => $item['news_description'] ?? $item['description'] ?? null,
+    //                     'status' => $item['news_status'] ?? $item['status'] ?? null,
+    //                     'privacy' => $item['news_privacy'] ?? null,
+    //                     'user_account_id' => $item['user_account_id'] ?? $this->user->get_user_account_id(),
+    //                     'user_name' => $item['user_name'] ?? null,
+    //                     'user_family' => $item['user_family'] ?? null,
+    //                     'user_phone' => $item['user_phone'] ?? null,
+    //                     'user_image_url' => $item['user_image_url'] ?? null,
+    //                     'address' => $item['address'] ?? [],
+    //                     'category' => $item['category'] ?? [],
+    //                     'news_media' => $item['news_media'] ?? [],
+    //                 ],
+    //                 'report_list' => [],
+    //             ];
+    //         }
+
+    //         $grouped[$news_id]['report_list'][] = [
+    //             'id' => $item['report_id'] ?? $item['id'],
+    //             'description' => $item['report_description'] ?? $item['description'] ?? null,
+    //             'status' => $item['status'] ?? null,
+    //             'run_time' => $item['run_time'] ?? null,
+    //             'created_at' => $item['created_at'] ?? null,
+    //             'updated_at' => $item['updated_at'] ?? null,
+    //             'report_media' => $item['report_media'] ?? [],
+    //             'reporter' => [
+    //                 'user_account_id' => $item['reporter']['user_account_id'] ?? null,
+    //                 'name' => $item['reporter']['name'] ?? null,
+    //                 'family' => $item['reporter']['family'] ?? null,
+    //                 'phone' => $item['reporter']['phone'] ?? null,
+    //                 'user_image_url' => $item['reporter']['user_image_url'] ?? null,
+    //             ],
+    //         ];
+    //     }
+
+    //     return array_values($grouped);
+    // }
+// $my_report=$this->report_model->get_reports_by_user_account_id($this->user->get_user_account_id());
+            // $my_news=$this->report_model->get_reports_by_news_user_account_id($this->user->get_user_account_id());
+            // $arr=$this->group_reports_by_news($my_news)+$my_report;
+            // foreach ($arr as &$newsBlock) {
+            //     foreach ($newsBlock['report_list'] as &$report) {
+            //         $start = new DateTime($report['run_time'] ?? 'now');
+            //         $status = $report['status'] ?? 'unknown';
+            //         $end = $status === 'done'
+            //             ? new DateTime($report['updated_at'] ?? 'now')
+            //             : (($start > new DateTime()) ? (clone $start)->modify('+2 hours') : new DateTime());
+
+            //         $report['start'] = $start->format(DateTime::ATOM);
+            //         $report['end'] = $end->format(DateTime::ATOM);
+            //     }
+            // }
 // $my_news=$this->report_model->get_reports_by_news_user_account_id($this->user->get_user_account_id());

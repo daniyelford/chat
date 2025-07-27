@@ -1,24 +1,27 @@
 <template>
+    <BaseModal :show="true" @close="close">
+        <h3>انتخاب زمان ملاقات</h3>
+        <div class="calendar-container">
+            <date-picker
+            v-model="selectedDate"
+            format="jYYYY/jMM/jDD"
+            display-format="jYYYY/jMM/jDD"
+            auto-submit
+            />
+        </div>
+        <div class="actions">
+            <button @click="submit">ثبت</button>
+            <button @click="close">انصراف</button>
+        </div>
+    </BaseModal>
     <div class="modal-mask" @click.self="close">
         <div class="modal-container">
-            <h3>انتخاب زمان اجرا</h3>
-            <div class="calendar-container">
-                <date-picker
-                v-model="selectedDate"
-                format="jYYYY/jMM/jDD"
-                display-format="jYYYY/jMM/jDD"
-                auto-submit
-                />
-            </div>
-            <div class="actions">
-                <button @click="submit">ثبت</button>
-                <button @click="close">انصراف</button>
-            </div>
         </div>
     </div>
 </template>
 <script setup>
     import { ref,defineEmits } from 'vue'
+    import BaseModal from '@/components/tooles/modal/BaseModal.vue'
     import DatePicker from 'vue3-persian-datetime-picker'
     const emit = defineEmits(['close', 'submit'])
     const selectedDate = ref(null)
@@ -39,6 +42,7 @@
 <style scoped>
     h3{
         margin-top: 0;
+        text-align: center;
     }
     .actions button{
         width: 48%;
@@ -55,26 +59,6 @@
     }
     .actions button:first-child{
         background: green;
-    }
-    .modal-mask {
-        position: fixed;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        background-color: rgba(0, 0, 0, 0.6);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 999;
-    }
-    .modal-container {
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        min-width: 300px;
-        max-width: 400px;
-        text-align: center;
     }
     .radio-group {
         display: flex;

@@ -1,8 +1,8 @@
 <script setup>
   import { ref , defineAsyncComponent, onMounted } from 'vue'
-  import { useCalendarEventsStore } from '@/stores/calendarEvents'
+  import { useNewsStore } from '@/stores/news'
   import ReportListModal from '@/components/tooles/news/ReportListModal.vue'
-  const calendar = useCalendarEventsStore()
+  const store = useNewsStore()
   const showModal = ref(false)
   const selectedEvent = ref(null)
   const jalaliCalendar = defineAsyncComponent(() =>
@@ -17,20 +17,17 @@
     selectedEvent.value = null
   }
   onMounted(() => {
-    calendar.loadEvents()
+    store.loadEvents()
   })
 </script>
-
 <template>
   <jalaliCalendar
-    :eventsList="calendar.events"
-    :vacationsList="calendar.vacations"
+    :eventsList="store.events"
     disablePastDays
     @on-event-click="showEventModal"
   />
   <ReportListModal :show="showModal" :event="selectedEvent" @close="closeModal" />
 </template>
-
 <style>
   #persian-calendar #vpc_calendar .vpc_week .vpc_day.vpc_week-period-day , #persian-calendar #vpc_calendar .vpc_week .vpc_day{
     min-height: 250px !important;        

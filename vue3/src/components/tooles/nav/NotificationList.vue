@@ -19,11 +19,10 @@
           <small class="date">{{ formatDate(notif.created_at) }}</small>
         </span>
       </li>
+      <div v-if="canLoadMore" ref="loadMoreDiv" class="scroll-trigger"></div>
     </ul>
     <div v-if="props.notifications.length==0">
       نوتیفیکیشنی وجود ندارد.
-    </div>
-    <div v-if="canLoadMore" ref="loadMoreDiv" class="scroll-trigger">
     </div>
   </div>
 </template>

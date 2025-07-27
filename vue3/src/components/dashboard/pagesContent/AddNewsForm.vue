@@ -46,7 +46,9 @@
       <button type="submit" :disabled="isSubmitDisabled">ثبت خبر</button>
     </BaseModal>
   </form>
-  <button :disabled="isSaveDisabled" @click="showModal = true">افزودن خبر</button>
+  <button :disabled="isSaveDisabled" @click="showModal = true">
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0,0,256,256"><g fill="#031c66" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(2,2)"><path d="M24,20c-7.2,0 -13,5.8 -13,13v62c0,7.2 5.8,13 13,13h72.80078l-7.80078,7.80078c-1.1,1.1 -1.30078,2.99922 -0.30078,4.19922c0.6,0.7 1.40078,1 2.30078,1c0.8,0 1.49961,-0.30039 2.09961,-0.90039l13,-13c1.2,-1.2 1.2,-3.09922 0,-4.19922l-12.90039,-12.90039c-1.1,-1.1 -2.99922,-1.29922 -4.19922,-0.19922c-1.3,1.2 -1.29961,3.09844 -0.09961,4.39844l7.90039,7.90039h-72.80078c-3.9,0 -7,-3.1 -7,-7v-62.09961c0,-3.9 3.1,-7 7,-7h80c3.9,0 7,3.1 7,7v19c0,1.7 1.3,3 3,3c1.7,0 3,-1.3 3,-3v-19c0,-7.2 -5.8,-13 -13,-13zM27.63672,44.83789c-0.7625,-0.0625 -1.53672,0.16211 -2.13672,0.66211c-1.2,1 -1.40039,2.99922 -0.40039,4.19922c0.9,1.1 21.50039,25.30078 38.90039,25.30078c17.4,0 38.00039,-24.19922 38.90039,-25.19922c1.1,-1.3 0.89961,-3.20117 -0.40039,-4.20117c-1.2,-1.1 -3.09922,-0.99922 -4.19922,0.30078c0,0.1 -5.10039,5.99883 -11.90039,11.79883c-8.8,7.4 -16.50039,11.30078 -22.40039,11.30078c-5.9,0 -13.60039,-3.90078 -22.40039,-11.30078c-6.9,-5.8 -11.90039,-11.69883 -11.90039,-11.79883c-0.55,-0.65 -1.3,-1 -2.0625,-1.0625zM114,70c-1.7,0 -3,1.3 -3,3v10c0,1.7 1.3,3 3,3c1.7,0 3,-1.3 3,-3v-10c0,-1.7 -1.3,-3 -3,-3z"></path></g></g></svg>
+  </button>
 </template>
 <script setup>
   import { ref , onMounted , computed , defineProps , defineEmits , watch } from 'vue'
@@ -105,7 +107,8 @@
     const isLocationSelected = form.value.user_address?.type === 'location'
     const isAddressInvalid = isLocationSelected && (!form.value.user_address?.value || !form.value.user_address.value.address?.trim())
     const isStillLoading = isLocationSelected && isAddressLoading.value
-    return isDescriptionEmpty || isCategoryInvalid || isAddressInvalid || isStillLoading
+    const isUploading = uploaderRef.value?.uploading === true
+    return isDescriptionEmpty || isCategoryInvalid || isAddressInvalid || isStillLoading || isUploading
   })
   const isSaveDisabled = computed(()=>{
     return !form.value.description.trim()

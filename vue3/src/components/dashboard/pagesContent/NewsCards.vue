@@ -132,29 +132,55 @@
         loadMoreTrigger,
         setupObserver,
     } = useInfiniteScroll(fetchNews, { limit: 10, immediate: true })
-    usePollingWithCompare( 
-      () => newsStore.fetchLatestNewsRaw(5, 0), {
+    usePollingWithCompare(() => newsStore.fetchLatestNewsRaw(10, 0), {
       intervalMs: 6000,
       isDifferent: (oldData, newData) => {
-        const oldIds = Array.isArray(oldData) ? oldData.map(i => i.id) : []
-        const newIds = Array.isArray(newData) ? newData.map(i => i.id) : []
-        return JSON.stringify(oldIds) !== JSON.stringify(newIds)
-      },
-      onChange: async (newCards) => {
-        const filtered = newCards.filter(item => !newsStore.cards.some(card => card.id === item.id))
-        if (filtered.length) {
-          if (filtered.length > 10) {
-            const scrollTop = window.scrollY
-            await newsStore.fetchNews({ limit: 10, offset: 0, append: false })
-            showToast('خبر جدید رسید!')
-            window.scrollTo(0, scrollTop)
-          } else {
-            newsStore.cards = [...filtered, ...newsStore.cards]
-            showToast('خبر جدید رسید!')
+        if (!Array.isArray(oldData) || !Array.isArray(newData)) return true
+        if (oldData.length !== newData.length) return true
+
+        for (let i = 0; i < newData.length; i++) {
+          const oldItem = oldData[i]
+          const newItem = newData[i]
+
+          if (oldItem.id !== newItem.id) return true
+
+          const oldReports = oldItem.reports || []
+          const newReports = newItem.reports || []
+
+          if (oldReports.length !== newReports.length) return true
+
+          for (let j = 0; j < newReports.length; j++) {
+            const oldReport = oldReports[j]
+            const newReport = newReports[j]
+
+            if (
+              oldReport.id !== newReport.id ||
+              oldReport.updated_at !== newReport.updated_at ||
+              oldReport.status !== newReport.status ||
+              oldReport.run_time !== newReport.run_time
+            ) {
+              return true
+            }
           }
         }
-      }
 
+        return false
+      },
+      onChange: async (newCards) => {
+        for (const newItem of newCards) {
+          const index = newsStore.cards.findIndex(c => c.id === newItem.id)
+          if (index !== -1) {
+            const card = newsStore.cards[index]
+            const updatedCard = { ...card, reports: newItem.reports }
+            newsStore.cards.splice(index, 1, updatedCard)
+          } else {
+            newsStore.cards.unshift(newItem)
+          }
+        }
+        if (newCards.length > 0) {
+          showToast('خبر جدید رسید!')
+        }
+      }
     })
     function openCalendarModal(id,reportId) {
         selectedNewsId.value = id
@@ -305,6 +331,19 @@
     width: 35px;
     height: 35px;
     border-radius: 50px;
+  }
+  .none-cart-error{
+    text-align: center;
+    background-color: #dc6a6a;
+    color: white;
+    border-radius: 10px;
+    height: 200px;
+    width: 100%;
+    font-size: x-large;
+    font-weight: bolder;
+    padding-top: 150px;
+    box-sizing: content-box;
+    box-shadow: 0 0 10px grey;
   }
   .tiny-loader {
     width: 20px;
