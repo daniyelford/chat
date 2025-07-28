@@ -91,7 +91,6 @@ export const useCartableStore = defineStore('cartable', () => {
     }
   }
   const getCartableById = async (id) => {
-    loading.value = true
     try {
       const res = await sendApi({
         control: 'news',
@@ -99,14 +98,15 @@ export const useCartableStore = defineStore('cartable', () => {
         data: { id : id }
       })
       if (res.status === 'success' && res.data) {
+        rule.value = !!res.rule
         return normalizeCartableEntry(res.data)
       } else {
         alert('خطا در دریافت جزئیات: ' + res.message)
-        return []
+        return null
       }
     } catch (e) {
       alert('خطا در ارتباط با سرور: ' + e.message)
-      return []
+      return null
     } finally {
       loading.value = false
     }
