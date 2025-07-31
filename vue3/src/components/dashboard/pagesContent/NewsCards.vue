@@ -32,6 +32,9 @@
         <RouterLink class="choose" :to="{ path: `/show-news/${card.id}` }">
           مشاهده
         </RouterLink>
+        <a v-if="card.self" class="choose" @click="handleEdit(card.id,null)">
+          ویرایش
+        </a>
         <a
           class="choose"
           v-if="newsStore.hasRule && !card.self"
@@ -59,7 +62,18 @@
             </div>
             <p v-if="report.description">📄 {{ report.description }}</p>
             <p>📅 تاریخ ثبت {{ moment(report.created_at).format('jYYYY/jMM/jDD') }}</p>
-            <p v-if="report.run_time">📅 تاریخ ملاقات {{ moment(report.run_time).format('jYYYY/jMM/jDD') }}</p>
+            <p v-if="report.run_time">
+              📅 تاریخ ملاقات {{ moment(report.run_time).format('jYYYY/jMM/jDD') }}
+            </p>
+            <a v-if="report.reporter.self && report.description" class="choose" @click="handleEdit(card.id,report.id)">
+              ویرایش
+            </a>
+            <a
+            class="choose"
+            v-if="report.reporter.self && report.run_time"
+            @click="openCalendarModal(card.id,report.id)">
+              ویرایش زمان ملاقات
+            </a>
             <RouterLink class="choose" :to="{ path: `/show-cartable/${report.id}` }">
               مشاهده
             </RouterLink>
@@ -83,11 +97,18 @@
     </div>
     <CalendarModal
     v-if="showModal"
+    :initialDate="modalRunTime"
     @close="showModal = false"
     @submit="onCalendarSubmit"
     />
   </div>
-  <AddNewsForm :reply-to-id="replyToId" @clearReplyId="replyToId = 0"/>
+  <AddNewsForm
+  :reply-to-id="replyToId"
+  :edit-data="editCard"
+  :edit-report="editReport"
+  @clearReplyId="replyToId = 0; editCard = null; editReport = null"
+  />
+
 </template>
 <script setup>
     import { ref, onMounted } from 'vue'
@@ -103,11 +124,24 @@
     const selectedNewsId = ref(null)
     const selectedReportId = ref(null)
     const showModal = ref(false)
+    const modalRunTime = ref(null)
     function showToast(msg) {
         toastMsg.value = msg
         setTimeout(() => (toastMsg.value = ''), 3000)
     }
     const replyToId = ref(0)
+    const editCard = ref(null)
+    const editReport = ref(null)
+    function handleEdit(newsId, reportId) {
+      const card = newsStore.cards.find(c => c.id === newsId)
+      editCard.value = card
+      replyToId.value = 0
+      if (reportId) {
+        editReport.value = card.reports.find(r => r.id === reportId) || null
+      } else {
+        editReport.value = null
+      }
+    }
     function handleReply(newsId) {
       replyToId.value = newsId
     }
@@ -185,6 +219,18 @@
     function openCalendarModal(id,reportId) {
         selectedNewsId.value = id
         selectedReportId.value=reportId
+        if (reportId) {
+          const card = newsStore.cards.find(c => c.id === id)
+          if (card) {
+            const report = card.reports.find(r => r.id === reportId)
+            modalRunTime.value = report?.run_time ? new Date(report.run_time) : null
+          } else {
+            modalRunTime.value = null
+          }
+        } else {
+          modalRunTime.value = null
+        }
+
         showModal.value = true
     }
     async function onCalendarSubmit({ date }) {

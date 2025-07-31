@@ -17,27 +17,37 @@
     </div>
   </div>
 </template>
+
 <script setup>
-  import { ref, defineProps, defineEmits, watch , defineExpose } from 'vue'
+  import { ref, defineProps, defineEmits, watch, defineExpose } from 'vue'
   import { sendApi } from '@/utils/api'
   const fileInput = ref(null)
   const selectedFilesBase64 = ref([])
   const progress = ref(0)
   const uploading = ref(false)
+
   const props = defineProps({
     url: String,
     toAction: String,
     modelValue: {
       type: Array,
       default: () => []
+    },
+    initialMedias: {
+      type: Array,
+      default: () => []
     }
   })
-  const mediaList = ref([...props.modelValue])
-  const emit = defineEmits(['done'])
+
+  const emit = defineEmits(['update:modelValue', 'done'])
+
+  const mediaList = ref([...props.initialMedias]) // لیست کامل آبجکت مدیا
+
   const handleDrop = (e) => {
     const files = e.dataTransfer.files
     handleFiles({ target: { files } })
   }
+
   const handleFiles = async (e) => {
     const files = Array.from(e.target.files)
     if (!files.length) return
@@ -62,6 +72,7 @@
     uploading.value = false
     fileInput.value.value = null
   }
+
   const uploadFiles = async () => {
     try {
       const response = await sendApi({
@@ -75,9 +86,12 @@
       })
       if (response.status === 'success') {
         const uploaded = response.data
-        mediaList.value.push(...uploaded)
+        const existingIds = mediaList.value.map(m => m.id)
+        const newItems = uploaded.filter(m => !existingIds.includes(m.id))
+        mediaList.value.push(...newItems)
         selectedFilesBase64.value = []
-        emit('update:modelValue', mediaList.value)
+        // فقط شناسه ها رو برای v-model ارسال کن
+        emit('update:modelValue', mediaList.value.map(m => m.id))
         emit('done', mediaList.value)
       } else {
         alert('آپلود با خطا مواجه شد: ' + response.message)
@@ -86,6 +100,7 @@
       alert('خطا در ارسال: ' + err.message)
     }
   }
+
   const deleteMedia = async (media, index) => {
     try {
       const res = await sendApi({
@@ -95,7 +110,7 @@
       })
       if (res.status === 'success') {
         mediaList.value.splice(index, 1)
-        emit('update:modelValue', mediaList.value)
+        emit('update:modelValue', mediaList.value.map(m => m.id))
         emit('done', mediaList.value)
       } else {
         alert('حذف فایل با خطا مواجه شد: ' + res.message)
@@ -104,6 +119,7 @@
       alert('خطا در حذف: ' + err.message)
     }
   }
+
   const reset = () => {
     selectedFilesBase64.value = []
     progress.value = 0
@@ -115,13 +131,22 @@
     emit('update:modelValue', [])
     emit('done', [])
   }
-  defineExpose({
-    reset,
-  })
-  watch(() => props.modelValue, (val) => {
-    mediaList.value = [...val]
+  defineExpose({ reset })
+  watch(() => props.initialMedias, (newVal) => {
+    if (!Array.isArray(newVal)) return
+    mediaList.value = [...newVal]
+  }, { immediate: true })
+  watch(() => props.modelValue, (newVal) => {
+    if (!Array.isArray(newVal)) return
+    const existingIds = mediaList.value.map(m => m.id)
+    const missing = newVal.filter(id => !existingIds.includes(id))
+    if (missing.length > 0) {
+      const extras = props.initialMedias.filter(m => missing.includes(m.id))
+      mediaList.value.push(...extras)
+    }
   }, { immediate: true })
 </script>
+
 <style scoped>
   .drop-area {
     box-sizing: border-box;

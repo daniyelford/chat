@@ -2,7 +2,7 @@
 class Functions_handler
 {
     public $category=[];
-    // public $category_news=[];
+    public $category_filtter_for_place=false;
     // public $media=[];
     // public $report_media=[];
     // public $product_media=[];
@@ -29,7 +29,7 @@ class Functions_handler
         Users_model $users_model,
         Notification_model $notification_model,
         News_model $news_model,
-        Rule_model $rule_model
+        Rule_model $rule_model,
     ){
         $this->user = $user_handler;
         $this->send_handler = $send_handler;
@@ -45,7 +45,10 @@ class Functions_handler
         return (!empty($this->user->get_user_category_id()) && intval($this->user->get_user_category_id())>0);
     }
     public function get_all_category_active(){
-        $this->category = $this->category_model->select_category_where_active();
+        if($this->category_filtter_for_place)
+            $this->category=$this->category_model->select_category_where_active_and_not_place();
+        else
+            $this->category = $this->category_model->select_category_where_active();
     }
     public function send_add_news_notification($category,$news_id){
         if(!empty($category) && is_array($category)){

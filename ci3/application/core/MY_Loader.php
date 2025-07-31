@@ -12,6 +12,7 @@ class MY_Loader extends CI_Loader
     public Rule_model $rule_model;
     public Report_model $report_model;
     public Order_model $order_model;
+    public Place_model $place_model;
 
     public Send_handler $send_handler;
     public Functions_handler $functions_handler;
@@ -47,6 +48,7 @@ class MY_Loader extends CI_Loader
         $this->model('Rule_model', 'rule_model');
         $this->model('Report_model', 'report_model');
         $this->model('Order_model', 'order_model');
+        $this->model('Place_model', 'place_model');
         
 
         $this->category_model = $CI->category_model;
@@ -58,6 +60,7 @@ class MY_Loader extends CI_Loader
         $this->rule_model = $CI->rule_model;
         $this->report_model = $CI->report_model;
         $this->order_model = $CI->order_model;
+        $this->place_model = $CI->place_model;
 
         $this->send_handler= new Send_handler();
         $this->security_handler= new Security_handler();
@@ -78,7 +81,7 @@ class MY_Loader extends CI_Loader
             $this->users_model,
             $this->notification_model,
             $this->news_model,
-            $this->rule_model
+            $this->rule_model,
         );
         $this->news_handler= new News_handler(
             $this->security_handler,
@@ -97,7 +100,8 @@ class MY_Loader extends CI_Loader
             $this->user_handler,
             $this->users_model,
             $this->wallet_model,
-            $this->notification_model
+            $this->notification_model,
+            $this->place_model
         );
         $this->upload_handler= new Upload_handler(
             $this->security_handler,

@@ -63,12 +63,12 @@ export const useCartableStore = defineStore('cartable', () => {
             phone: report?.reporter?.phone || '',
             image: report?.reporter?.user_image_url || null,
           },
-          media: Array.isArray(report?.report_media)
-            ? report.report_media.map(m => ({
-                type: m.type,
-                url: m.url,
-              }))
-            : [],
+          media: Array.isArray(report?.report_media) ? 
+            report.report_media.map(m => ({
+              id: m.id,
+              type: m.type,
+              url: m.url,
+            })) : [],
         },
       ],
     }

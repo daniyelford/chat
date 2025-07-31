@@ -5,6 +5,28 @@ class CategorySeeder extends CI_Controller {
 
     public function index() {
         $this->load->database();
+        $this->place();
+        $this->no_place();
+    }
+    public function place(){
+        $data = [];
+        $data[] = [
+            'title' => "آموزشگاه",
+            'for_place'=>'yes',
+            'is_force'=>'no',
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ];
+        $data[] = [
+            'title' => "خیاطی",
+            'for_place'=>'yes',
+            'is_force'=>'no',
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ];
+        $this->db->insert_batch('category', $data);
+    }
+    public function no_place(){
         $data = [];
         $data[] = [
             'title' => "پلیس امنیت",

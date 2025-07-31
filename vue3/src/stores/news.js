@@ -18,6 +18,7 @@ export const useNewsStore = defineStore('news', ()=> {
       privacy: item.privacy,
       self: item.self,
       location: {
+        address_id: item.address_id || null,
         city: item.city || null,
         lat: item.lat || item.address_lat || null,
         lon: item.lon || item.address_lon || null,
@@ -38,6 +39,7 @@ export const useNewsStore = defineStore('news', ()=> {
       },
       medias: Array.isArray(item.media)
         ? item.media.map(m => ({
+            id: m.id,
             type: m.type,
             url: m.url,
           }))
@@ -52,6 +54,7 @@ export const useNewsStore = defineStore('news', ()=> {
             updated_at: report.report_info?.updated_at ?? '',
             status: report.report_info?.status ?? '',
             location: {
+              address_id: report.location?.address_id ?? null,
               city: report.location?.city ?? null,
               address: report.location?.address ?? null,
               lat: report.location?.lat ?? null,
@@ -67,6 +70,7 @@ export const useNewsStore = defineStore('news', ()=> {
             },
             media: Array.isArray(report.report_media)
               ? report.report_media.map(m => ({
+                  id: m.id,
                   type: m.type,
                   url: m.url,
                 }))
@@ -127,13 +131,16 @@ export const useNewsStore = defineStore('news', ()=> {
     })
     return res
   }
-  const addNews = async (newsData) => {
+  const addNews = async (newsData) => {    
     const res = await sendApi({
       control: 'news',
       action: 'add_news',
       data: {
         ...newsData,
-        category_id: newsData.category_id.map(c => c.id),
+        category_id:
+        Array.isArray(newsData.category_id)
+        ? newsData.category_id.map(c => c.id)
+        : (newsData.category_id ? [newsData.category_id.id] : [])
       }
     })
     if (res.status === 'success') {
@@ -143,7 +150,7 @@ export const useNewsStore = defineStore('news', ()=> {
         if (index !== -1) {
           cards.value[index] = newCard
         } else {
-          cards.value.unshift(newCard)
+          cards.value.push(newCard)
         }
       }
     }

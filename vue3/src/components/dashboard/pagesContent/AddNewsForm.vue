@@ -2,7 +2,7 @@
   <div class="top-send">
     <div v-if="replyCard" class="reply-preview">
       <div class="reply-box">
-        <strong>پاسخ به:</strong>
+        <strong>{{ props.editReport ? 'ویرایش پاسخ' : 'پاسخ به:' }}</strong>
         <div class="user-replay">
           <img v-if="replyCard.user.image" :src="replyCard.user.image" alt="reporter image">
           <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#000000" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g><rect fill="none" height="24" width="24"/></g><g><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20z"/></g></svg>
@@ -12,9 +12,15 @@
         <button class="close-btn" @click="clearReply">×</button>
       </div>
     </div>
+    <div class="edit" v-if="props.editData || props.editReport">
+      <button class="close-btn" @click="clearReply">×</button>
+      ویرایش
+    </div>
     <UploaderManyMedia
     :url="'news_media/'"
     :toAction="'addNews'"
+    v-model="form.media_id"
+    :initial-medias="medias"
     ref="uploaderRef"
     @done="handleUploadResult" />
   </div>
@@ -27,6 +33,7 @@
           :options="categories"
           :multiple="true"
           track-by="id"
+          :value-prop="'id'"
           label="title"
           placeholder="گیرنده را انتخاب کنید"
           selectLabel="برای انتخاب این مورد کلیک کنید"
@@ -43,7 +50,9 @@
         @update="val => form.user_address = val"
         @loading="isAddressLoading = $event"
       />
-      <button type="submit" :disabled="isSubmitDisabled">ثبت خبر</button>
+      <button type="submit" :disabled="isSubmitDisabled">
+        {{ props.editData ? 'ذخیره تغییرات' : 'ثبت خبر' }}
+      </button>
     </BaseModal>
   </form>
   <button :disabled="isSaveDisabled" @click="showModal = true">
@@ -64,6 +73,14 @@
     replyToId: {
       type: Number,
       default: 0,
+    },
+    editData: { 
+      type: Object, 
+      default: null 
+    },
+    editReport: { 
+      type: Object, 
+      default: null 
     }
   })  
   const emit = defineEmits(["clearReplyId"])
@@ -74,6 +91,7 @@
   const userCoordinate=ref(null)
   const isAddressLoading = ref(false)
   const showModal = ref(false)
+  const medias = ref([])
   const form = ref({
     user_address: { type: 'location', value: '' },
     media_id: [],
@@ -85,20 +103,25 @@
   }
   function clearReply() {
     replyCard.value = null
+    form.value = {
+      user_address: { type: 'location', value: '' },
+      media_id: [],
+      description: '',
+      category_id: rule.value ? form.value.category_id : []
+    }
+    medias.value = []
     emit('clearReplyId')
   }
   onMounted(async () => {
     const data = await newsStore.fetchAddNewsData()
-    if (data) {
+    if (data) {      
       address.value = data.address
       rule.value = data.rule
       userCoordinate.value = data.coordinate
       if (rule.value) {
-        categories.value = data.category ? [data.category] : []
-        form.value.category_id = data.category ? [data.category] : []
-      } else {
-        categories.value = data.category??[]
+        form.value.category_id = data.category??[]
       }
+      categories.value = data.category??[]
     } 
   })
   const isSubmitDisabled = computed(() => {
@@ -114,20 +137,17 @@
     return !form.value.description.trim()
   })
   const submitForm = async () => {
+    console.log('Submitting:', JSON.stringify(form.value, null, 2))
     const finalData = {
       ...form.value,
       reply_to_id: props.replyToId,
+      edit: props.editData?.id || null,
+      edit_report: props.editReport?.id || null
     }
     try {
       const res = await newsStore.addNews(finalData)
       if (res.status === 'success') {
         showModal.value = false
-        form.value = {
-          user_address: { type: 'location', value: '' },
-          media_id: [],
-          description: '',
-          category_id: rule.value ? form.value.category_id : []
-        }
         clearReply()
         uploaderRef.value?.reset()
       } else {
@@ -144,8 +164,60 @@
       replyCard.value = null
     }
   })
+  watch(() => props.editData, (newVal) => {
+    if (newVal) {
+      form.value.description = newVal.description || ''
+      form.value.category_id = newVal.category
+      form.value.media_id = newVal.medias?.map(m => m.id) || []
+      medias.value = newVal.medias || []
+      form.value.user_address = {
+        type: 'location',
+        value: {
+          address: newVal.location?.address || '',
+          address_id: newVal.location?.address_id || '',
+          lat: newVal.location?.lat,
+          lon: newVal.location?.lon,
+          city: newVal.location?.city,
+        }
+      }
+    }
+  })
+  watch(() => props.editReport, (report) => {
+    if (report) {
+      form.value.description = report.description || ''
+      form.value.media_id = report.media?.map(m => m.id) || []
+      medias.value = report.media || []
+      form.value.user_address = {
+        type: 'location',
+        value: {
+          address: report.location?.address || '',
+          address_id: report.location?.address_id || '',
+          lat: report.location?.lat,
+          lon: report.location?.lon,
+          city: report.location?.city
+        }
+      }
+    }
+  })
+
 </script>
 <style scoped>
+  .edit{
+    background: beige;
+    direction: rtl;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .edit button{
+    position: static;
+    padding: 5px;
+    width: 30px;
+    height: 30px;
+    background: red;
+    border-radius: 30px;
+  }
   .top-send {
     bottom: 45px;
     left: 0;

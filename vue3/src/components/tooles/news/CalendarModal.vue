@@ -20,11 +20,15 @@
     </div>
 </template>
 <script setup>
-    import { ref,defineEmits } from 'vue'
+    import { ref,defineEmits,defineProps,watchEffect } from 'vue'
+    import moment from 'moment-jalaali'
     import BaseModal from '@/components/tooles/modal/BaseModal.vue'
     import DatePicker from 'vue3-persian-datetime-picker'
     const emit = defineEmits(['close', 'submit'])
     const selectedDate = ref(null)
+    const props = defineProps({
+        initialDate: String
+    })
     function close() {
         emit('close')
     }
@@ -38,6 +42,14 @@
         })
         close()
     }
+    watchEffect(() => {
+        console.log('watchEffect -> initialDate', props.initialDate)
+        if (props.initialDate) {
+            selectedDate.value = moment(props.initialDate).format('jYYYY/jMM/jDD')
+        } else {
+            selectedDate.value = null
+        }
+    })
 </script>
 <style scoped>
     h3{

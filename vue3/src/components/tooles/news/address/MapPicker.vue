@@ -4,7 +4,7 @@
     </div>
 </template>
 <script setup>
-    import { onMounted , ref , defineEmits , defineProps , watch } from 'vue'
+    import { onMounted , ref , defineEmits , defineProps } from 'vue'
     import { BASE_URL } from '@/config'
     import L from 'leaflet'
     import 'leaflet/dist/leaflet.css'
@@ -14,6 +14,7 @@
     const marker = ref(null)
     const props = defineProps({
         center: Object,
+        editMarker: Object,
     })
     onMounted(() => {
         map.value = L.map('map').setView([35.6892, 51.3890], 13)
@@ -23,6 +24,24 @@
          setTimeout(() => {
             map.value.invalidateSize()
         }, 300)
+        if (props.center?.lat && props.center?.lon) {
+            map.value.flyTo([props.center.lat, props.center.lon], 13, {
+                animate: true,
+                duration: 1.2,
+            })
+        }
+        if (marker.value && map.value.hasLayer(marker.value)){
+            map.value.removeLayer(marker.value)
+        }
+        if(props.editMarker?.lat && props.editMarker.lon){
+            marker.value = L.marker([props.editMarker?.lat, props.editMarker?.lon], {
+                icon: L.icon({
+                    iconUrl: markerIcon,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 32],
+                }),
+            }).addTo(map.value)
+        }
         map.value.on('click', (e) => {
             const { lat, lng } = e.latlng
             if (marker.value && map.value.hasLayer(marker.value)){
@@ -38,14 +57,6 @@
             emit('pick', { lat, lng })
         })
     })
-    watch(() => props.center, (val) => {
-        if (val && val.lat && val.lon && map.value) {
-            map.value.flyTo([val.lat, val.lon], 13, {
-                animate: true,
-                duration: 1.2 
-            })
-        }
-    }, { immediate: true })
 </script>
 <style scoped>
     .map-wrapper {

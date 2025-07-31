@@ -179,6 +179,7 @@ class News_model extends CI_Model
         $map = [];
         foreach ($results as $row) {
             $map[$row->target_id] = [
+                'address_id'      => $row->target_id,
                 'city'    => $row->city,
                 'address' => $row->address,
                 'lat'     => $row->lat,
@@ -256,6 +257,7 @@ class News_model extends CI_Model
                 'id' => $r['id'],
                 'report_info' => $r,
                 'location' => [
+                    'address_id'=> $addr['address_id']    ?? null,
                     'city'    => $addr['city']    ?? null,
                     'address' => $addr['address'] ?? null,
                     'lat'     => $addr['lat']     ?? null,
@@ -412,6 +414,9 @@ class News_model extends CI_Model
     }
     public function seen_weher_id($id){
         return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['status'=>'seen'],['id'=>intval($id)]));
+    }
+    public function change_description_where_id($id,$description){
+        return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['description'=>$description??''],['id'=>intval($id)]));
     }
     public function seen_weher_id_and_user_account_id($id){
         return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['status'=>'seen'],['id'=>intval($id)]));

@@ -13,6 +13,11 @@ class Migration_Create_places_table extends CI_Migration {
                 'unsigned' => TRUE,
                 'auto_increment' => TRUE,
             ],
+            'title' => [
+                'type' => 'VARCHAR',
+                'constraint' => 100,
+                'null' => FALSE,
+            ],
             'description' => [
                 'type' => 'TEXT',
                 'null' => TRUE,

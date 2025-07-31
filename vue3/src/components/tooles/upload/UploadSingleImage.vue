@@ -109,6 +109,8 @@
   svg{
     position: relative;
     top: -360px;
+    width: 100%;
+    height: 100%;
   }
   p{
     position: relative;
@@ -121,7 +123,7 @@
       width: 100%;
       height: 100%;
       position: relative;
-      top: -720px;
+      top: -700px;
       padding: 20px;
       box-sizing: border-box;
   }

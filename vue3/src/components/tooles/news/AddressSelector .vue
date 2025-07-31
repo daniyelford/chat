@@ -8,7 +8,7 @@
     />
     <div class="section" v-if="selectedMode === 'location'">
       <label class="text">موقعیت مکانی</label>
-      <MapPicker :center="props.userCoordinate" @pick="handleMapSelect" />
+      <MapPicker :center="props.userCoordinate" :edit-marker="location" @pick="handleMapSelect" />
       <span class="loading" v-if="loading">در حال دریافت آدرس از نقشه...</span>
       <textarea
         v-if="!loading"
@@ -117,7 +117,7 @@
     }
     .textarea {
       width: 100%;
-      height: 80px;
+      height: 50px;
       margin-right: 0;
     }
   }

@@ -7,14 +7,17 @@ class Wallet_handler
   private Users_model $users_model;
   private Wallet_model $wallet_model;
   private Notification_model $notification_model;
+  private Place_model $place_model;
   public function __construct(
     Security_handler $security_handler,
     Order_model $order_model,
     User_handler $user_handler,
     Users_model $users_model,
     Wallet_model $wallet_model,
-    Notification_model $notification_model 
-  ){
+    Notification_model $notification_model,
+    Place_model $place_model,
+    ){
+    $this->place_model=$place_model;
     $this->security = $security_handler;
     $this->order_model = $order_model;
     $this->user = $user_handler;
@@ -22,8 +25,14 @@ class Wallet_handler
     $this->wallet_model = $wallet_model;
     $this->notification_model = $notification_model;
 	}
+  public function get_places(){
+    return (!empty($this->user->get_user_account_id())?
+    ['status'=>'success','data'=>$this->place_model->get_place_with_relations(),'cord'=>$this->user->get_user_cordinates()]:
+    ['status'=>'error']);
+  }
   public function get_cards() {
-    return (!empty($this->user->get_user_account_id())? ['status' => 'success', 'data' => $this->wallet_model->select_carts_where_user_account_id($this->user->get_user_account_id())]:
+    return (!empty($this->user->get_user_account_id())?
+    ['status' => 'success', 'data' => $this->wallet_model->select_carts_where_user_account_id($this->user->get_user_account_id())]:
     ['status' => 'error', 'message' => 'شناسه کاربر یافت نشد']);
 
   }

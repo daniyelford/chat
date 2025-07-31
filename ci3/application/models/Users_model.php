@@ -66,8 +66,17 @@ class Users_model extends CI_Model
     public function add_credential($arr){
         return (!empty($arr) && is_array($arr) && $this->add_to_table($this->credential,$arr));
     }
+    public function select_address_relation_where_news_id($id){
+	    return (!empty($id) && intval($id)?$this->select_where_array_table($this->address_relation,['target_id'=>intval($id),'target_table' => 'news']):false);
+	}
+    public function select_address_relation_where_report_id($id){
+	    return (!empty($id) && intval($id)?$this->select_where_array_table($this->address_relation,['target_id'=>intval($id),'target_table' => 'report_list']):false);
+	}
     public function add_address_relation($arr){
         return (!empty($arr) && is_array($arr) && $this->add_to_table($this->address_relation,$arr));
+    }
+    public function edit_address_relation_weher_id($arr,$id){
+        return (!empty($id) && intval($id)>0 && !empty($arr) && is_array($arr) && $this->edit_table($this->address_relation,$arr,['id'=>intval($id)]));
     }
     public function add_account_return_id($arr){
         return (!empty($arr) && is_array($arr)?$this->add_to_table_return_id($this->account,$arr):false);

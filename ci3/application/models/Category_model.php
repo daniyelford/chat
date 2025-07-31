@@ -32,10 +32,46 @@ class Category_model extends CI_Model
     public function select_all_relation() {
         return $this->db->get($this->relation)->result_array();
     }
+    public function select_relation_where_array($arr){
+        return (!empty($arr) && is_array($arr)?$this->select_where_array_table($this->relation,$arr):false);
+    }
     public function select_category_where_active(){
 	    return $this->select_where_array_table($this->tbl,['status'=>'active']);
 	}
+    public function select_category_where_active_and_not_place(){
+	    return $this->select_where_array_table($this->tbl,['status'=>'active','for_place'=>'no']);
+	}
+    public function insert_relation($arr){
+        return (!empty($arr) && is_array($arr) && $this->db->insert($this->relation, $arr));
+    }
     public function insert_relation_batch($arr){
         return (!empty($arr) && is_array($arr) && $this->db->insert_batch($this->relation, $arr));
+    }
+    public function check_changes(String $tbl,Int $id,Array $old,Array $new){
+        if(!empty($tbl) && !empty($id))
+            if(!empty($old) && is_array($old)){
+                $old_category_ids=array_map('intval',array_column($old,'category_id'));
+                if(!empty($old_category_ids)){
+                    $category_defrante_id=array_diff($old_category_ids,$new);
+                    if(!empty($category_defrante_id)){
+                        $category_defrante_relation_id = array_filter($old, function($item) use ($category_defrante_id) {
+                            return in_array(intval($item['category_id']), $category_defrante_id);
+                        });
+                        $this->db->where_in('id', $category_defrante_relation_id)->delete($this->relation);
+                    }
+                }
+                if(!empty($new)){
+                    foreach($new as $n){
+                        if(!empty($n) && !in_array($n,$old_category_ids))
+                            $this->insert_relation([
+                                'target_table'=>$tbl,
+                                'target_id'=>(int) $id,
+                                'category_id'=>$n
+                            ]);
+                    }
+                }
+                return true;
+            }
+        return false;
     }
 }

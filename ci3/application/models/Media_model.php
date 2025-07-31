@@ -13,6 +13,18 @@ class Media_model extends CI_Model
 	private function select_where_id_table($tbl,$id){
 	    return (!empty($tbl) && is_string($tbl) && !empty($id) && intval($id)>0?$this->select_where_array_table($tbl,['id'=>$id]):false);
 	}
+    private function select_where_in_array_table($table, $field, $in_values, $extra_conditions = []){
+        if (empty($table) || empty($field) || !is_array($in_values)) {
+            return false;
+        }
+        $this->db->where_in($field, $in_values);
+        if (!empty($extra_conditions) && is_array($extra_conditions)) {
+            foreach ($extra_conditions as $key => $value) {
+                $this->db->where($key,$value);
+            }
+        }
+        return $this->db->get($table)->result_array();
+    }
     private function add_to_table($tbl,$arr){
         return (!empty($tbl) && is_string($tbl) && !empty($arr) && is_array($arr) && $this->db->insert($tbl,$arr));
     }
@@ -40,11 +52,13 @@ class Media_model extends CI_Model
     public function select_where_id($id){
 	    return (!empty($id) && intval($id)?$this->select_where_id_table($this->tbl,intval($id)):false);
 	}
+    public function select_relation_where_array($arr){
+        return (!empty($arr) && is_array($arr)?$this->select_where_array_table($this->relation,$arr):false);
+    }
     public function select_media_info_by_target($target_table, $target_id) {
         if (empty($target_table) || empty($target_id)) {
             return false;
         }
-
         $this->db->select('m.*, mr.target_table, mr.target_id');
         $this->db->from($this->relation . ' as mr');
         $this->db->join($this->tbl . ' as m', 'mr.media_id = m.id');
@@ -56,13 +70,16 @@ class Media_model extends CI_Model
 	    return $this->select_where_array_table($this->tbl,['upload_place'=>'addNews','used_status'=>'used']);
 	}
     public function select_where_report_used(){
-	    return $this->select_where_array_table($this->tbl,['upload_place'=>'report','used_status'=>'used']);
+	    return $this->select_where_array_table($this->tbl,['upload_place'=>'report_list','used_status'=>'used']);
 	}
     public function select_where_product_used(){
 	    return $this->select_where_array_table($this->tbl,['upload_place'=>'product','used_status'=>'used']);
 	}
     public function add($arr){
         return (!empty($arr) && is_array($arr) && $this->add_to_table($this->tbl,$arr));
+    }
+    public function add_relation($arr){
+        return (!empty($arr) && is_array($arr) && $this->db->insert($this->relation,$arr));
     }
     public function add_relation_batch($arr){
         return (!empty($arr) && is_array($arr) && $this->db->insert_batch($this->relation,$arr));
@@ -112,5 +129,42 @@ class Media_model extends CI_Model
             }
         return (!empty($arr)?$this->add_relation_batch($arr):true);
     }
-
+    public function check_changes(String $tbl,Int $id,Array $old=[],Array $new=[]){
+        if(!empty($tbl) && !empty($id)){
+            if(!empty($old)){
+                $old=array_map('intval',$old);
+                $media_defrante_ids = array_diff($old, $new);
+                if(!empty($media_defrante_ids) && is_array($media_defrante_ids)){
+                    $defrante_media_relation=$this->select_where_in_array_table($this->relation,'media_id',$media_defrante_ids,['target_table'=>$tbl]);
+                    if(!empty($defrante_media_relation)){
+                        $defrante_media_relation_ids=array_column($defrante_media_relation,'id');
+                        $this->db->where_in('id', $defrante_media_relation_ids)->delete($this->relation);
+                    }
+                    $defrante_media=$this->select_where_in_array_table($this->tbl,'id',$media_defrante_ids);
+                    if(!empty($defrante_media)){
+                        $delete_urls=array_column($defrante_media,'url');
+                        if(!empty($delete_urls))
+                            foreach($delete_urls as $d){
+                                if(!empty($d) && is_string($d)) $this->remove_file($d);
+                            }
+                        $this->db->where_in('id', $media_defrante_ids)->delete($this->tbl);
+                    }
+                }
+            }
+            if(!empty($new)){
+                $new=array_map('intval',$new);
+                foreach ($new as $n) {
+                    if(!empty($a) && !in_array($n,$old)){
+                        $this->add_relation([
+                            'target_table'=>$tbl,
+                            'target_id'=>(int) $id,
+                            'media_id'=>$a
+                        ]);
+                    }
+                }
+            }
+            return true;
+        }
+        return false;
+    }
 }

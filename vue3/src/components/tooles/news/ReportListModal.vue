@@ -94,7 +94,7 @@
 <style scoped>
   h4 {
     text-align: center;
-    margin: 10px 0;
+    margin: 2px 0;
     clear: both;
   }
   
