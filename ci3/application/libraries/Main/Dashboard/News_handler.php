@@ -84,7 +84,7 @@ class News_handler
                         'address'=> $this->security->string_secutory_week_check($data['user_address']['value']['total']['display_name']??''),
                         'country'=>$data['user_address']['value']['total']['address']['country']??'',
                         'region'=>$data['user_address']['value']['total']['address']['province']??'',
-                        'city'=>$data['user_address']['value']['total']['address']['city']??$data['user_address']['value']['total']['address']['village']??'',
+                        'city'=>$data['user_address']['value']['total']['address']['city']??$data['user_address']['value']['total']['address']['town']??$data['user_address']['value']['total']['address']['village']??'',
                         'lat'=>$data['user_address']['value']['total']['lat']??'',
                         'lon'=>$data['user_address']['value']['total']['lon']??'',
                         'code_posti'=>$data['user_address']['value']['total']['address']['postcode']??'',

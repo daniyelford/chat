@@ -9,6 +9,7 @@
   import MediaSlider from '../media/MediaSlider.vue'
   import 'leaflet/dist/leaflet.css'
   import { BASE_URL } from '@/config'
+  import { nextTick } from 'vue'
   const props = defineProps({
     center: { type: Object, required: true },
     markers: {
@@ -76,8 +77,10 @@
       })
       app.component('MediaSlider', MediaSlider)
       app.mount(container)
-      leafletMarker.bindPopup(container)
-      leafletMarker.addTo(markerLayerGroup.value)
+      nextTick(() => {
+        leafletMarker.bindPopup(container)
+        leafletMarker.addTo(markerLayerGroup.value)
+      })
     })
   }
 </script>

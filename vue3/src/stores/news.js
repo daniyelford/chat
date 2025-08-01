@@ -90,7 +90,7 @@ export const useNewsStore = defineStore('news', ()=> {
       const items = Array.isArray(newsObj) ? newsObj : Object.values(newsObj)
       const newCards = items.map(normalizeNewsItem)
       const filteredCards = newCards.filter(card => card.user.id)
-      cards.value = append ? [...cards.value, ...filteredCards] : [...filteredCards]
+      cards.value = append ? [ ...cards.value,...filteredCards] : [...filteredCards]
       more.value = res.has_more
       lastUpdate.value = new Date().toISOString()
       isLoaded.value = true
@@ -150,7 +150,7 @@ export const useNewsStore = defineStore('news', ()=> {
         if (index !== -1) {
           cards.value[index] = newCard
         } else {
-          cards.value.push(newCard)
+          cards.value.unshift(newCard)
         }
       }
     }

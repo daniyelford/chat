@@ -264,18 +264,28 @@
 </script>
 <style scoped>
   .inner-posts {
-    padding: 10px;
     position: fixed;
     top: 60px;
     bottom: 45px;
-    overflow: auto;
+    overflow: hidden;
     left: 0;
     right: 0;
   }
+  .scroll-trigger{
+    position: relative;
+    top: 10px;
+  }
   .card-inner {
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
+    max-height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
     gap: 1.5rem;
+    justify-content: flex-start;
   }
   .card {
     max-width: 75%;
