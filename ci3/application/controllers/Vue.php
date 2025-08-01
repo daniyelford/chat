@@ -31,6 +31,8 @@ class Vue extends CI_Controller {
 		$this->generate_api_key_file();
 		$apiKeyFile = $this->session->userdata('api_key_file');
     	require_once($apiKeyFile);
-		echo $this->load->view('dist/vue',[],true).$this->load->view('vue_data',['api_key'=>API_KEY],true);
+		$output = $this->load->view('dist/vue', [], true);
+		$output .= $this->load->view('vue_data', ['api_key' => API_KEY], true);
+		$this->output->set_output($output);
 	}
 }

@@ -41,9 +41,19 @@ class Migration_Create_news_table extends CI_Migration {
         $this->dbforge->create_table('news');
         $this->db->query("ALTER TABLE news MODIFY created_at DATETIME DEFAULT CURRENT_TIMESTAMP");
         $this->db->query("ALTER TABLE news MODIFY updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
-        // $this->db->query("CREATE INDEX IF NOT EXISTS idx_news_id_desc ON news(id DESC)");
-        $this->db->query("CREATE INDEX IF NOT EXISTS idx_news_status_privacy ON news(status, privacy)");
-        $this->db->query("CREATE INDEX IF NOT EXISTS idx_status_privacy_id ON news(status, privacy, id)");
+        $indexes = [
+            'idx_news_status_privacy' => 'CREATE INDEX idx_news_status_privacy ON news(status, privacy)',
+            'idx_status_privacy_id'   => 'CREATE INDEX idx_status_privacy_id ON news(status, privacy, id)',
+        ];
+        foreach ($indexes as $indexName => $createQuery) {
+            $res = $this->db->query("SHOW INDEX FROM news WHERE Key_name = '$indexName'");
+            if ($res->num_rows() == 0) {
+                $this->db->query($createQuery);
+            }
+        }
+        // // $this->db->query("CREATE INDEX IF NOT EXISTS idx_news_id_desc ON news(id DESC)");
+        // $this->db->query("CREATE INDEX IF NOT EXISTS idx_news_status_privacy ON news(status, privacy)");
+        // $this->db->query("CREATE INDEX IF NOT EXISTS idx_status_privacy_id ON news(status, privacy, id)");
     }
 
     public function down() {

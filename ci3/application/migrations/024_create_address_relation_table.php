@@ -43,7 +43,12 @@ class Migration_Create_address_relation_table extends CI_Migration {
         $this->db->query("ALTER TABLE address_relation MODIFY created_at DATETIME DEFAULT CURRENT_TIMESTAMP");
         $this->db->query("ALTER TABLE address_relation MODIFY updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
         $this->db->query("ALTER TABLE address_relation ADD CONSTRAINT fk_address_relation_address FOREIGN KEY (address_id) REFERENCES addresses(id) ON DELETE CASCADE ON UPDATE CASCADE");
-        $this->db->query("CREATE INDEX IF NOT EXISTS idx_ar_target ON address_relation(target_table, target_id, address_id)");
+        $indexName = 'idx_ar_target';
+        $check = $this->db->query("SHOW INDEX FROM address_relation WHERE Key_name = '$indexName'");
+        if ($check->num_rows() == 0) {
+            $this->db->query("CREATE INDEX $indexName ON address_relation(target_table, target_id, address_id)");
+        }
+        // $this->db->query("CREATE INDEX IF NOT EXISTS idx_ar_target ON address_relation(target_table, target_id, address_id)");
     }
 
     public function down() {
