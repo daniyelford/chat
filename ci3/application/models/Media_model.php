@@ -154,11 +154,11 @@ class Media_model extends CI_Model
             if(!empty($new)){
                 $new=array_map('intval',$new);
                 foreach ($new as $n) {
-                    if(!empty($a) && !in_array($n,$old)){
+                    if(!empty($n) && !in_array($n,$old)){
                         $this->add_relation([
                             'target_table'=>$tbl,
                             'target_id'=>(int) $id,
-                            'media_id'=>$a
+                            'media_id'=>$n
                         ]);
                     }
                 }

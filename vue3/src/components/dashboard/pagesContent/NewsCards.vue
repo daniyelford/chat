@@ -49,7 +49,10 @@
         >
           قرار ملاقات
         </a>
-        <div class="report-block" v-if="card.reports && card.reports.length">
+        <a class="choose" v-if="card.reports && card.reports.length" @click="toggleReports(card.id)">
+          {{ showReports[card.id] ? 'بستن گزارش‌ها' : 'نمایش گزارش‌ها' }}
+        </a>
+        <div class="report-block" v-if="card.reports && card.reports.length && showReports[card.id]">
           <h4 style="text-align: center;">گزارش‌ها</h4>
           <div class="single-report" v-for="report in card.reports" :key="report.id">
             <div class="reporter-user">
@@ -125,13 +128,17 @@
     const selectedReportId = ref(null)
     const showModal = ref(false)
     const modalRunTime = ref(null)
+    const showReports = ref({})
+    const replyToId = ref(0)
+    const editCard = ref(null)
+    const editReport = ref(null)
     function showToast(msg) {
         toastMsg.value = msg
         setTimeout(() => (toastMsg.value = ''), 3000)
     }
-    const replyToId = ref(0)
-    const editCard = ref(null)
-    const editReport = ref(null)
+    function toggleReports(id) {
+      showReports.value[id] = !showReports.value[id]
+    }
     function handleEdit(newsId, reportId) {
       const card = newsStore.cards.find(c => c.id === newsId)
       editCard.value = card

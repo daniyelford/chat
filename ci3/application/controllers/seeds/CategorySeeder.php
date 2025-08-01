@@ -5,8 +5,8 @@ class CategorySeeder extends CI_Controller {
 
     public function index() {
         $this->load->database();
-        $this->place();
         $this->no_place();
+        $this->place();
     }
     public function place(){
         $data = [];

@@ -137,7 +137,6 @@
     return !form.value.description.trim()
   })
   const submitForm = async () => {
-    console.log('Submitting:', JSON.stringify(form.value, null, 2))
     const finalData = {
       ...form.value,
       reply_to_id: props.replyToId,

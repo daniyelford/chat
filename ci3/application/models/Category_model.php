@@ -54,9 +54,10 @@ class Category_model extends CI_Model
                 if(!empty($old_category_ids)){
                     $category_defrante_id=array_diff($old_category_ids,$new);
                     if(!empty($category_defrante_id)){
-                        $category_defrante_relation_id = array_filter($old, function($item) use ($category_defrante_id) {
+                        $category_defrante_relation = array_filter($old, function($item) use ($category_defrante_id) {
                             return in_array(intval($item['category_id']), $category_defrante_id);
                         });
+                        $category_defrante_relation_id = array_column($category_defrante_relation, 'id');
                         $this->db->where_in('id', $category_defrante_relation_id)->delete($this->relation);
                     }
                 }

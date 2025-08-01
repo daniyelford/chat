@@ -146,7 +146,7 @@ export const useNewsStore = defineStore('news', ()=> {
     if (res.status === 'success') {
       const newCard = await fetchNewsById(res.id)
       if (newCard) {
-        const index = cards.value.findIndex(card => card.id === newCard.id)
+        const index = cards.value.findIndex(card =>  Number(card.id) ===  Number(newCard.id))
         if (index !== -1) {
           cards.value[index] = newCard
         } else {

