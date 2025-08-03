@@ -41,7 +41,7 @@
 
   const emit = defineEmits(['update:modelValue', 'done'])
 
-  const mediaList = ref([...props.initialMedias]) // لیست کامل آبجکت مدیا
+  const mediaList = ref([...props.initialMedias])
 
   const handleDrop = (e) => {
     const files = e.dataTransfer.files
@@ -158,7 +158,8 @@
     width: 45px;
     padding: 3px;
     height: 45px;
-    border-radius: 4px;
+    border-top-left-radius: 15px;
+    border: unset;
     background: #e9e9a8;
   }
   .hidden-input {

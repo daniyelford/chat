@@ -5,9 +5,13 @@ npm install vue3-persian-datetime-picker
 npm config set registry https://registry.npmmirror.com/
 npm install vue-multiselect
 npm install leaflet
+npm install leaflet-routing-machine
+npm install leaflet-control-geocoder
 npm install pinia
 npm install vue3-jalali-calendar moment-jalaali
 // npm install lodash.isequal
+npm install -D sass
+npm install -D sass sass-loader
 npm install firebase
 npm install @capacitor/core @capacitor/cli
 npx cap init

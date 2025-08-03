@@ -6,7 +6,7 @@ export const usePlaceStore = defineStore('place', () => {
   const userCoordinate = ref([])
   const fetchAllPlaces = async () => {
     try {
-      const res = await sendApi({ control: 'wallet', action: 'get_places' })
+      const res = await sendApi({ control: 'place', action: 'get_places' })
       if (res.status === 'success' && Array.isArray(res.data)) {
         allPlaces.value = res.data
         userCoordinate.value = res.cord

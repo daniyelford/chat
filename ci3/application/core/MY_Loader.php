@@ -23,6 +23,7 @@ class MY_Loader extends CI_Loader
     public User_handler $user_handler;
     public News_handler $news_handler;
     public Wallet_handler $wallet_handler;
+    public Place_handler $place_handler;
     public Api_handler $api_handler;
     public function __construct()
     {
@@ -37,6 +38,7 @@ class MY_Loader extends CI_Loader
         require_once(APPPATH . 'libraries/Main/Dashboard/User_handler.php');
         require_once(APPPATH . 'libraries/Main/Dashboard/News_handler.php');
         require_once(APPPATH . 'libraries/Main/Dashboard/Wallet_handler.php');
+        require_once(APPPATH . 'libraries/Main/Dashboard/Place_handler.php');
         require_once(APPPATH . 'libraries/Api_handler.php');
 
         $this->model('Category_model', 'category_model');
@@ -72,15 +74,15 @@ class MY_Loader extends CI_Loader
             $this->media_model,
             $this->notification_model
         );
+        // $this->wallet_model,
+        // $this->media_model,
+        // $this->news_model,
         $this->functions_handler= new Functions_handler(
             $this->user_handler,
             $this->send_handler,
-            $this->wallet_model,
             $this->category_model,
-            $this->media_model,
             $this->users_model,
             $this->notification_model,
-            $this->news_model,
             $this->rule_model,
         );
         $this->news_handler= new News_handler(
@@ -101,7 +103,6 @@ class MY_Loader extends CI_Loader
             $this->users_model,
             $this->wallet_model,
             $this->notification_model,
-            $this->place_model
         );
         $this->upload_handler= new Upload_handler(
             $this->security_handler,
@@ -115,13 +116,18 @@ class MY_Loader extends CI_Loader
             $this->users_model,
             $this->media_model
         );
+        $this->place_handler=new Place_handler(
+            $this->user_handler,
+            $this->place_model
+        );
         $this->api_handler= new Api_handler(
             $this->upload_handler,
             $this->security_handler,
             $this->login_handler,
             $this->user_handler,
             $this->news_handler,
-            $this->wallet_handler
+            $this->wallet_handler,
+            $this->place_handler
         );
         // $CI->category_model=$this->category_model;
         // $CI->media_model=$this->media_model;
@@ -140,6 +146,7 @@ class MY_Loader extends CI_Loader
         $CI->user_handler=$this->user_handler;
         $CI->news_handler=$this->news_handler;
         $CI->wallet_handler=$this->wallet_handler;
+        $CI->place_handler=$this->place_handler;
         $CI->api_handler=$this->api_handler;
     }
 }

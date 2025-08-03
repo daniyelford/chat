@@ -57,21 +57,31 @@ class Send_handler
     public function weather_finder(){
 	    return (($a=$this->ip_handler())!==false && !empty($a) && !empty($a['lat']) && !empty($a['lon']) && ($b=$this->resive_data_only('https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/'.$a['lat'].','.$a['lon'].'?key='.WEATHER_API))!==false && !empty($b) && ($c=json_decode($b,true))!==false && !empty($c) && !empty($c['days']) && !empty($c['days']['0']) && !empty($c['days']['0']['description']) && !empty($c['days']['0']['temp'])?['temp'=>$c['days']['0']['temp'],'desc'=>$c['days']['0']['description']]:[]);
 	}
-    private function getClientIp() {
-        $ip = $_SERVER['HTTP_CLIENT_IP']
-            ?? $_SERVER['HTTP_X_FORWARDED_FOR']
-            ?? $_SERVER['HTTP_X_FORWARDED']
-            ?? $_SERVER['HTTP_FORWARDED_FOR']
-            ?? $_SERVER['HTTP_FORWARDED']
-            ?? $_SERVER['REMOTE_ADDR']
-            ?? 'UNKNOWN';
-        if (strpos($ip, ',') !== false) {
-            $ip = explode(',', $ip)[0];
+    private function getClientIp(): string {
+        if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) return $_SERVER['HTTP_CF_CONNECTING_IP'];
+        $headers = [
+            'HTTP_CLIENT_IP',
+            'HTTP_X_FORWARDED_FOR',
+            'HTTP_X_FORWARDED',
+            'HTTP_FORWARDED_FOR',
+            'HTTP_FORWARDED',
+            'REMOTE_ADDR'
+        ];
+        foreach ($headers as $key) {
+            if (!empty($_SERVER[$key])) {
+                $ipList = explode(',', $_SERVER[$key]);
+                foreach ($ipList as $ip) {
+                    $ip = trim($ip);
+                    if (filter_var($ip, FILTER_VALIDATE_IP)) return $this->fack_ip_used ? '185.107.56.33' : $ip;
+                }
+            }
         }
-        return ($this->fack_ip_used?'185.107.56.33':trim($ip));
+        return '';
     }
     public function ip_handler(){
-        $response = $this->resive_data_only("http://ip-api.com/php/" . $this->getClientIp() . "?fields=country,regionName,city,lat,lon,currency,mobile,proxy");
+        $ip=$this->getClientIp();
+        if(empty($ip)) return [];
+        $response = $this->resive_data_only("http://ip-api.com/php/" . $ip . "?fields=country,regionName,city,lat,lon,currency,mobile,proxy");
         if (!$response) return [];
         $data = @unserialize($response);
         if (!is_array($data)) return [];

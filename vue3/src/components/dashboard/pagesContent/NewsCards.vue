@@ -21,14 +21,10 @@
           </span>
         </div>
         <div class="description" v-if="card.description">
-          {{ card.description }}
+          {{ truncateText(card.description) }}
         </div>
-        <div class="location" v-if="card.location?.city">
-          📍 {{ card.location.city }}
-        </div>
-        <div class="time">
-          {{ moment(card.created_at).format('jYYYY/jMM/jDD') }}
-        </div>
+        <div class="location" v-if="card.location?.city">📍 {{ card.location.city }}</div>
+        <div class="time">📅 {{ moment(card.created_at).format('jYYYY/jMM/jDD') }}</div>
         <RouterLink class="choose" :to="{ path: `/show-news/${card.id}` }">
           مشاهده
         </RouterLink>
@@ -53,7 +49,6 @@
           {{ showReports[card.id] ? 'بستن گزارش‌ها' : 'نمایش گزارش‌ها' }}
         </a>
         <div class="report-block" v-if="card.reports && card.reports.length && showReports[card.id]">
-          <h4 style="text-align: center;">گزارش‌ها</h4>
           <div class="single-report" v-for="report in card.reports" :key="report.id">
             <div class="reporter-user">
               <img v-if="report.reporter.image" :src="report.reporter.image" alt="reporter image">
@@ -63,11 +58,12 @@
             <div class="media-inner" v-if="Array.isArray(report.media) && report.media.length > 0">
               <MediaSlider :medias="report.media" />
             </div>
-            <p v-if="report.description">📄 {{ report.description }}</p>
-            <p>📅 تاریخ ثبت {{ moment(report.created_at).format('jYYYY/jMM/jDD') }}</p>
+            <p v-if="report.description">📄 {{ truncateText(report.description) }}</p>
+            <div class="location" v-if="report.location?.city">📍 {{ report.location.city }}</div>
             <p v-if="report.run_time">
               📅 تاریخ ملاقات {{ moment(report.run_time).format('jYYYY/jMM/jDD') }}
             </p>
+            <div class="time">📅 {{ moment(report.created_at).format('jYYYY/jMM/jDD') }}</div>
             <a v-if="report.reporter.self && report.description" class="choose" @click="handleEdit(card.id,report.id)">
               ویرایش
             </a>
@@ -95,9 +91,9 @@
     <div v-else class="none-cart-error">
       خبری در محدوده شما وجود ندارد
     </div>
-    <div v-if="toastMsg" class="toast">
+    <span v-if="toastMsg" class="toast">
       {{ toastMsg }}
-    </div>
+    </span>
     <CalendarModal
     v-if="showModal"
     :initialDate="modalRunTime"
@@ -132,6 +128,10 @@
     const replyToId = ref(0)
     const editCard = ref(null)
     const editReport = ref(null)
+    const truncateText = (text, max = 50) => {
+      if (!text) return ''
+      return text.length > max ? text.slice(0, max) + '...' : text
+    }
     function showToast(msg) {
         toastMsg.value = msg
         setTimeout(() => (toastMsg.value = ''), 3000)
@@ -215,11 +215,11 @@
             const updatedCard = { ...card, reports: newItem.reports }
             newsStore.cards.splice(index, 1, updatedCard)
           } else {
-            newsStore.cards.unshift(newItem)
+            newsStore.cards.push(newItem)
           }
         }
         if (newCards.length > 0) {
-          showToast('خبر جدید رسید!')
+          showToast('منتظر بمانید')
         }
       }
     })
@@ -284,26 +284,35 @@
     max-height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
-    gap: 1.5rem;
+    gap: 3px;
     justify-content: flex-start;
   }
   .card {
-    max-width: 75%;
+    box-shadow: 0 5px 5px grey;
+    /* box-shadow: 0px 0px 125px #153c23; */
+    border-left: 5px solid #e17cfd;
+    box-sizing: border-box;
+    width: 100%;
     padding: 1rem;
-    border-radius: 1.2rem;
-    background-color: #f1f1f1;
+    border-radius: 0 50px 50px 50px;
+    /* border-radius: 0 50px 50px 0px; */
+    background-color: #fff6c1;
     align-self: flex-start;
-    position: relative;
+    position: sticky;
+    bottom: 10px;
     direction: rtl;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
   }
   .card .user-info.my-news {
     text-align: right;
   }
   .card.my-news {
+    border-right: 5px solid #0a7283;
+    border-left: unset;
     align-self: flex-end;
-    background-color: #d0f0ff;
+    border-radius: 50px 0 50px 50px;
+    /* border-radius: 50px 0px 0px 50px; */
+    background-color: #b3ffd0;
   }
   .card.my-news::before {
     content: "";
@@ -355,8 +364,7 @@
     font-size: 0.75rem;
     color: #777;
     float: left;
-    margin-right: 10px;
-    margin-top: 0.8rem;
+    margin-top: 10px;
   }
   .choose {
     display: inline-block;
@@ -377,12 +385,20 @@
     margin-top: 1rem;
     padding-top: 0.5rem;
     border-top: 1px solid #ccc;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-start;
+    flex-direction: row;
+    overflow: auto;
   }
   .single-report {
     margin-top: 0.5rem;
+    position: sticky;
+    right: 7px;
+    width: 100%;
     font-size: 0.9rem;
     background: #fafafa;
-    padding: 0.5rem;
+    padding: 15px;
     border-radius: 0.5rem;
   }
   .reporter-user {
@@ -407,6 +423,15 @@
     padding-top: 150px;
     box-sizing: content-box;
     box-shadow: 0 0 10px grey;
+  }
+  .toast{
+    position: fixed;
+    z-index: 99999999999999;
+    padding: 10px;
+    background-color: greenyellow;
+    border-radius: 10px;
+    bottom: 85px;
+    left: 15px;
   }
   .tiny-loader {
     width: 20px;

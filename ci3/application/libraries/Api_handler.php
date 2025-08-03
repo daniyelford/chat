@@ -8,7 +8,8 @@ class Api_handler{
         Login_handler $login,
         User_handler $user,
         News_handler $news,
-        Wallet_handler $wallet
+        Wallet_handler $wallet,
+        Place_handler $place
     ) {
         $this->handlers = [
             'upload'   => $upload,
@@ -16,7 +17,7 @@ class Api_handler{
             'login'    => $login,
             'user'     => $user,
             'news'     => $news,
-            'wallet'   => $wallet,
+            'place'   => $place,
         ];
     }
     public function handler($data){

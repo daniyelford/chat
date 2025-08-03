@@ -89,7 +89,8 @@ export const useNewsStore = defineStore('news', ()=> {
       const newsObj = res.data || {}
       const items = Array.isArray(newsObj) ? newsObj : Object.values(newsObj)
       const newCards = items.map(normalizeNewsItem)
-      const filteredCards = newCards.filter(card => card.user.id)
+      const existingIds = new Set(cards.value.map(card => card.id))
+      const filteredCards = newCards.filter(card => card.user.id && !existingIds.has(card.id))
       cards.value = append ? [ ...cards.value,...filteredCards] : [...filteredCards]
       more.value = res.has_more
       lastUpdate.value = new Date().toISOString()

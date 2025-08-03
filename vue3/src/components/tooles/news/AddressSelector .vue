@@ -1,13 +1,15 @@
 <template>
   <div>
-    <label class="address-label">انتخاب آدرس</label>
-    <RadioGroup
-      v-model="selectedMode"
-      :options="addressModes"
-      name="address-mode"
-    />
+    <label style="display: none;" class="address-label">انتخاب آدرس</label>
+    <span style="display: none;">
+      <RadioGroup
+        v-model="selectedMode"
+        :options="addressModes"
+        name="address-mode"
+      />
+    </span>
     <div class="section" v-if="selectedMode === 'location'">
-      <label class="text">موقعیت مکانی</label>
+      <label class="text" style="display: none;">موقعیت مکانی</label>
       <MapPicker :center="props.userCoordinate" :edit-marker="location" @pick="handleMapSelect" />
       <span class="loading" v-if="loading">در حال دریافت آدرس از نقشه...</span>
       <textarea

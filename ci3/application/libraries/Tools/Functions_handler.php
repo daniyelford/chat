@@ -11,36 +11,36 @@ class Functions_handler
     // public $cartables=[];
     // public $news_manager=[];
     // public $result_cartables=[];
-    private Wallet_model $wallet_model;
-    private Media_model $media_model;
-    private News_model $news_model;
+    // private Wallet_model $wallet_model;
+    // private Media_model $media_model;
+    // private News_model $news_model;
     private User_handler $user;
     private Category_model $category_model;
     private Users_model $users_model;
     private Notification_model $notification_model;
     private Rule_model $rule_model;
     private Send_handler $send_handler;
+    // Wallet_model $wallet_model,
+    // Media_model $media_model,
+    // News_model $news_model,
     public function __construct(
         User_handler $user_handler,
         Send_handler $send_handler,
-        Wallet_model $wallet_model,
         Category_model $category_model,
-        Media_model $media_model,
         Users_model $users_model,
         Notification_model $notification_model,
-        News_model $news_model,
         Rule_model $rule_model,
     ){
         $this->user = $user_handler;
         $this->send_handler = $send_handler;
-        $this->wallet_model = $wallet_model;
         $this->category_model = $category_model;
-        $this->media_model = $media_model;
         $this->users_model = $users_model;
         $this->notification_model = $notification_model;
-        $this->news_model = $news_model;
         $this->rule_model=$rule_model;
 	}
+    // $this->wallet_model = $wallet_model;
+    // $this->media_model = $media_model;
+    // $this->news_model = $news_model;
     public function has_category_id(){
         return (!empty($this->user->get_user_category_id()) && intval($this->user->get_user_category_id())>0);
     }
