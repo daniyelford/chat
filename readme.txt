@@ -28,12 +28,12 @@ composer config -g --unset repos.packagist
 composer config -g repo.packagist composer https://repo.packagist.org
 composer clear-cache
 composer require --dev kenjis/ci-phpunit-test
-
 php vendor/kenjis/ci-phpunit-test/install.php
 
 ./vendor/bin/phpunit --migrate-configuration
 
 
+//composer require geoip2/geoip2:~2.0
 //npm install -g firebase-tools
 //firebase login
 //firebase init

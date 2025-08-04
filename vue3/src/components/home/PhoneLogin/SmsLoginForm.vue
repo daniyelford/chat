@@ -115,6 +115,22 @@
     onUnmounted(() => {
         if (interval) clearInterval(interval)
     })
+    onMounted(() => {
+        updatecountdown()
+        interval = setInterval(updatecountdown, 1000)
+        if ('OTPCredential' in window) {
+            const ac = new AbortController();
+            navigator.credentials.get({
+                otp: { transport: ['sms'] },
+                signal: ac.signal
+            }).then(otp => {
+                code.value = otp.code;
+            }).catch(err => {
+                console.warn('OTP retrieval error:', err);
+            });
+            setTimeout(() => ac.abort(), 60000);
+        }
+    })
 </script>
 <style scoped>
     form {

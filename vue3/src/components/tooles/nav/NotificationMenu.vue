@@ -7,12 +7,8 @@
   import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
   const logo = BASE_URL + '/assets/images/logo.png'
   const song = BASE_URL + '/assets/song/notif.mp3'
-  const showList = ref(false)
   const notifSound = ref(null)
   const store = useNotificationStore()
-  function toggleList() {
-    showList.value = !showList.value
-  }
   function playSound() {
     notifSound.value?.play().catch(() => {})
   }
@@ -69,11 +65,11 @@
 </script>
 <template>
   <div>
-    <div class="icon-wrapper" @click="toggleList">
+    <div class="icon-wrapper" @click="store.toggle()">
       🔔
       <span class="badge" v-if="store.unreadCount > 0">{{ store.unreadCount }}</span>
     </div>
-    <div class="dropdown" v-if="showList">
+    <div class="dropdown" v-if="store.showList">
       <NotificationList
         :notifications="store.notifications"
         :can-load-more="canLoadMore"

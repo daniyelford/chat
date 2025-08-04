@@ -6,6 +6,7 @@ export const useNotificationStore = defineStore('notification', {
     notifications: [],
     unreadCount: 0,
     lastId: 0,
+    showList: false
   }),
   actions: {
     async fetchNotifications({ limit = 10, offset = 0 } = {}) {
@@ -56,6 +57,12 @@ export const useNotificationStore = defineStore('notification', {
         this.lastId = Math.max(this.lastId, parseInt(newNotif.id))
       }
     },
+    toggle() {
+      this.showList = !this.showList
+    },
+    close() {
+      this.showList = false
+    }
   },
   persist: true,
 })

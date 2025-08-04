@@ -4,6 +4,7 @@ import RegisterView from '@/views/home/RegisterView.vue';
 import MainDashboard from '@/views/dashboard/MainDashboard.vue';
 import { sendApi } from '@/utils/api';
 import { useMenuStore } from '@/stores/menu'
+import { useNotificationStore } from '@/stores/notification'
 import { BASE_URL } from '@/config';
 const icon=BASE_URL+'/assets/images/fav.png'
 const routes = [
@@ -120,5 +121,7 @@ router.beforeEach(async (to, from, next) => {
 router.afterEach(() => {
   const menuStore = useMenuStore()
   menuStore.close()
+  const notificationStore=useNotificationStore()
+  notificationStore.close()
 })
 export default router

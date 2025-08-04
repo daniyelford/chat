@@ -4,13 +4,14 @@
   </div>
 </template>
 <script setup>
-  import { onMounted, ref, defineProps, watch, createApp ,h } from 'vue'
+  import { onMounted, ref, defineProps, watch, createApp  } from 'vue'
   import MediaSlider from '@/components/tooles/media/MediaSlider.vue'
   import L from 'leaflet'
   import 'leaflet-routing-machine'
   import 'leaflet-routing-machine/dist/leaflet-routing-machine.css'
   import 'leaflet/dist/leaflet.css'
   import { BASE_URL,ORS_API_KEY } from '@/config'
+  import PlacePopup from '@/components/tooles/places/PlacePopup.vue'
   import { nextTick } from 'vue'
   const props = defineProps({
     userCenter: { type: Object, required: true },
@@ -33,10 +34,6 @@
     iconSize: [32, 32],
     iconAnchor: [16, 32]
   })
-  const truncateText = (text, max = 50) => {
-    if (!text) return ''
-    return text.length > max ? text.slice(0, max) + '...' : text
-  }
   const renderMarkers = () => {
     if (!markerLayerGroup.value) return
     leafletMarkers.value = {}
@@ -45,27 +42,7 @@
       const leafletMarker = L.marker([m.lat, m.lon], { icon: markerIcon })
       const container = document.createElement('div')
       container.style.maxWidth = '250px'
-      const app = createApp({
-        render() {
-          return h('div', {style:'direction: rtl;text-align: center;'} , [
-            h('h4',{style:'margin-bottom: 5px;display: inline-block;'}, m.title || ''),
-            h(MediaSlider, {
-              medias: m.medias || []
-            }),
-            m.categories?.length ? 
-              h('ul', { style: 'display:flex;justify-content: center;margin: 5px 0; padding: 0; list-style: none;' },
-                m.categories.map(c =>
-                  h('li', {
-                    style: 'background: #f3f3f3; margin: 2px 0; padding: 3px 5px; border-radius: 4px; font-size: 11px;'
-                  }, c.title)
-                )
-              )
-              : null ,
-            h('p', { style: 'margin: 5px 0;' }, truncateText(m.description) || ''),
-            h('small', { style: 'margin: 5px 0;' }, m.address || ''),
-          ])
-        }
-      })
+      const app = createApp(PlacePopup, { place: m })
       app.component('MediaSlider', MediaSlider)
       app.mount(container)
       nextTick(() => {
@@ -163,6 +140,27 @@
     }).addTo(map.value)
     markerLayerGroup.value = L.layerGroup().addTo(map.value)
     renderMarkers()
+    if (navigator.geolocation) {
+      navigator.geolocation.watchPosition(
+        position => {
+          const lat = position.coords.latitude
+          const lon = position.coords.longitude
+          map.value.setView([lat, lon], 13)
+          if (props.activePlaceId && leafletMarkers.value[props.activePlaceId]) {
+            const marker = leafletMarkers.value[props.activePlaceId]
+            const latlng = marker.getLatLng()
+            drawRoute({ lat, lon }, { lat: latlng.lat, lon: latlng.lng })
+          }
+        },
+        error => console.warn('GPS error', error),{
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 1000
+        }
+      )
+    } else {
+      console.warn('Geolocation is not supported')
+    }
   })
   watch(() => props.markers, () => {
     renderMarkers()
