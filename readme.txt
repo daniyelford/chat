@@ -14,6 +14,10 @@ npm install -D sass
 npm install -D sass sass-loader
 npm install firebase
 npm install @capacitor/core @capacitor/cli
+//npm install -g localtunnel
+//lt --port 8000
+npm install -g cloudflared
+cloudflared tunnel --url http://localhost:8000
 npx cap init
 npm install @capacitor/android
 npx cap add android
