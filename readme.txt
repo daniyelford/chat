@@ -16,8 +16,9 @@ npm install firebase
 npm install @capacitor/core @capacitor/cli
 //npm install -g localtunnel
 //lt --port 8000
-npm install -g cloudflared
-cloudflared tunnel --url http://localhost:8000
+//npm install -g cloudflared
+//cloudflared tunnel --url http://localhost:8000
+//cloudflared.exe service install eyJhIjoiNGYwNWI0YWM0Njg0YWZjYjZlYjFjMmY0OWI2ZjkzOWIiLCJ0IjoiM2U5MzM5NjAtMTBlYi00Mzg4LTg4YjEtYTMxOWM4ZDFiMzZkIiwicyI6Ik9EZ3lNMkV4TnpjdE5ETXpZUzAwT1RGbUxXSmtaVFF0TkRoa05XVmtZbU5rTTJFeSJ9
 npx cap init
 npm install @capacitor/android
 npx cap add android
