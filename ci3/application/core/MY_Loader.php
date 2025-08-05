@@ -72,7 +72,8 @@ class MY_Loader extends CI_Loader
             $this->rule_model,
             $this->users_model,
             $this->media_model,
-            $this->notification_model
+            $this->notification_model,
+            $this->send_handler
         );
         // $this->wallet_model,
         // $this->media_model,

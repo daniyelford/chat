@@ -32,9 +32,9 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
     .close-button {
-        position: absolute;
-        top: 10px;
-        left: 5px;
+        position: relative;
+        top: 0;
+        left: 0px;
         color: #ff3b3b;
         background: none;
         border: none;

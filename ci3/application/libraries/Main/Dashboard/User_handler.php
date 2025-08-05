@@ -7,12 +7,14 @@ class User_handler
     private Security_handler $security;
     private Notification_model $notification_model;
     private Rule_model $rule_model;
+    private Send_handler $send;
     public function __construct(
         Security_handler $security_handler,
         Rule_model $rule_model,
         Users_model $users_model,
         Media_model $media_model,
         Notification_model $notification_model,
+        Send_handler $send
     ){
 		$this->CI =& get_instance();
         $this->rule_model = $rule_model;
@@ -20,6 +22,7 @@ class User_handler
         $this->media_model = $media_model;
         $this->notification_model = $notification_model;
         $this->security = $security_handler;
+        $this->send = $send;
 	}
     // used
     public function subscribe($data){
@@ -98,6 +101,9 @@ class User_handler
     }
     public function get_user_info(){
         if($this->get_user_account_id()){
+            $a=$this->send->ip_handler();
+            $this->CI->session->set_userdata('user_city',$a['city']??'');
+            $this->CI->session->set_userdata('user_cordinates',['lat'=>$a['lat']??'','lon'=>$a['lon']??'']);
             $data=$this->users_model->get_full_user_data_by_account_id(intval($this->get_user_account_id()));
             $data['status']='success';
             return $data;
