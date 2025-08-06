@@ -1,9 +1,16 @@
 <template>
     <div class="add-place-container">
-        <h2>{{ props.editPlace ? 'ویرایش مکان' : 'افزودن مکان جدید' }}</h2>
+        <UploaderManyMedia
+        :toAction="'addPlace'"
+        :HasStylePlace="true"
+        v-model="form.media_id"
+        :initial-medias="initialMedias"
+        ref="uploaderRef"
+        @done="handleUploadResult"
+        :url="'place_media/'"
+        />
         <form @submit.prevent="submitPlace">
             <input v-model="form.title" placeholder="عنوان مکان" required />
-            <textarea v-model="form.description" placeholder="توضیحات" />
             <Multiselect
                 v-model="form.category_id"
                 :options="placeStore.categories"
@@ -19,14 +26,7 @@
                 selectLabel="برای انتخاب کلیک کنید"
                 deselectLabel="برای حذف کلیک کنید"
             />
-            <UploaderManyMedia
-                :url="'place_media/'"
-                :toAction="'addPlace'"
-                v-model="form.media_id"
-                :initial-medias="initialMedias"
-                ref="uploaderRef"
-                @done="handleUploadResult"
-            />
+            <textarea v-model="form.description" placeholder="توضیحات" />
             <AddressSelector
                 :loginCity="address"
                 :userCoordinate="userCoordinate"
@@ -34,7 +34,7 @@
                 @update="val => form.user_address = val"
                 @loading="isAddressLoading = $event"
             />
-            <button type="submit" :disabled="isSubmitDisabled">
+            <button class="save" type="submit" :disabled="isSubmitDisabled">
                 {{ props.editPlace ? 'ذخیره تغییرات' : 'ثبت مکان' }}
             </button>
         </form>
@@ -79,7 +79,7 @@
     }
     const isSubmitDisabled = computed(() => {
         const f = form.value
-        return !f.title || !f.user_address?.value?.lat || isAddressLoading.value || uploaderRef.value?.uploading
+        return !f.title || !f.description || !f.user_address?.value?.lat || isAddressLoading.value || uploaderRef.value?.uploading
     })
     const submitPlace = async () => {
         const res = await placeStore.submitPlace({
@@ -88,7 +88,6 @@
         },
         props.editPlace?.id || null)
         if (res.status === 'success') {
-            await placeStore.fetchAllPlaces()
             emit('done')
             resetForm()
         } else {
@@ -102,7 +101,7 @@
             form.value.description = p.description || ''
             form.value.media_id = p.medias?.map(m => m.id) || []
             initialMedias.value = p.medias || []
-            form.value.category_id = p.categories?.map(c => c.id) || []
+            form.value.category_id = p.categories ?? []
             form.value.user_address = {
                 type: 'location',
                 value: {
@@ -141,3 +140,48 @@
         }
     })
 </script>
+<style scoped>
+    .add-place-container {
+        max-height: 500px;
+        overflow: auto;
+    }
+    input{
+        width: 100%;
+        display: block;
+        box-sizing: border-box;
+        height: 37px;
+        border: none;
+        direction: rtl;
+        margin: 10px 0;
+        border-radius: 5px;
+        box-shadow: 0 0 5px grey;
+        padding: 0 5px;
+        outline: none;
+    }
+    textarea {
+        margin: 10px 0;
+        width: 100%;
+        box-sizing: border-box;
+        height: 60px;
+        border: none;
+        outline: none;
+        direction: rtl;
+        padding: 5px;
+        box-shadow: 0 0 5px grey;
+        border-radius: 5px;
+    }
+    .save {
+        width: 100%;
+        text-align: center;
+        border: none;
+        outline: none;
+        border-radius: 5px;
+        height: 40px;
+        background: green;
+        color: white;
+    }
+    .save:disabled{
+        color: rgb(92, 90, 90);
+        background: rgb(187, 182, 182);
+    }
+</style>

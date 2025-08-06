@@ -1,58 +1,20 @@
 <?php
 class Place_model extends CI_Model
 {
-        // درج مکان جدید
-    public function insert_place($data) {
-        // اینجا باید فیلدهای لازم رو در $data استخراج کنی
-        // مثلا:
-        $insertData = [
-            'title' => $data['title'] ?? '',
-            'description' => $data['description'] ?? '',
-            // بقیه فیلدهای places رو اضافه کن
-        ];
-
-        $this->db->insert('places', $insertData);
-        $placeId = $this->db->insert_id();
-
-        if ($placeId) {
-            // افزودن روابط مثل دسته‌بندی‌ها، آدرس‌ها و رسانه‌ها اگر هست
-            $this->save_relations($placeId, $data);
-            return $placeId;
-        }
-
-        return false;
-    }
-
-    // به‌روزرسانی مکان موجود
-    public function update_place($id, $data) {
-        $updateData = [
-            'title' => $data['title'] ?? '',
-            'description' => $data['description'] ?? '',
-            // بقیه فیلدهای places رو اضافه کن
-        ];
-
-        $this->db->where('id', $id);
-        $updated = $this->db->update('places', $updateData);
-
-        if ($updated) {
-            // حذف روابط قبلی و افزودن مجدد روابط جدید
-            $this->delete_relations($id);
-            $this->save_relations($id, $data);
-            return true;
-        }
-
-        return false;
-    }
+    public $security;
     public function get_place_with_relations($offset = 0, $limit = 10, $category_id = null) {
+        $fetchLimit = $limit + 1;
         $this->db->select('p.*');
         $this->db->from('places p');
         if ($category_id !== null) {
             $this->db->join('category_relation cr', 'cr.target_id = p.id AND cr.target_table = "places"', 'inner');
             $this->db->where('cr.category_id', $category_id);
         }
-        $this->db->limit($limit, $offset);
+        $this->db->limit($fetchLimit, $offset);
         $places = $this->db->get()->result_array();
-        if (!$places) return [];
+        if (!$places) return ['data'=>[],'has_more'=>false];
+        $hasMore = count($places) > $limit;
+        if ($hasMore) array_pop($places);
         $placeIds = array_column($places, 'id');
         $categoryRelations = [];
         if (!empty($placeIds)) {
@@ -134,60 +96,103 @@ class Place_model extends CI_Model
                 }
             }
         }
-        return $places;
+        return ['data'=>$places,'has_more'=>$hasMore];
     }
-    public function count_places($category_id = null) {
-        $this->db->from('places');
-        if ($category_id !== null) {
-            $this->db->join('category_relation cr', 'cr.target_id = places.id AND cr.target_table = "places"', 'inner');
-            $this->db->where('cr.category_id', $category_id);
+    public function get_categories($offset = 0, $limit = 20, $get_all = false, $search = '') {
+        if($get_all){
+            $this->db->where('for_place', 'yes');
+            if ($search !== '') {
+                $this->db->like('title', $search);
+            }
+            return ['data'=>$this->db->get('category')->result_array(),'has_more'=>false];
+        }else{
+            $fetchLimit=$limit+1;
+            $this->db->limit($fetchLimit, $offset);
+            $relationQuery = $this->db
+            ->distinct()
+            ->select('category_id')
+            ->where('target_table', 'places')
+            ->get('category_relation')
+            ->result_array();
+            $has_more=(count($relationQuery) > $limit);
+            if($has_more) array_pop($relationQuery);
+            $categoryIds = array_column($relationQuery, 'category_id');
+            if (empty($categoryIds)) {
+                return ['data' => [], 'has_more' => false];
+            }
+            $this->db->where_in('id', $categoryIds);
+            return ['data'=>$this->db->get('category')->result_array(),'has_more'=>$has_more];
         }
-        return $this->db->count_all_results();
     }
-    public function get_categories($offset = 0, $limit = 20, $search = '') {
-        if ($search !== '') {
-            $this->db->like('title', $search);
+    public function insert_place($data) {
+        $insertData = [
+            'title' => is_callable($this->security) ? ($this->security)($data['title'] ?? '') : $data['title']??'',
+            'description' => is_callable($this->security) ? ($this->security)($data['description'] ?? '') : $data['description']??'',
+        ];
+        $this->db->insert('places', $insertData);
+        $placeId = $this->db->insert_id();
+        if ($placeId) {
+            $this->save_relations($placeId, $data);
+            return $placeId;
         }
-        $this->db->limit($limit, $offset);
-        return $this->db->get('category')->result_array();
+        return false;
     }
-    public function count_categories($search = '') {
-        if ($search !== '') {
-            $this->db->like('title', $search);
+    public function update_place($id, $data) {
+        $updateData = [];
+        $title = is_callable($this->security) ? ($this->security)($data['title'] ?? '') : $data['title']??'';
+        $description = is_callable($this->security) ? ($this->security)($data['description'] ?? '') : $data['description']??'';
+        if(!empty($title)) $updateData['title'] = $title;
+        if(!empty($description)) $updateData['description'] = $description;
+        if(!empty($updateData)){
+            $this->db->where('id', $id);
+            $this->db->update('places', $updateData);
         }
-        return $this->db->count_all_results('category');
+        $this->delete_relations($id);
+        $this->save_relations($id, $data);
+        return true;
     }
     private function save_relations($placeId, $data) {
-        if (!empty($data['categories']) && is_array($data['categories'])) {
-            foreach ($data['categories'] as $categoryId) {
-                $this->db->insert('category_relation', [
-                    'target_table' => 'places',
-                    'target_id' => $placeId,
-                    'category_id' => $categoryId
-                ]);
-            }
-        }
-        if (!empty($data['addresses']) && is_array($data['addresses'])) {
-            foreach ($data['addresses'] as $address) {
-                if (!empty($address['id'])) {
-                    $this->db->insert('address_relation', [
+        if (!empty($data['category_id']) && is_array($data['category_id'])) {
+            $category_ids=array_column($data['category_id'],'id');
+            $category_data=[];
+            foreach ($category_ids as $categoryId) {
+                if (!empty($categoryId) && intval($categoryId)>0)
+                    $category_data[] = [
                         'target_table' => 'places',
                         'target_id' => $placeId,
-                        'address_id' => $address['id']
-                    ]);
-                }
+                        'category_id' => $categoryId
+                    ];
             }
+            $this->db->insert_batch('category_relation', $category_data);
         }
-        if (!empty($data['medias']) && is_array($data['medias'])) {
-            foreach ($data['medias'] as $media) {
-                if (!empty($media['id'])) {
-                    $this->db->insert('media_relation', [
+        if (!empty($data['media_id']) && is_array($data['media_id'])) {
+            $media_data=[];
+            foreach ($data['media_id'] as $media) {
+                if (!empty($media) && intval($media)>0)
+                    $media_data[]=[
                         'target_table' => 'places',
                         'target_id' => $placeId,
-                        'media_id' => $media['id']
-                    ]);
-                }
+                        'media_id' => $media
+                    ];
             }
+            $this->db->insert_batch('media_relation', $media_data);
+        }
+        if (!empty($data['user_address']) && !empty($data['user_address']['value']) && !empty($data['user_address']['value']['total'])) {
+            $this->db->insert('addresses',[
+                'address'=>is_callable($this->security) ? ($this->security)($data['user_address']['value']['total']['display_name'] ?? '') : $data['user_address']['value']['total']['display_name']??'',
+                'country'=>$data['user_address']['value']['total']['address']['country']??'',
+                'region'=>$data['user_address']['value']['total']['address']['province']??'',
+                'city'=>$data['user_address']['value']['total']['address']['city']??$data['user_address']['value']['total']['address']['town']??$data['user_address']['value']['total']['address']['village']??'',
+                'lat'=>$data['user_address']['value']['total']['lat']??'',
+                'lon'=>$data['user_address']['value']['total']['lon']??'',
+                'code_posti'=>$data['user_address']['value']['total']['address']['postcode']??'',
+            ]);
+            $address_id=$this->db->insert_id();
+            $this->db->insert('address_relation', [
+                'target_table' => 'places',
+                'target_id' => $placeId,
+                'address_id' => $address_id
+            ]);
         }
     }
     private function delete_relations($placeId) {

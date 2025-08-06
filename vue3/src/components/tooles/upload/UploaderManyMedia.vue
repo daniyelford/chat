@@ -1,5 +1,5 @@
 <template>
-  <div class="drop-area" @click="fileInput.click()" @dragover.prevent @dragenter.prevent @drop.prevent="handleDrop">
+  <div :class="props.HasStylePlace?'place-drop-area':'drop-area'" @click="fileInput.click()" @dragover.prevent @dragenter.prevent @drop.prevent="handleDrop">
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0,0,256,256"><g fill="#031c66" fill-rule="evenodd" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(0.05905,0.05905)"><path d="M161,824h192v192v1209v1209h3735v-2418h-2490v-192h2490h192v0v2610v192h-192h-3735h-192v0v-2610zM1333,3280l1277,-1125l503,359l646,-479l192,186v1060h-2618zM611,643v1093v181v199c0,0 26,312 346,312c321,0 381,-251 381,-359v-292v-934c0,-34 28,-61 61,-61v0c34,0 61,28 61,61v934v296c0,0 0,4 0,11c0,267 -159,487 -467,487c-482,0 -504,-460 -504,-482v-173h-1v-1235v-101c0,-5 1,-9 2,-14v0c0,0 44,-316 312,-328c227,-10 365,192 365,398v474v772c0,66 -4,135 -4,206c0,0 -17,156 -181,156c-229,0 -233,-161 -224,-332v0v-988c0,-34 28,-61 61,-61v0c34,0 61,28 61,61v679v309c0,60 -9,197 79,197c74,0 85,-78 85,-193v-160v-721v-454c0,0 -9,-213 -201,-213c-192,0 -232,145 -232,276z"></path></g></g></svg>
     <input type="file" multiple ref="fileInput" class="hidden-input" @change="handleFiles" />
   </div>
@@ -17,7 +17,6 @@
     </div>
   </div>
 </template>
-
 <script setup>
   import { ref, defineProps, defineEmits, watch, defineExpose } from 'vue'
   import { sendApi } from '@/utils/api'
@@ -36,18 +35,18 @@
     initialMedias: {
       type: Array,
       default: () => []
+    },
+    HasStylePlace:{
+      type: Boolean,
+      default: false
     }
   })
-
   const emit = defineEmits(['update:modelValue', 'done'])
-
   const mediaList = ref([...props.initialMedias])
-
   const handleDrop = (e) => {
     const files = e.dataTransfer.files
     handleFiles({ target: { files } })
   }
-
   const handleFiles = async (e) => {
     const files = Array.from(e.target.files)
     if (!files.length) return
@@ -72,7 +71,6 @@
     uploading.value = false
     fileInput.value.value = null
   }
-
   const uploadFiles = async () => {
     try {
       const response = await sendApi({
@@ -100,7 +98,6 @@
       alert('خطا در ارسال: ' + err.message)
     }
   }
-
   const deleteMedia = async (media, index) => {
     try {
       const res = await sendApi({
@@ -119,7 +116,6 @@
       alert('خطا در حذف: ' + err.message)
     }
   }
-
   const reset = () => {
     selectedFilesBase64.value = []
     progress.value = 0
@@ -146,8 +142,20 @@
     }
   }, { immediate: true })
 </script>
-
 <style scoped>
+  .place-drop-area{
+    border: unset;
+    cursor: pointer;
+    text-align: center;
+    width: 100%;
+    height: 100px;
+    border-radius: 10px;
+    background-color: aliceblue;
+  }
+  svg{
+    width: 100%;
+    height: 100%;
+  }
   .drop-area {
     box-sizing: border-box;
     position: fixed;

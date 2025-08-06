@@ -119,7 +119,8 @@ class MY_Loader extends CI_Loader
         );
         $this->place_handler=new Place_handler(
             $this->user_handler,
-            $this->place_model
+            $this->place_model,
+            $this->security_handler
         );
         $this->api_handler= new Api_handler(
             $this->upload_handler,

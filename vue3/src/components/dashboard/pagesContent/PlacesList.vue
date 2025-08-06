@@ -223,8 +223,11 @@
   h4,p,small{
     margin: 0 0 5px 0;
   }
+  small{
+    display: block;
+  }
   .place-item a {
-    width: 100%;
+    width: 50%;
     display: inline-block;
     padding: 10px;
     background: yellow;
