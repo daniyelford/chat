@@ -11,9 +11,13 @@
           @click="selectedCategoryId = cat.id">
           {{ cat.title }}
         </button>
+        <div :ref="categoryLoadTrigger" class="load-trigger"></div>
       </div>
     </div>
     <div class="info">
+      <div v-if="placeStore?.userAccountId===1||placeStore?.userAccountId===2" class="addPlace">
+        <a @click="showAddPlace=true">add place</a>
+      </div>
       <div v-for="place in filteredPlaces" :key="place.id" class="place-item">
         <h4>
           {{ place.title }}
@@ -27,25 +31,37 @@
           {{ truncateText(place.addresses?.[0]?.address) || '' }}
         </small>
         <a v-if="place.addresses?.[0]?.lat && place.addresses?.[0]?.lon" @click="openMapModal(place)">محل دقیق</a>
+        <a v-if="placeStore?.userAccountId===1||placeStore?.userAccountId===2" @click="editPlace(place)">ویرایش</a>
       </div>
+      <div :ref="placeLoadTrigger" class="load-trigger"></div>
     </div>
+    <BaseModal :show="showMapModal" @close="showMapModal = false">
+      <SinglePlaceMap
+      v-if="selectedPlace && selectedPlace.lat && selectedPlace.lon && userCenter && userCenter.lat && userCenter.lon"
+      :user-center="userCenter"
+      :place="selectedPlace"
+      />
+    </BaseModal>
+    <BaseModal :show="showAddPlace" @close="handleCloseAddPlace">
+      <AddPlaceForm :editPlace="editingPlace" @done="handleCloseAddPlace" />
+    </BaseModal>
   </div>
-  <BaseModal :show="showMapModal" @close="showMapModal = false">
-    <SinglePlaceMap
-    v-if="selectedPlace && selectedPlace.lat && selectedPlace.lon && userCenter && userCenter.lat && userCenter.lon"
-    :user-center="userCenter"
-    :place="selectedPlace"
-    />
-  </BaseModal>
+  <div v-else class="error">
+    محل نزدیکی برای ارائه به شما وجود ندارد
+  </div>
 </template>
 <script setup>
-  import { onMounted, computed, ref } from 'vue'
+  import { onMounted, computed, ref, watch } from 'vue'
   import { usePlaceStore } from '@/stores/place'
+  import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
   import MediaSlider from '@/components/tooles/media/MediaSlider.vue'
   import BaseModal from '@/components/tooles/modal/BaseModal.vue'
   import SinglePlaceMap from '@/components/tooles/places/SinglePlaceMap.vue'
+  import AddPlaceForm from '@/components/dashboard/pagesContent/AddPlaceForm.vue'
   const placeStore = usePlaceStore()
   const showMapModal = ref(false)
+  const showAddPlace = ref(false)
+  const editingPlace = ref(null)
   const selectedPlace=ref(null)
   const selectedCategoryId = ref(null)
   const categorySearch = ref('')
@@ -56,21 +72,10 @@
     }
     return { lat: 35.6892, lon: 51.3890 }
   })
-  const allCategories = computed(() => {
-    const set = new Map()
-    placeStore.allPlaces.forEach(place => {
-      (place.categories || []).forEach(category => {
-        if (!set.has(Number(category.id))) {
-          set.set(Number(category.id), category)
-        }
-      })
-    })
-    return Array.from(set.values())
-  })
   const filteredCategories = computed(() => {
     const q = categorySearch.value.trim().toLowerCase()
-    if (!q) return allCategories.value
-    return allCategories.value.filter(c => c.title.toLowerCase().includes(q))
+    if (!q) return placeStore.allCategories
+    return placeStore.allCategories.filter(c => c.title.toLowerCase().includes(q))
   })
   const filteredPlaces = computed(() => {
     if (!selectedCategoryId.value) return placeStore.allPlaces
@@ -97,8 +102,51 @@
     }
     showMapModal.value = true
   }
+  const handleCloseAddPlace = () => {
+    showAddPlace.value = false
+    editingPlace.value = null
+  }
+  const editPlace = (place) => {
+    if (placeStore.userAccountId === 1 || placeStore.userAccountId === 2) {
+      editingPlace.value = place
+      showAddPlace.value = true
+    } else {
+      alert("شما مجوز ویرایش این مکان را ندارید.")
+    }
+  }
+  const {
+    loadMoreTrigger: categoryLoadTrigger,
+    setupObserver: setupCategoryObserver,
+  } = useInfiniteScroll(async ({ offset }) => {
+    await placeStore.fetchCategoriesPaginated(offset)
+    return {
+      items: placeStore.allCategories,
+      has_more: placeStore.hasMoreCategories,
+    }
+  })
+  const {
+    loadMoreTrigger: placeLoadTrigger,
+    setupObserver: setupPlaceObserver,
+  } = useInfiniteScroll(async ({ offset }) => {
+    await placeStore.fetchPlacesPaginated({ offset, category_id: selectedCategoryId.value })
+    return {
+      items: placeStore.allPlaces,
+      has_more: placeStore.hasMorePlaces,
+    }
+  })
   onMounted(() => {
-    placeStore.fetchAllPlaces()
+    setupCategoryObserver()
+    setupPlaceObserver()
+  })
+  watch(showAddPlace, (val) => {
+    if (!val) {
+      editingPlace.value = null
+    }
+  })
+  watch(selectedCategoryId, (newVal) => {
+    placeStore.resetPlaces()
+    placeStore.fetchPlacesPaginated({ offset: 0, category_id: newVal })
+    setupPlaceObserver()
   })
 </script>
 <style>
