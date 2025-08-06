@@ -39,11 +39,10 @@
     import ShowCartable from '@/components/dashboard/pagesContent/ShowCartable.vue';
     import ShowNews from '@/components/dashboard/pagesContent/ShowNews.vue';
     import UserSetting from '@/components/dashboard/pagesContent/UserSetting.vue';
-    import { defineProps , ref , computed , onMounted } from 'vue'
+    import { defineProps , ref , computed } from 'vue'
     import { useMenuStore } from '@/stores/menu'
-    import { subscribeToPush } from '@/utils/pushService';
-    const menu = useMenuStore()
     import { BASE_URL } from '@/config';
+    const menu = useMenuStore()
     const backgroundImage=ref(BASE_URL+'/assets/images/content.jpg')
     const props = defineProps({
         view: String,
@@ -55,18 +54,7 @@
         backgroundPosition: 'center',
     }))
 
-    onMounted(() => {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register(`${BASE_URL}/assets/sw.js`)
-        .then(() => {
-            subscribeToPush()
-        })
-        .catch(err => {
-            console.error('SW registration failed:', err);
-        });
-    }
-    });
-</script>
+</script> 
 <style scoped>
     .menu-modal {
         position: fixed;

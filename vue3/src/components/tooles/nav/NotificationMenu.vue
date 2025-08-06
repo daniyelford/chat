@@ -5,9 +5,12 @@
   import { useNotificationStore } from '@/stores/notification'
   import { usePollingWithCompare } from '@/composables/usePollingWithCompare'
   import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+  import { subscribeToPush } from '@/utils/pushService';
   const logo = BASE_URL + '/assets/images/logo.png'
   const song = BASE_URL + '/assets/song/notif.mp3'
   const notifSound = ref(null)
+  const loadMoreTrigger = ref(null)
+  const hasAccess = ref(false)
   const store = useNotificationStore()
   function playSound() {
     notifSound.value?.play().catch(() => {})
@@ -24,11 +27,36 @@
       }
     }
   }
-  onMounted(() => {
-    if (Notification.permission === 'default') {
-      Notification.requestPermission()
+  function onLoadMoreTriggerReady(el) {
+    loadMoreTrigger.value = el
+  }
+  function askNotificationPermission() {
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        hasAccess.value = true
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register(`${BASE_URL}/assets/sw.js`)
+          .then(() => {
+            subscribeToPush();
+          })
+          .catch(err => {
+            console.error('SW registration failed:', err);
+          });
+        }
+      } else {
+        const retry = confirm('برای دریافت اعلان‌ها لطفاً دسترسی نوتیفیکیشن را فعال کنید. می‌خواهید دوباره تلاش شود؟');
+        if (retry) {
+          askNotificationPermission();
+        }
+      }
+    });
+  }
+  function tog() {
+    store.toggle()
+    if (!hasAccess.value) {
+      askNotificationPermission()
     }
-  })
+  }
   usePollingWithCompare(() => store.fetchNotifications({ limit: 10, offset: 0 }), {
     intervalMs: 10000,
     runOnStart: true,
@@ -48,7 +76,6 @@
       })
     }
   })
-  const loadMoreTrigger = ref(null)
   const {
     canLoadMore,
     setupObserver,
@@ -56,16 +83,19 @@
     ({ offset }) => store.fetchNotifications({ limit: 10, offset }),
     { immediate: false }
   )
+  onMounted(() => {
+    if (!('Notification' in window)) {
+      alert('مرورگر شما از نوتیفیکیشن پشتیبانی نمی‌کند.');
+      return;
+    }
+  });
   watch(loadMoreTrigger, (el) => {
     if (el) setupObserver()
   })
-  function onLoadMoreTriggerReady(el) {
-    loadMoreTrigger.value = el
-  }
 </script>
 <template>
   <div>
-    <div class="icon-wrapper" @click="store.toggle()">
+    <div class="icon-wrapper" @click="tog">
       🔔
       <span class="badge" v-if="store.unreadCount > 0">{{ store.unreadCount }}</span>
     </div>
