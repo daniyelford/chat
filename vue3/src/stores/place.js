@@ -79,7 +79,7 @@ export const usePlaceStore = defineStore('place', () => {
       })
       if (res.status === 'success' && res.data?.id) {
         const id = res.data.id
-        const [newPlace] = await fetchPlacebyId(id)
+        const newPlace = await fetchPlacebyId(id)
         if (!edit) {
           allPlaces.value.unshift(newPlace)
         } else {
