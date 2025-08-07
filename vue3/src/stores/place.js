@@ -8,52 +8,76 @@ export const usePlaceStore = defineStore('place', () => {
   const userCoordinate = ref([])
   const userAccountId = ref(null)
   const categoryLoading = ref(false)
+  const categoryListLoading = ref(false)
+  const placeListLoading = ref(false)
   const placeOffset = ref(0)
+  const categoryId = ref(0)
   const categoryOffset = ref(0)
   const hasMorePlaces = ref(true)
   const hasMoreCategories = ref(true)
-  const fetchCategoriesPaginated = async (offset = 0, limit = 20) => {
-    const res = await sendApi({
-      control: 'place',
-      action: 'get_places_category',
-      data: { offset:offset, limit:limit }
-    })
-    if (res.status === 'success') {
-      if (Array.isArray(res.data)) {
-        if (offset === 0) allCategories.value = res.data
-        else allCategories.value.push(...res.data)
-        hasMoreCategories.value = res.data.has_more
-        categoryOffset.value += res.data.length
+  const fetchCategoriesPaginated = async (offset = 0, limit = 16) => {
+    categoryListLoading.value = true
+    try{
+      const res = await sendApi({
+        control: 'place',
+        action: 'get_places_category',
+        data: { offset:offset, limit:limit }
+      })
+      if (res.status === 'success') {
+        if (Array.isArray(res.data)) {
+          if (offset === 0) allCategories.value = res.data
+          else allCategories.value.push(...res.data)
+          hasMoreCategories.value = res.has_more
+          categoryOffset.value += res.data.length
+        }
       }
+    }catch(error) {
+      console.error('submitPlace error:', error)
+    }finally{
+      categoryListLoading.value = false
     }
   }
-  const fetchPlacesPaginated = async ({ offset = 0, category_id = null, limit = 10 }) => {
-    const res = await sendApi({
-      control: 'place',
-      action: 'get_places',
-      data: { offset:offset, category_id:category_id, limit:limit }
-    })
-    if (res.status === 'success') {
-      if (Array.isArray(res.data)) {
-        if (offset === 0) allPlaces.value = res.data
-        else allPlaces.value.push(...res.data)
-        hasMorePlaces.value = res.data.has_more
-        if (res.cord) userCoordinate.value = res.cord
-        userAccountId.value= res.user_account_id
-        placeOffset.value += res.data.length
+  const fetchPlacesPaginated = async ({ offset = null, category_id = null, limit = 10 }) => {
+    placeListLoading.value = true
+    if(offset) placeOffset.value = offset
+    if (categoryId.value !== category_id) resetPlaces()
+    try{
+      const res = await sendApi({
+        control: 'place',
+        action: 'get_places',
+        data: { offset:placeOffset.value, category_id:category_id, limit:limit }
+      })
+      if (res.status === 'success') {
+        if (Array.isArray(res.data)) {
+          if (categoryId.value !== category_id) categoryId.value = category_id
+          if (placeOffset.value === 0) allPlaces.value = res.data
+          else allPlaces.value.push(...res.data)
+          if (res.cord) userCoordinate.value = res.cord
+          userAccountId.value= res.user_account_id
+          placeOffset.value += res.data.length
+          hasMorePlaces.value = res.has_more
+        }
       }
+    }catch(error) {
+      console.error('submitPlace error:', error)
+    }finally{
+      placeListLoading.value = false
     }
   }
   const fetchPlacebyId = async (id) => {
-    const res = await sendApi({
-      control: 'place',
-      action: 'get_places',
-      data: { id:id }
-    })
-    if (res.status === 'success' && Array.isArray(res.data)) {
-      return res.data
+    try{
+      const res = await sendApi({
+        control: 'place',
+        action: 'get_places',
+        data: { id:id }
+      })
+      if (res.status === 'success' && Array.isArray(res.data)) {
+        return res.data
+      }
+      return []
+    }catch(error) {
+      console.error('submitPlace error:', error)
     }
-    return []
   }
   const fetchCategories = async (query) => {
     categoryLoading.value = true
@@ -77,9 +101,10 @@ export const usePlaceStore = defineStore('place', () => {
         action: 'add_place',
         data: placeData
       })
-      if (res.status === 'success' && res.data?.id) {
-        const id = res.data.id
-        const newPlace = await fetchPlacebyId(id)
+      if (res.status === 'success' && res?.id) {
+        const id = res.id
+        const newPlaceArray = await fetchPlacebyId(id)
+        const newPlace = newPlaceArray[0]
         if (!edit) {
           allPlaces.value.unshift(newPlace)
         } else {
@@ -102,7 +127,6 @@ export const usePlaceStore = defineStore('place', () => {
     placeOffset.value = 0
     hasMorePlaces.value = true
   }
-
   return {
     allPlaces,
     categories,
@@ -114,6 +138,8 @@ export const usePlaceStore = defineStore('place', () => {
     categoryOffset,
     hasMorePlaces,
     hasMoreCategories,
+    categoryListLoading,
+    placeListLoading,
     fetchCategoriesPaginated,
     fetchPlacesPaginated,
     fetchCategories,

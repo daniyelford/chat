@@ -33,8 +33,9 @@
         if (marker.value && map.value.hasLayer(marker.value)){
             map.value.removeLayer(marker.value)
         }
-        if(props.editMarker?.lat && props.editMarker.lon){
-            marker.value = L.marker([props.editMarker?.lat, props.editMarker?.lon], {
+        if(props.editMarker?.lat && (props.editMarker.lng || props.editMarker.lon)){
+            const lon= props.editMarker.lon ?? props.editMarker.lng
+            marker.value = L.marker([props.editMarker?.lat, lon], {
                 icon: L.icon({
                     iconUrl: markerIcon,
                     iconSize: [32, 32],

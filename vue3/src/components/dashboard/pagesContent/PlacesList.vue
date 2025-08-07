@@ -3,7 +3,7 @@
     <div class="category">
       <input v-model="categorySearch" placeholder="جستجوی دسته‌بندی..." class="search-box" />
       <div class="category-list">
-        <button @click="selectedCategoryId = null">همه</button>
+        <button @click="selectedCategoryId = 0">همه</button>
         <button
           v-for="cat in filteredCategories"
           :key="cat.id"
@@ -11,7 +11,7 @@
           @click="selectedCategoryId = cat.id">
           {{ cat.title }}
         </button>
-        <div :ref="categoryLoadTrigger" class="load-trigger"></div>
+        <div ref="categoryLoadTrigger" style="margin-top: -10px;" class="load-trigger"></div>
       </div>
     </div>
     <div class="info">
@@ -33,7 +33,7 @@
         <a v-if="place.addresses?.[0]?.lat && place.addresses?.[0]?.lon" @click="openMapModal(place)">محل دقیق</a>
         <a v-if="placeStore?.userAccountId===1||placeStore?.userAccountId===2" @click="editPlace(place)">ویرایش</a>
       </div>
-      <div :ref="placeLoadTrigger" class="load-trigger"></div>
+      <div ref="placeLoadTrigger" class="load-trigger" style="margin-top: -750px;"></div>
     </div>
     <BaseModal :show="showMapModal" @close="showMapModal = false">
       <SinglePlaceMap
@@ -45,6 +45,9 @@
     <BaseModal :show="showAddPlace" @close="handleCloseAddPlace">
       <AddPlaceForm :editPlace="editingPlace" @done="handleCloseAddPlace" />
     </BaseModal>
+  </div>
+  <div v-else-if="placeStore.categoryListLoading || placeStore.placeListLoading">
+      <div class="tiny-loader"></div>
   </div>
   <div v-else class="error">
     محل نزدیکی برای ارائه به شما وجود ندارد
@@ -102,9 +105,11 @@
     }
     showMapModal.value = true
   }
-  const handleCloseAddPlace = () => {
+  const handleCloseAddPlace = async () => {
     showAddPlace.value = false
     editingPlace.value = null
+    placeStore.resetPlaces()
+    await placeStore.fetchPlacesPaginated({ offset: 0, category_id: selectedCategoryId.value })
   }
   const editPlace = (place) => {
     if (placeStore.userAccountId === 1 || placeStore.userAccountId === 2) {
@@ -127,8 +132,9 @@
   const {
     loadMoreTrigger: placeLoadTrigger,
     setupObserver: setupPlaceObserver,
-  } = useInfiniteScroll(async ({ offset }) => {
-    await placeStore.fetchPlacesPaginated({ offset, category_id: selectedCategoryId.value })
+    reset: resetPlaces
+  } = useInfiniteScroll(async () => {
+    await placeStore.fetchPlacesPaginated({ category_id: selectedCategoryId.value })
     return {
       items: placeStore.allPlaces,
       has_more: placeStore.hasMorePlaces,
@@ -143,9 +149,8 @@
       editingPlace.value = null
     }
   })
-  watch(selectedCategoryId, (newVal) => {
-    placeStore.resetPlaces()
-    placeStore.fetchPlacesPaginated({ offset: 0, category_id: newVal })
+  watch(selectedCategoryId, () => {
+    resetPlaces()
     setupPlaceObserver()
   })
 </script>
@@ -241,5 +246,28 @@
     border-radius: 5px;
     display: inline-block;
     margin: 5px;
+  }
+  .error{
+    width: 100%;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    background-color: red;
+    color: white;
+    font-size: large;
+    font-weight: bolder;
+    box-sizing: border-box;
+  }
+  .tiny-loader {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ccc;
+    border-top-color: #333;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 10px auto;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
 </style>

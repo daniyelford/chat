@@ -2,15 +2,20 @@
 class Place_model extends CI_Model
 {
     public $security;
-    public function get_place_with_relations($offset = 0, $limit = 10, $category_id = null) {
+    public function get_place_with_relations($offset = 0, $limit = 10, $id = null, $category_id = null) {
         $fetchLimit = $limit + 1;
         $this->db->select('p.*');
         $this->db->from('places p');
-        if ($category_id !== null) {
-            $this->db->join('category_relation cr', 'cr.target_id = p.id AND cr.target_table = "places"', 'inner');
-            $this->db->where('cr.category_id', $category_id);
+        if(!empty($id)){
+            $this->db->where('id',(int) $id);
+        }else{
+            if (!empty($category_id)) {
+                $this->db->join('category_relation cr', 'cr.target_id = p.id AND cr.target_table = "places"', 'inner');
+                $this->db->where('cr.category_id', (int) $category_id);
+            }
+            $this->db->order_by('id','DESC');
+            $this->db->limit($fetchLimit, $offset);
         }
-        $this->db->limit($fetchLimit, $offset);
         $places = $this->db->get()->result_array();
         if (!$places) return ['data'=>[],'has_more'=>false];
         $hasMore = count($places) > $limit;

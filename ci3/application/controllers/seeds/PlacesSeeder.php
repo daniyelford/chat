@@ -11,7 +11,7 @@ class PlacesSeeder extends CI_Controller {
     }
     private function place(){
         $data = [];
-        for ($i = 1; $i <= 6; $i++) {
+        for ($i = 1; $i <= 80; $i++) {
             $data[] = [
                 'title'=>"مکان مورد تایید $i",
                 'description' => "توضیحات خبر شماره $i",
@@ -21,18 +21,18 @@ class PlacesSeeder extends CI_Controller {
     }
     private function category(){
         $catNewsData = [];
-        for ($i = 1; $i <= 6; $i++) {
+        for ($i = 1; $i <= 80; $i++) {
             $catNewsData[] = [
                 'target_table'=>'places',
                 'target_id'=>$i,
-                'category_id'=>18
+                'category_id'=>rand(18,40)
             ];
         }
         $this->db->insert_batch('category_relation', $catNewsData);
     }
     private function media(){
         $mediadata = [];
-        for ($i = 1; $i <= 6; $i++) {
+        for ($i = 1; $i <= 80; $i++) {
             $mediadata[] = [
                 'target_table'=>'places',
                 'target_id'=>$i,
@@ -43,7 +43,7 @@ class PlacesSeeder extends CI_Controller {
     }
     private function address(){
         $address_news = [];
-        for ($i = 1; $i <= 6; $i++) {
+        for ($i = 1; $i <= 80; $i++) {
             $address_news[] = [
                 'target_table'=>'places',
                 'target_id'=>$i,

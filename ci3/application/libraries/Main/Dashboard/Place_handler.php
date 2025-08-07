@@ -16,10 +16,11 @@ class Place_handler
     }
     public function get_places($data){
         if (!empty($this->user->get_user_account_id())) {
+            $id = isset($data['id']) ? (int)$data['id'] : null;
             $offset = isset($data['offset']) ? (int)$data['offset'] : 0;
             $limit = isset($data['limit']) ? (int)$data['limit'] : 10;
             $category_id = isset($data['category_id']) ? $data['category_id'] : null;
-            $places = $this->place_model->get_place_with_relations($offset, $limit, $category_id);
+            $places = $this->place_model->get_place_with_relations($offset, $limit, $id, $category_id);
             return [
                 'status' => 'success',
                 'data' => $places['data']??[],

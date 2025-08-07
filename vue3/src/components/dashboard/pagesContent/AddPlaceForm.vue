@@ -1,13 +1,13 @@
 <template>
     <div class="add-place-container">
         <UploaderManyMedia
-        :toAction="'addPlace'"
-        :HasStylePlace="true"
-        v-model="form.media_id"
-        :initial-medias="initialMedias"
-        ref="uploaderRef"
-        @done="handleUploadResult"
-        :url="'place_media/'"
+            :toAction="'addPlace'"
+            :HasStylePlace="true"
+            v-model="form.media_id"
+            :initial-medias="initialMedias"
+            ref="uploaderRef"
+            @done="handleUploadResult"
+            :url="'place_media/'"
         />
         <form @submit.prevent="submitPlace">
             <input v-model="form.title" placeholder="عنوان مکان" required />
@@ -27,6 +27,7 @@
                 deselectLabel="برای حذف کلیک کنید"
             />
             <textarea v-model="form.description" placeholder="توضیحات" />
+            <!-- :model-value="form.user_address" -->
             <AddressSelector
                 :loginCity="address"
                 :userCoordinate="userCoordinate"
@@ -119,6 +120,8 @@
     })
     watch(() => props.editPlace, (newVal) => {
         if (newVal) {
+            console.log(newVal);
+            
             const p = newVal
             form.value.title = p.title || ''
             form.value.description = p.description || ''
@@ -126,14 +129,14 @@
             initialMedias.value = p.medias || []
             form.value.category_id = p.categories?.map(c => c.id) || []
             form.value.user_address = {
-            type: 'location',
-            value: {
-                address: p.addresses?.[0]?.address || '',
-                lat: p.addresses?.[0]?.lat,
-                lon: p.addresses?.[0]?.lon,
-                city: p.addresses?.[0]?.city || '',
-                address_id: p.addresses?.[0]?.id || ''
-            }
+                type: 'location',
+                value: {
+                    address: p.addresses?.[0]?.address || '',
+                    lat: p.addresses?.[0]?.lat,
+                    lon: p.addresses?.[0]?.lon,
+                    city: p.addresses?.[0]?.city || '',
+                    address_id: p.addresses?.[0]?.id || ''
+                }
             }
         } else {
             resetForm()

@@ -35,6 +35,13 @@ export function useInfiniteScroll(fetchFn, {
       if (el) observer.observe(el)
     }, { immediate: true })
   }
+  const reset = () => {
+    canLoadMore.value = true
+    offset.value = 0
+    loading.value = false
+    if (observer) observer.disconnect()
+    setupObserver()
+  }
   onBeforeUnmount(() => {
     if (observer) observer.disconnect()
   })
@@ -43,6 +50,7 @@ export function useInfiniteScroll(fetchFn, {
     loading,
     canLoadMore,
     loadMoreTrigger,
+    reset,
     setupObserver,
   }
 }
