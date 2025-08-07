@@ -8,6 +8,14 @@
     })
     const store = useNewsStore()
     const news = ref(null)
+    const restoreNews = async (id) => {
+        await sendApi({ control: 'news', action: 'restore_news', data: { id: id } })
+        news.value = await store.fetchNewsById(props.id)
+    }
+    const deleteNews = async (id) => {
+        await sendApi({ control: 'news', action: 'delete_news', data: { id: id } })
+        news.value = await store.fetchNewsById(props.id)
+    }
     onMounted(async () => {
         news.value = await store.fetchNewsById(props.id)
     })
@@ -33,17 +41,23 @@
         </div>
         <span class="category" v-for="cat in news.category" :key="cat.id">
             {{ cat.title }}
-        </span>
+        </span> 
         <h3>{{ news.description }}</h3>
         <p v-if="news.location?.address" style="margin: 10px 0;">{{ news.location.address }}</p>
         <small>{{ moment(news.created_at).format('jYYYY/jMM/jDD') }}</small>
         
-        <!-- <a v-if="news.status==='checking'">
-            منتشر شده
-        </a>
-        <a v-else>
-            در حال پیگیری
-        </a> -->
+        <button
+        class="c-s"
+        v-if="news.show_status === 'dont'"
+        @click="restoreNews(news.id)">
+            پخش مجدد
+        </button>
+        <button
+        class="c-r"
+        v-if="news.show_status === 'do'"
+        @click="deleteNews(news.id)">
+            عدم پخش
+        </button>
     </div>
     <div v-else>
         <p>در حال بارگذاری...</p>

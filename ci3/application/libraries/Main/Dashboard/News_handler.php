@@ -335,12 +335,12 @@ class News_handler
         ['status'=>'error']);
     }
     public function delete_news($data){
-        return (!empty($data) && !empty($data['id']) && intval($data['id'])>0 && ($a=$this->user->get_user_account_id())!==false && !empty($a) && intval($a)>0 && $this->news_model->seen_weher_id_and_user_account_id(intval($data['id']))?
+        return (!empty($data) && !empty($data['id']) && intval($data['id'])>0 && ($a=$this->user->get_user_account_id())!==false && !empty($a) && intval($a)>0 && $this->news_model->enable_disable_news(intval($data['id']),false)?
         ['status'=>'success']:
         ['status'=>'error']);
     }
     public function restore_news($data){
-        return (!empty($data) && !empty($data['id']) && intval($data['id'])>0 && ($a=$this->user->get_user_account_id())!==false && !empty($a) && intval($a)>0 && $this->news_model->checking_weher_id_and_user_account_id(intval($data['id']))?
+        return (!empty($data) && !empty($data['id']) && intval($data['id'])>0 && ($a=$this->user->get_user_account_id())!==false && !empty($a) && intval($a)>0 && $this->news_model->enable_disable_news(intval($data['id']),true)?
         ['status'=>'success']:
         ['status'=>'error']);
     }

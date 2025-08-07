@@ -28,6 +28,11 @@ class Migration_Create_news_table extends CI_Migration {
                 'default' => 'checking',
                 'null' => FALSE,
             ],
+            'show_status' => [
+                'type' => 'ENUM("do", "dont")',
+                'default' => 'do',
+                'null' => FALSE,
+            ],
             'created_at' => [
                 'type' => 'DATETIME',
                 'null' => TRUE,

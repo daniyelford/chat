@@ -182,23 +182,30 @@ class Place_model extends CI_Model
             }
             $this->db->insert_batch('media_relation', $media_data);
         }
-        if (!empty($data['user_address']) && !empty($data['user_address']['value']) && !empty($data['user_address']['value']['total'])) {
-            $this->db->insert('addresses',[
-                'address'=>is_callable($this->security) ? ($this->security)($data['user_address']['value']['total']['display_name'] ?? '') : $data['user_address']['value']['total']['display_name']??'',
-                'country'=>$data['user_address']['value']['total']['address']['country']??'',
-                'region'=>$data['user_address']['value']['total']['address']['province']??'',
-                'city'=>$data['user_address']['value']['total']['address']['city']??$data['user_address']['value']['total']['address']['town']??$data['user_address']['value']['total']['address']['village']??'',
-                'lat'=>$data['user_address']['value']['total']['lat']??'',
-                'lon'=>$data['user_address']['value']['total']['lon']??'',
-                'code_posti'=>$data['user_address']['value']['total']['address']['postcode']??'',
-            ]);
-            $address_id=$this->db->insert_id();
-            $this->db->insert('address_relation', [
-                'target_table' => 'places',
-                'target_id' => $placeId,
-                'address_id' => $address_id
-            ]);
-        }
+        if (!empty($data['user_address']) && !empty($data['user_address']['value']))
+            if(!empty($data['user_address']['value']['total'])) {
+                $this->db->insert('addresses',[
+                    'address'=>is_callable($this->security) ? ($this->security)($data['user_address']['value']['total']['display_name'] ?? '') : $data['user_address']['value']['total']['display_name']??'',
+                    'country'=>$data['user_address']['value']['total']['address']['country']??'',
+                    'region'=>$data['user_address']['value']['total']['address']['province']??'',
+                    'city'=>$data['user_address']['value']['total']['address']['city']??$data['user_address']['value']['total']['address']['town']??$data['user_address']['value']['total']['address']['village']??'',
+                    'lat'=>$data['user_address']['value']['total']['lat']??'',
+                    'lon'=>$data['user_address']['value']['total']['lon']??'',
+                    'code_posti'=>$data['user_address']['value']['total']['address']['postcode']??'',
+                ]);
+                $address_id=$this->db->insert_id();
+                $this->db->insert('address_relation', [
+                    'target_table' => 'places',
+                    'target_id' => $placeId,
+                    'address_id' => $address_id
+                ]);
+            }elseif(!empty($data['user_address']['value']['address_id']) && intval($data['user_address']['value']['address_id'])>0){
+                $this->db->insert('address_relation', [
+                    'target_table' => 'places',
+                    'target_id' => $placeId,
+                    'address_id' => intval($data['user_address']['value']['address_id'])
+                ]);
+            }
     }
     private function delete_relations($placeId) {
         $this->db->where('target_table', 'places');

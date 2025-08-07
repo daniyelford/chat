@@ -55,6 +55,7 @@ class News_model extends CI_Model
             $this->db->where_in('cr.category_id', $category_ids);
             $this->db->where('n.privacy', 'private');
         }
+        $this->db->where('n.show_status', 'do');
         $this->db->group_by('n.id');
         $this->db->stop_cache();
     }
@@ -81,6 +82,7 @@ class News_model extends CI_Model
             $this->db->where('n.status', 'checking');
             $this->db->where('n.privacy', 'public');
         }
+        $this->db->where('n.show_status', 'do');
         $this->db->group_by('n.id');
         $this->db->stop_cache();
     }
@@ -420,6 +422,9 @@ class News_model extends CI_Model
     }
     public function seen_weher_id_and_user_account_id($id){
         return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['status'=>'seen'],['id'=>intval($id)]));
+    }
+    public function enable_disable_news($id,$en){
+        return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['show_status'=>(bool) $en],['id'=>intval($id)]));
     }
     public function checking_weher_id_and_user_account_id($id){
         return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['status'=>'checking'],['id'=>intval($id)]));

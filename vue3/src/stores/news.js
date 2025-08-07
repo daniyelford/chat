@@ -15,6 +15,7 @@ export const useNewsStore = defineStore('news', ()=> {
       description: item.description,
       created_at: item.created_at,
       status: item.status,
+      show_status: item.show_status,
       privacy: item.privacy,
       self: item.self,
       location: {

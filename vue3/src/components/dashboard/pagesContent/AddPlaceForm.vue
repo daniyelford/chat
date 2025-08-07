@@ -27,7 +27,6 @@
                 deselectLabel="برای حذف کلیک کنید"
             />
             <textarea v-model="form.description" placeholder="توضیحات" />
-            <!-- :model-value="form.user_address" -->
             <AddressSelector
                 :loginCity="address"
                 :userCoordinate="userCoordinate"
@@ -42,7 +41,7 @@
     </div>
 </template>
 <script setup>
-    import { ref, computed, onMounted, defineProps, defineEmits, watch } from 'vue'
+    import { ref, computed, onMounted, defineProps, defineEmits, watchEffect } from 'vue'
     import UploaderManyMedia from '@/components/tooles/upload/UploaderManyMedia.vue'
     import AddressSelector from '@/components/tooles/news/AddressSelector .vue'
     import Multiselect from 'vue-multiselect'
@@ -96,38 +95,18 @@
         }
     }
     onMounted( async () => {
+        await placeStore.fetchCategories('')
+        address.value = placeStore.userCity || ''
+        userCoordinate.value = placeStore.userCoordinate
+    })
+    watchEffect(() => {
         if (props.editPlace) {
             const p = props.editPlace
             form.value.title = p.title || ''
             form.value.description = p.description || ''
             form.value.media_id = p.medias?.map(m => m.id) || []
             initialMedias.value = p.medias || []
-            form.value.category_id = p.categories ?? []
-            form.value.user_address = {
-                type: 'location',
-                value: {
-                    address: p.addresses?.[0]?.address || '',
-                    lat: p.addresses?.[0]?.lat,
-                    lon: p.addresses?.[0]?.lon,
-                    city: p.addresses?.[0]?.city || '',
-                    address_id: p.addresses?.[0]?.id || ''
-                }
-            }
-        }
-        await placeStore.fetchCategories('')
-        address.value = placeStore.userCity || ''
-        userCoordinate.value = placeStore.userCoordinate
-    })
-    watch(() => props.editPlace, (newVal) => {
-        if (newVal) {
-            console.log(newVal);
-            
-            const p = newVal
-            form.value.title = p.title || ''
-            form.value.description = p.description || ''
-            form.value.media_id = p.medias?.map(m => m.id) || []
-            initialMedias.value = p.medias || []
-            form.value.category_id = p.categories?.map(c => c.id) || []
+            form.value.category_id = p.categories || []
             form.value.user_address = {
                 type: 'location',
                 value: {

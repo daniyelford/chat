@@ -10,6 +10,7 @@ export const useManageNewsStore = defineStore('manageNews', () => {
       id: item.id,
       description: item.description,
       status: item.status,
+      show_status : item.show_status,
       report: !!item.report,
       mediaCount: Array.isArray(item.media) ? item.media.length : 0,
       categoryCount: Array.isArray(item.category) ? item.category.length : 0,
@@ -44,7 +45,7 @@ export const useManageNewsStore = defineStore('manageNews', () => {
         await loadNews()
         return true
       } else {
-        alert('خطا در پخش مجدد خبر: ' + res.message)
+        alert('خطا در پخش مجدد خبر: ' + res.message) 
         return false
       }
     } catch (error) {

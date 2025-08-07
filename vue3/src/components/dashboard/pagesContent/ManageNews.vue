@@ -42,13 +42,13 @@
             </RouterLink>
             <button
               class="c-s"
-              v-if="news.status === 'seen' && !news.report"
+              v-if="news.show_status === 'dont'"
               @click="restoreNews(news.id)">
               پخش مجدد
             </button>
             <button
               class="c-r"
-              v-if="news.status === 'checking'"
+              v-if="news.show_status === 'do'"
               @click="deleteNews(news.id)">
               عدم پخش
             </button>
@@ -77,7 +77,7 @@
     const ok = await store.restoreNews(id)
     if (ok) {
       store.loadNews()
-    }
+    } 
   }
   const deleteNews = async (id) => {
     const ok = await store.deleteNews(id)

@@ -67,20 +67,6 @@
       emit('update', { type: 'location', value: location.value })
     }
   }
-  watch(() => props.modelValue, (val) => {
-    console.log(val);
-    
-  //   if (val?.value?.lat && (val.value?.lon || val.value?.lng)) {
-  //     location.value = { 
-  //       ...location.value,
-  //       lat: val.value.lat,
-  //       lng: val.value.lng || val.value.lon,
-  //       address: val.value.address || '',
-  //       total: val.value.total || ''
-  //     }
-  //   }
-  }, { immediate: true })
-
   watch([selectedMode, location], () => {
     let value = null
     if (selectedMode.value === 'city') {
