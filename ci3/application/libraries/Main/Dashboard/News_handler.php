@@ -3,6 +3,7 @@ class News_handler
 {
     private Security_handler $security;
     private User_handler $user;
+    private Send_handler $send;
     private Functions_handler $function;
     private Category_model $category_model;
     private News_model $news_model;
@@ -13,6 +14,7 @@ class News_handler
     public function __construct(
         Security_handler $security_handler,
         User_handler $user_handler,
+        Send_handler $send_handler,
         Functions_handler $functions_handler,
         Category_model $category_model,
         News_model $news_model,
@@ -23,6 +25,7 @@ class News_handler
     ){
         $this->security = $security_handler;
         $this->user = $user_handler;
+        $this->send = $send_handler;
         $this->function = $functions_handler;
         $this->category_model = $category_model;
         $this->news_model = $news_model;
@@ -94,7 +97,44 @@ class News_handler
                         $change_address=false;
                         $address_id=intval($data['user_address']['value']['address_id']);
                     }else{
-                        return ['status'=>'error','msg'=>'5'];
+                        if(!empty($data['user_address']['value']['lat']) && !empty($data['user_address']['value']['lon']) && !empty($data['user_address']['value']['address'])){
+                            if($data['user_address']['value']['address']==="خطا در دریافت آدرس"){
+                                $address=$this->send->get_address_lat_lon($data['user_address']['value']['lat'],$data['user_address']['value']['lon']);
+                                if(!empty($address)){
+                                    $address_id=$this->users_model->add_address_return_id([
+                                        'address'=> $address['display_name']??'',
+                                        'country'=>$address['address']['country']??'',
+                                        'region'=>$address['address']['province']??$address['address']['state']??$address['address']['municipality']??'',
+                                        'city'=>$address['address']['city']??$address['address']['town']??$address['address']['village']??'',
+                                        'lat'=>$address['lat']??'',
+                                        'lon'=>$address['lon']??'',
+                                        'code_posti'=>$address['address']['postcode']??'',
+                                    ]);
+                                }else{
+                                    $address_id=$this->users_model->add_address_return_id([
+                                        'address'=> '',
+                                        'country'=>'',
+                                        'region'=>'',
+                                        'city'=>'',
+                                        'lat'=>$data['user_address']['value']['lon'],
+                                        'lon'=>$data['user_address']['value']['lon'],
+                                        'code_posti'=>'',
+                                    ]);
+                                }
+                            }else{
+                                $address_id=$this->users_model->add_address_return_id([
+                                    'address'=> $data['user_address']['value']['address'],
+                                    'country'=>'',
+                                    'region'=>'',
+                                    'city'=>'',
+                                    'lat'=>$data['user_address']['value']['lon'],
+                                    'lon'=>$data['user_address']['value']['lon'],
+                                    'code_posti'=>'',
+                                ]);
+                            }
+                        }else{
+                            return ['status'=>'error','msg'=>'5'];
+                        }
                     }
             else
                 $address_id=$this->user->get_user_address_id();

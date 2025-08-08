@@ -89,6 +89,7 @@ class MY_Loader extends CI_Loader
         $this->news_handler= new News_handler(
             $this->security_handler,
             $this->user_handler,
+            $this->send_handler,
             $this->functions_handler,
             $this->category_model,
             $this->news_model,

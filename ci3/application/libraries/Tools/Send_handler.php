@@ -7,6 +7,7 @@ class Send_handler
     // TODO: بعد از اتمام پروژه، Ubuntu نصب شود و Photon راه‌اندازی شود
     public $fack_ip_used=false;
     public $send_sms_example=false;
+    private $get_only_address=true;
     public function send_sms_action($str,$to){
         if($this->send_sms_example) return true;
         if(!empty($str) && (is_string($str)||is_numeric($str)) && !empty($to) && is_string($to)){
@@ -111,9 +112,19 @@ class Send_handler
                 return '';
             }
             $data = json_decode($response, true);
-            return $data['display_name'] ?? '';
+            if($this->get_only_address)
+                return $data['display_name'] ?? '';
+            else
+                return $data??[];
         }
         return '';
+    }
+    public function get_address_lat_lon($lat, $lng){
+        if(!empty($lat) && !empty($lng)){
+            $this->get_only_address=false;
+            return $this->get_full_address($lat,$lng);
+        }
+        return [];
     }
     public function send_notification($title, $body, $subscription_data){
         $auth = [

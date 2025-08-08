@@ -100,7 +100,9 @@
       <div ref="loadMoreTrigger" class="scroll-trigger"></div>
     </div>
     <div v-else class="none-cart-error">
-      خبری در محدوده شما وجود ندارد
+      <span>
+        خبری در محدوده شما وجود ندارد
+      </span>
     </div>
     <span v-if="toastMsg" class="toast">
       {{ toastMsg }}
@@ -465,15 +467,24 @@
   .none-cart-error{
     text-align: center;
     background-color: #dc6a6a;
-    color: white;
-    border-radius: 10px;
-    height: 200px;
+    height: 100%;
+    overflow: hidden;
     width: 100%;
     font-size: x-large;
+    border-radius: 50%;
     font-weight: bolder;
-    padding-top: 150px;
-    box-sizing: content-box;
-    box-shadow: 0 0 10px grey;
+    box-sizing: border-box;
+    box-shadow: 0 0 20px #1e1212;
+  }
+  .none-cart-error span{
+    display: block;
+    background: #fff;
+    top: 40%;
+    height: 20%;
+    box-sizing: border-box;
+    color: #000;
+    position: relative;
+    padding-top: 5%;
   }
   .toast{
     position: fixed;

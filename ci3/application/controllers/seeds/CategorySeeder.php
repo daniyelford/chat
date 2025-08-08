@@ -176,9 +176,9 @@ class CategorySeeder extends CI_Controller {
     private function no_place(){
         $data = [];
         $data[] = [
-            'title' => "پلیس امنیت",
+            'title' => "ادمین",
             'for_place'=>'no',
-            'is_force'=>'no',
+            'is_force'=>'yes',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
