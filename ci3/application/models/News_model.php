@@ -424,7 +424,7 @@ class News_model extends CI_Model
         return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['status'=>'seen'],['id'=>intval($id)]));
     }
     public function enable_disable_news($id,$en){
-        return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['show_status'=>(bool) $en],['id'=>intval($id)]));
+        return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['show_status'=>$en?'do':'dont'],['id'=>intval($id)]));
     }
     public function checking_weher_id_and_user_account_id($id){
         return (!empty($id) && intval($id)>0 && $this->edit_table($this->tbl,['status'=>'checking'],['id'=>intval($id)]));

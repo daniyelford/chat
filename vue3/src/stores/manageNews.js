@@ -42,7 +42,6 @@ export const useManageNewsStore = defineStore('manageNews', () => {
     try {
       const res = await sendApi({ control: 'news', action: 'restore_news', data: { id: id } })
       if (res.status === 'success') {
-        await loadNews()
         return true
       } else {
         alert('خطا در پخش مجدد خبر: ' + res.message) 
@@ -57,7 +56,6 @@ export const useManageNewsStore = defineStore('manageNews', () => {
     try {
       const res = await sendApi({ control: 'news', action: 'delete_news', data: { id: id } })
       if (res.status === 'success') {
-        newsList.value = newsList.value.filter(news => news.id !== id)
         return true
       } else {
         alert('خطا در حذف خبر: ' + res.message)
@@ -66,6 +64,17 @@ export const useManageNewsStore = defineStore('manageNews', () => {
     } catch (error) {
       alert('خطا در ارتباط با سرور: ' + error.message)
       return false
+    }
+  }
+  const toggleShowStatus = (id) => {
+    const index = newsList.value.findIndex(item => item.id === id)
+    if (index !== -1) {
+      const oldItem = newsList.value[index]
+      const updatedItem = {
+        ...oldItem,
+        show_status: oldItem.show_status === 'do' ? 'dont' : 'do'
+      }
+      newsList.value.splice(index, 1, updatedItem)
     }
   }
   const startPolling = () => {
@@ -89,6 +98,8 @@ export const useManageNewsStore = defineStore('manageNews', () => {
     restoreNews,
     startPolling,
     stopPolling,
+    toggleShowStatus,
   }
 })
 
+ 

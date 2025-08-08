@@ -212,6 +212,24 @@ export const useNewsStore = defineStore('news', ()=> {
     isLoaded.value = false
     hasRule.value=false
   }
+  const newsRestore = async (id) => {
+      const res = await sendApi({ control: 'news', action: 'restore_news', data: { id: id } })
+      if (res.status === 'success') {
+        return true
+      } else {
+        alert(res.message)
+        return false
+      }
+  }
+  const newsDelete = async (id) => {
+    const res = await sendApi({ control: 'news', action: 'delete_news', data: { id: id } })
+    if (res.status === 'success') {
+        return true
+      } else {
+        alert(res.message)
+        return false
+      }
+  }
   return {
     cards,
     more,
@@ -227,6 +245,8 @@ export const useNewsStore = defineStore('news', ()=> {
     addNews,
     reset,
     fetchAddNewsData,
-    loadEvents
+    loadEvents,
+    newsRestore,
+    newsDelete
   }
 })

@@ -9,11 +9,11 @@
     const store = useNewsStore()
     const news = ref(null)
     const restoreNews = async (id) => {
-        await sendApi({ control: 'news', action: 'restore_news', data: { id: id } })
+        await store.newsRestore(id)
         news.value = await store.fetchNewsById(props.id)
     }
     const deleteNews = async (id) => {
-        await sendApi({ control: 'news', action: 'delete_news', data: { id: id } })
+        await store.newsDelete(id)
         news.value = await store.fetchNewsById(props.id)
     }
     onMounted(async () => {

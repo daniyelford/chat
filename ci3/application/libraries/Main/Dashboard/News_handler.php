@@ -336,12 +336,12 @@ class News_handler
     }
     public function delete_news($data){
         return (!empty($data) && !empty($data['id']) && intval($data['id'])>0 && ($a=$this->user->get_user_account_id())!==false && !empty($a) && intval($a)>0 && $this->news_model->enable_disable_news(intval($data['id']),false)?
-        ['status'=>'success']:
-        ['status'=>'error']);
+        ['status'=>'success','ok'=>false]:
+        ['status'=>'error']); 
     }
     public function restore_news($data){
         return (!empty($data) && !empty($data['id']) && intval($data['id'])>0 && ($a=$this->user->get_user_account_id())!==false && !empty($a) && intval($a)>0 && $this->news_model->enable_disable_news(intval($data['id']),true)?
-        ['status'=>'success']:
+        ['status'=>'success','ok'=>true]:
         ['status'=>'error']);
     }
     public function get_cartables($data){

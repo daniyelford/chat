@@ -9,7 +9,7 @@
         <li
           v-for="news in store.newsList"
           :key="news.id"
-          v-memo="[news.status]"
+          v-memo="[news.show_status]"
           class="news-item">
           <div class="media-list" v-if="news.media?.length">
             <MediaSlider :medias="news.media" />
@@ -75,14 +75,16 @@
   }
   const restoreNews = async (id) => {
     const ok = await store.restoreNews(id)
+    console.log(ok);
     if (ok) {
-      store.loadNews()
+      store.toggleShowStatus(id)
     } 
   }
   const deleteNews = async (id) => {
     const ok = await store.deleteNews(id)
+    console.log(ok);
     if (ok) {
-      store.loadNews()
+      store.toggleShowStatus(id)
     }
   }
   const handleVisibilityChange = () => {
@@ -127,8 +129,14 @@
   .news-list {
     list-style: none;
     padding: 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
   }
   .news-item {
+    width: 50%;
+    box-sizing: border-box;
     border: 1px solid #ddd;
     border-radius: 6px;
     padding: 1rem;
@@ -191,10 +199,12 @@
     color: #000;
   }
   .actions {
+    display: flex;
+    justify-content: space-around;
     margin-top: 1rem;
   }
   .actions button ,.c-b,.c-d{
-    width: 100%;
+    width: 50%;
     display: block;
     text-align: center;
     padding: 6px 12px;
