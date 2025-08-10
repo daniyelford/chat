@@ -27,7 +27,13 @@
   <form @submit.prevent="submitForm">
     <textarea v-model="form.description" rows="4" required placeholder="متن خبر"></textarea>
     <BaseModal :show="showModal" @close="showModal = false">
-      <div v-if="!rule" class="selectInner">
+      <button v-if="!showAllCategory && rule" @click="toggleShowAllCategory">
+        برون سازمانی
+      </button>
+      <button v-if="showAllCategory && rule" @click="toggleShowAllCategory">
+        درون سازمانی
+      </button>
+      <div v-if="showAllCategory" class="selectInner">
         <multiselect
           v-model="form.category_id"
           :options="categories"
@@ -88,10 +94,13 @@
   const categories = ref([])
   const address = ref('')
   const rule = ref(false)
+  const high = ref(false)
   const userCoordinate=ref(null)
   const isAddressLoading = ref(false)
   const showModal = ref(false)
+  const showAllCategory = ref(true)
   const medias = ref([])
+  const myCategory = ref([])
   const form = ref({
     user_address: { type: 'location', value: '' },
     media_id: [],
@@ -100,6 +109,16 @@
   })
   const handleUploadResult = (uploadedData) => {
     form.value.media_id = uploadedData.map(item => item.id)
+  }
+  function toggleShowAllCategory(){
+    showAllCategory.value=!showAllCategory.value
+    if(showAllCategory.value){
+      form.value.category_id=[]
+    }else{
+      if(rule.value){
+        form.value.category_id=myCategory.value
+      }
+    }
   }
   function clearReply() {
     replyCard.value = null
@@ -117,16 +136,19 @@
     if (data) {      
       address.value = data.address
       rule.value = data.rule
+      high.value = data.highRule
       userCoordinate.value = data.coordinate
       if (rule.value) {
-        form.value.category_id = data.category??[]
+        form.value.category_id = data.myCategory??[]
+        myCategory.value = data.myCategory??[]
+        showAllCategory.value=false
       }
       categories.value = data.category??[]
     } 
   })
   const isSubmitDisabled = computed(() => {
     const isDescriptionEmpty = !form.value.description.trim()
-    const isCategoryInvalid = !rule.value && (!form.value.category_id || form.value.category_id.length === 0)
+    const isCategoryInvalid = (!rule.value || high.value) && (!form.value.category_id || form.value.category_id.length === 0)
     const isLocationSelected = form.value.user_address?.type === 'location'
     const isAddressInvalid = isLocationSelected && (!form.value.user_address?.value || !form.value.user_address.value.address?.trim())
     const isStillLoading = isLocationSelected && isAddressLoading.value

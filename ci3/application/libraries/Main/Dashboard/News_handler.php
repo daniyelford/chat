@@ -54,7 +54,7 @@ class News_handler
                 $arr = $this->news_model->get_public_checking_news($limited,$offset);
             }
             // $this->function->set_data_user_location($arr['data']??[]);
-            // $arr=array_reverse($arr);
+            $arr['data']=array_reverse($arr['data']??[]);
             $arr['status']='success';
             $arr['rule']=$this->function->has_category_id();
             return $arr;
@@ -81,8 +81,8 @@ class News_handler
         !empty($data['user_address']['type'])){
             $category = array_map('intval', $data['category_id']);
             $change_address=true;
-            if($data['user_address']['type']==='location' && !empty($data['user_address']['value']))
-                if(!empty($data['user_address']['value']['total']))
+            if($data['user_address']['type']==='location' && !empty($data['user_address']['value'])){
+                if(!empty($data['user_address']['value']['total'])){
                     $address_id=$this->users_model->add_address_return_id([
                         'address'=> $this->security->string_secutory_week_check($data['user_address']['value']['total']['display_name']??''),
                         'country'=>$data['user_address']['value']['total']['address']['country']??'',
@@ -92,7 +92,7 @@ class News_handler
                         'lon'=>$data['user_address']['value']['total']['lon']??'',
                         'code_posti'=>$data['user_address']['value']['total']['address']['postcode']??'',
                     ]);
-                else
+                }else{
                     if(!empty($data['user_address']['value']['address_id']) && intval($data['user_address']['value']['address_id'])>0){
                         $change_address=false;
                         $address_id=intval($data['user_address']['value']['address_id']);
@@ -112,32 +112,25 @@ class News_handler
                                     ]);
                                 }else{
                                     $address_id=$this->users_model->add_address_return_id([
-                                        'address'=> '',
-                                        'country'=>'',
-                                        'region'=>'',
-                                        'city'=>'',
                                         'lat'=>$data['user_address']['value']['lon'],
                                         'lon'=>$data['user_address']['value']['lon'],
-                                        'code_posti'=>'',
                                     ]);
                                 }
                             }else{
                                 $address_id=$this->users_model->add_address_return_id([
                                     'address'=> $data['user_address']['value']['address'],
-                                    'country'=>'',
-                                    'region'=>'',
-                                    'city'=>'',
                                     'lat'=>$data['user_address']['value']['lon'],
                                     'lon'=>$data['user_address']['value']['lon'],
-                                    'code_posti'=>'',
                                 ]);
                             }
                         }else{
                             return ['status'=>'error','msg'=>'5'];
                         }
                     }
-            else
+                }
+            }else{
                 $address_id=$this->user->get_user_address_id();
+            }
             if(!(!empty($address_id) && intval($address_id)>0)) return ['status'=>'error','msg'=>'2','id'=>$address_id];
             if(!empty($data['edit']) && intval($data['edit'])>0){
                 if(!empty($data['edit_report']) && intval($data['edit_report'])>0){
@@ -354,12 +347,29 @@ class News_handler
         $this->function->category_filtter_for_place=true;
         $this->function->get_all_category_active();
         if($this->user->get_user_account_id()){
+            $high_rule=false;
+            $my_category=[]; 
+            if($this->function->has_category_id()){
+                $user_category=array_map('intval',$this->user->get_user_category_id());
+                $my_category=[];
+                if(!empty($user_category))
+                    foreach ($user_category as $u) {
+                        if(!empty($u) && intval($u)>0)
+                            $my_category[]=$this->function->search_id_return_value_in_key($this->function->category,intval($u),'id',['id','title']);
+                    }
+                if(in_array(1,$user_category)){
+                    $high_rule=true;
+                }
+            }  
+            $category=$this->function->category;
             return [
                 'status'=>'success',
                 'rule'=>($this->function->has_category_id()?true:false),
+                'high_rule'=>$high_rule,
                 'address'=>$this->user->get_user_location(),
                 'coordinate'=>$this->user->get_user_cordinates(),
-                'category'=>($this->function->has_category_id()?$this->function->search_id_return_value_in_key($this->function->category,intval($this->user->get_user_category_id()),'id',['id','title']):$this->function->category),
+                'category'=>$category,
+                'my_category'=>$my_category
             ];
         }
         return ['status'=>'error'];

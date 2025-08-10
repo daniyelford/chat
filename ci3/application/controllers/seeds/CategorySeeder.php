@@ -2,7 +2,6 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class CategorySeeder extends CI_Controller {
-
     public function index() {
         $this->load->database();
         $this->no_place();

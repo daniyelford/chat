@@ -2,15 +2,16 @@
   <div class="containers" v-if="placeStore?.allPlaces?.length>0">
     <PlaceCategory v-model:selectedCategoryId="selectedCategoryId"/>
     <div class="info">
-      <div v-if="placeStore?.userAccountId===1||placeStore?.userAccountId===2" class="addPlace">
+      <div v-if="placeStore?.highRule" class="addPlace">
         <a @click="showAddPlace=true">add place</a>
       </div>
       <placesCard
       v-for="place in filteredPlaces"
       :key="place.id"
       :place="place"
-      :userAccountId="placeStore?.userAccountId"
+      :highRule="placeStore?.highRule"
       @editPlace="editPlace"
+      @deletePlace="deletePlace"
       @openMap="openMapModal"
       />
       <div ref="placeLoadTrigger" class="load-trigger" style="margin-top: -750px;"></div>
@@ -83,14 +84,20 @@
     await placeStore.fetchPlacesPaginated({ offset: 0, category_id: selectedCategoryId.value })
   }
   const editPlace = (place) => {
-    if (placeStore.userAccountId === 1 || placeStore.userAccountId === 2) {
+    if (placeStore.highRule) {
       editingPlace.value = place
       showAddPlace.value = true
     } else {
       alert("شما مجوز ویرایش این مکان را ندارید.")
     }
   }
-
+  const deletePlace = (id) => {
+    if (placeStore.highRule) {
+      placeStore.deletePlace(id)
+    } else {
+      alert("شما مجوز ویرایش این مکان را ندارید.")
+    }
+  }
   const {
     loadMoreTrigger: placeLoadTrigger,
     setupObserver: setupPlaceObserver,

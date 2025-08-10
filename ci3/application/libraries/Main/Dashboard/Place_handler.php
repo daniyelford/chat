@@ -5,14 +5,20 @@ class Place_handler
     private User_handler $user;
     private Place_model $place_model;
     private Security_handler $security;
+    private Functions_handler $function;
+    private Send_handler $send;
     public function __construct(
         User_handler $user_handler,
         Place_model $place_model,
         Security_handler $security,
+        Functions_handler $function,
+        Send_handler $send
     ){
         $this->place_model = $place_model;
         $this->user = $user_handler;
         $this->security = $security;
+        $this->function = $function;
+        $this->send = $send;
     }
     public function get_places($data){
         if (!empty($this->user->get_user_account_id())) {
@@ -21,11 +27,16 @@ class Place_handler
             $limit = isset($data['limit']) ? (int)$data['limit'] : 10;
             $category_id = isset($data['category_id']) ? $data['category_id'] : null;
             $places = $this->place_model->get_place_with_relations($offset, $limit, $id, $category_id);
+            $high_rule=false;
+            if($this->function->has_category_id()){
+                $user_category=array_map('intval',$this->user->get_user_category_id());
+                if(in_array(1,$user_category)) $high_rule=true;
+            }
             return [
                 'status' => 'success',
                 'data' => $places['data']??[],
                 'cord' => $this->user->get_user_cordinates(),
-                'user_account_id' => $this->user->get_user_account_id(),
+                'high_rule' => $high_rule,
                 'has_more' => $places['has_more']??false
             ];
         }
@@ -45,6 +56,8 @@ class Place_handler
     }
     public function add_place($data){
         $this->place_model->security=[$this->security, 'string_secutory_week_check'];
+        $this->place_model->send=[$this->send, 'get_address_lat_lon'];
+        $this->place_model->user=[$this->user, 'get_user_address_id'];
         if (isset($data['edit']) && !empty($data['edit']) && intval($data['edit'])>0) {
             $updated = $this->place_model->update_place(intval($data['edit']), $data);
             if ($updated) {
@@ -60,5 +73,12 @@ class Place_handler
                 return ['status' => 'error', 'message' => 'افزودن مکان با خطا مواجه شد.'];
             }
         }
+    }
+    public function delete_place($data){
+        if($this->function->has_category_id() && !empty($data) && !empty($data['id']) && intval($data['id'])>0){
+            $user_category=array_map('intval',$this->user->get_user_category_id());
+            if(in_array(1,$user_category) && $this->place_model->delete_place(intval($data['id']))) return ['status'=>'success'];
+        }
+        return ['status'=>'error'];
     }
 }

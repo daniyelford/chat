@@ -6,7 +6,7 @@ export const usePlaceStore = defineStore('place', () => {
   const allCategories = ref([])
   const categories = ref([])
   const userCoordinate = ref([])
-  const userAccountId = ref(null)
+  const highRule = ref(null)
   const categoryLoading = ref(false)
   const categoryListLoading = ref(false)
   const placeListLoading = ref(false)
@@ -53,7 +53,7 @@ export const usePlaceStore = defineStore('place', () => {
           if (placeOffset.value === 0) allPlaces.value = res.data
           else allPlaces.value.push(...res.data)
           if (res.cord) userCoordinate.value = res.cord
-          userAccountId.value= res.user_account_id
+          highRule.value= res.high_rule
           placeOffset.value += res.data.length
           hasMorePlaces.value = res.has_more
         }
@@ -127,12 +127,30 @@ export const usePlaceStore = defineStore('place', () => {
     placeOffset.value = 0
     hasMorePlaces.value = true
   }
+  const deletePlace = async (id) => {
+    try {
+      const res = await sendApi({
+        control: 'place',
+        action: 'delete_place',
+        data: { id }
+      })
+      if (res.status === 'success') {
+        allPlaces.value = allPlaces.value.filter(p => Number(p.id) !== Number(id))
+        return { status: 'success' }
+      } else {
+        return { status: 'error', message: res.message || 'خطا در حذف' }
+      }
+    } catch (error) {
+      console.error('deletePlace error:', error)
+      return { status: 'error', message: 'خطا در ارسال درخواست حذف' }
+    }
+  }
   return {
     allPlaces,
     categories,
     allCategories,
     userCoordinate,
-    userAccountId,
+    highRule,
     categoryLoading,
     placeOffset,
     categoryOffset,
@@ -144,6 +162,7 @@ export const usePlaceStore = defineStore('place', () => {
     fetchPlacesPaginated,
     fetchCategories,
     submitPlace,
-    resetPlaces
+    resetPlaces,
+    deletePlace
   }
 })

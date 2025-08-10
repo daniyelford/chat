@@ -8,6 +8,7 @@ export const useNewsStore = defineStore('news', ()=> {
   const lastUpdate = ref(null)
   const isLoaded = ref(false)
   const hasRule = ref(false)
+  const highRule = ref(false)
   const events = ref([])
   function normalizeNewsItem(item) {
     return {
@@ -164,6 +165,7 @@ export const useNewsStore = defineStore('news', ()=> {
       action: 'add_data'
     })
     if (res.status === 'success') {
+      highRule.value = res.high_rule??false
       return {
         address: res.address,
         rule: res.rule,
@@ -171,7 +173,9 @@ export const useNewsStore = defineStore('news', ()=> {
           lat: res.coordinate?.lat,
           lon: res.coordinate?.lon,
         },
-        category: res.category ?? []
+        highRule: res.high_rule,
+        category: res.category ?? [],
+        myCategory: res.my_category??[]
       }
     }
     return null
@@ -236,6 +240,7 @@ export const useNewsStore = defineStore('news', ()=> {
     lastUpdate,
     isLoaded,
     hasRule,
+    highRule,
     events,
     normalizeNewsItem,
     fetchNews,

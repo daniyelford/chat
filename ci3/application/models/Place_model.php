@@ -2,6 +2,9 @@
 class Place_model extends CI_Model
 {
     public $security;
+    public $send;
+    public $user;
+    private $delete_extera_relations=false;
     public function get_place_with_relations($offset = 0, $limit = 10, $id = null, $category_id = null) {
         $fetchLimit = $limit + 1;
         $this->db->select('p.*');
@@ -156,6 +159,16 @@ class Place_model extends CI_Model
         $this->save_relations($id, $data);
         return true;
     }
+    public function delete_place($id){
+        if(!empty($id) && intval($id)>0){
+            $this->delete_extera_relations=true;
+            $this->delete_where_id(intval($id));
+            $this->delete_relations(intval($id));
+            $this->delete_extera_relations=false;
+            return true;
+        }
+        return false;
+    }
     private function save_relations($placeId, $data) {
         if (!empty($data['category_id']) && is_array($data['category_id'])) {
             $category_ids=array_column($data['category_id'],'id');
@@ -183,7 +196,9 @@ class Place_model extends CI_Model
             $this->db->insert_batch('media_relation', $media_data);
         }
         if (!empty($data['user_address']) && !empty($data['user_address']['value']))
-            if(!empty($data['user_address']['value']['total'])) {
+            if(!empty($data['user_address']['value']['address_id']) && intval($data['user_address']['value']['address_id'])>0){
+                $address_id=intval($data['user_address']['value']['address_id']);
+            }elseif(!empty($data['user_address']['value']['total'])) {
                 $this->db->insert('addresses',[
                     'address'=>is_callable($this->security) ? ($this->security)($data['user_address']['value']['total']['display_name'] ?? '') : $data['user_address']['value']['total']['display_name']??'',
                     'country'=>$data['user_address']['value']['total']['address']['country']??'',
@@ -194,26 +209,90 @@ class Place_model extends CI_Model
                     'code_posti'=>$data['user_address']['value']['total']['address']['postcode']??'',
                 ]);
                 $address_id=$this->db->insert_id();
-                $this->db->insert('address_relation', [
+            }elseif(!empty($data['user_address']['value']['lat']) && !empty($data['user_address']['value']['lon']) && !empty($data['user_address']['value']['address'])){
+                if($data['user_address']['value']['address']==="خطا در دریافت آدرس"){
+                    $address=is_callable($this->send) ? ($this->send)($data['user_address']['value']['lat'],$data['user_address']['value']['lon']):0;
+                    if(!empty($address)){
+                        $this->db->insert('addresses',[
+                            'address'=> $address['display_name']??'',
+                            'country'=>$address['address']['country']??'',
+                            'city'=>$address['address']['city']??$address['address']['town']??$address['address']['village']??'',
+                            'lat'=>$address['lat']??'',
+                            'lon'=>$address['lon']??'',
+                            'region'=>$address['address']['province']??$address['address']['state']??$address['address']['municipality']??'',
+                            'code_posti'=>$address['address']['postcode']??'',
+                        ]);
+                        $address_id=$this->db->insert_id();
+                    }else{
+                        $this->db->insert('addresses',[
+                            'lat'=>$data['user_address']['value']['lon'],
+                            'lon'=>$data['user_address']['value']['lon'],
+                        ]);
+                        $address_id=$this->db->insert_id();
+                    }
+                }else{
+                    $this->db->insert('addresses',[
+                        'address'=> $data['user_address']['value']['address'],                        
+                        'lat'=>$data['user_address']['value']['lon'],
+                        'lon'=>$data['user_address']['value']['lon'],
+                    ]);
+                    $address_id=$this->db->insert_id();
+                }
+            }else{
+                $address_id=is_callable($this->user)?($this->user)():0;
+            }
+            if(intval($address_id)>0)
+                return $this->db->insert('address_relation', [
                     'target_table' => 'places',
                     'target_id' => $placeId,
                     'address_id' => $address_id
                 ]);
-            }elseif(!empty($data['user_address']['value']['address_id']) && intval($data['user_address']['value']['address_id'])>0){
-                $this->db->insert('address_relation', [
-                    'target_table' => 'places',
-                    'target_id' => $placeId,
-                    'address_id' => intval($data['user_address']['value']['address_id'])
-                ]);
-            }
+            return false;
+
+    }
+    private function delete_where_id($id){
+        return (!empty($id) && intval($id)>0 && $this->db->delete('places', ['id'=>intval($id)]));
     }
     private function delete_relations($placeId) {
         $this->db->where('target_table', 'places');
         $this->db->where('target_id', $placeId);
         $this->db->delete('category_relation');
+        if ($this->delete_extera_relations) {
+            $addressIds = $this->db
+                ->select('address_id')
+                ->where('target_table', 'places')
+                ->where('target_id', $placeId)
+                ->get('address_relation')
+                ->result_array();
+            if (!empty($addressIds)) {
+                $ids = array_column($addressIds, 'address_id');
+                $this->db->where_in('id', $ids)->delete('addresses');
+            }
+        }
         $this->db->where('target_table', 'places');
         $this->db->where('target_id', $placeId);
         $this->db->delete('address_relation');
+        if ($this->delete_extera_relations) {
+            $mediaIds = $this->db
+                ->select('media_id')
+                ->where('target_table', 'places')
+                ->where('target_id', $placeId)
+                ->get('media_relation')
+                ->result_array();
+            if (!empty($mediaIds)) {
+                $ids = array_column($mediaIds, 'media_id');
+                $medias = $this->db
+                    ->select('url')
+                    ->where_in('id', $ids)
+                    ->get('media')
+                    ->result_array();
+                $files = array_column($medias, 'url');
+                foreach ($files as $file) {
+                    if (is_file($file)) @unlink($file);
+                }
+                $this->db->where_in('id', $ids)->delete('media');
+            }
+        }
         $this->db->where('target_table', 'places');
         $this->db->where('target_id', $placeId);
         $this->db->delete('media_relation');

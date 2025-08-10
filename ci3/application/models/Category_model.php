@@ -42,10 +42,29 @@ class Category_model extends CI_Model
 	    return $this->select_where_array_table($this->tbl,['status'=>'active','for_place'=>'no']);
 	}
     public function insert_relation($arr){
-        return (!empty($arr) && is_array($arr) && $this->db->insert($this->relation, $arr));
+        return (!empty($arr) && is_array($arr) && $this->add_to_table($this->relation, $arr));
     }
     public function insert_relation_batch($arr){
         return (!empty($arr) && is_array($arr) && $this->db->insert_batch($this->relation, $arr));
+    }
+    public function add_category_return_id($arr){
+        return (!empty($arr) && is_array($arr)?$this->add_to_table_return_id($this->tbl,$arr):false);
+    }
+    public function edit_category($arr,$where){
+        return (!empty($arr) && is_array($arr) && !empty($where) && is_array($where) && $this->edit_table($this->tbl,$arr,$where));
+    }
+    // costum
+    public function get_all_categories($limit = 10, $offset = 0) {
+        $this->db->order_by('id', 'DESC');
+        $this->db->limit($limit+1, $offset);
+        $data = $this->db->get($this->tbl)->result_array();
+        $has_more=(count($data) > $limit);
+        if ($has_more) array_pop($data);
+        return ['data'=>$data??[],'has_more'=>$has_more??false];
+    }
+    public function delete_category_with_relations($id) {
+        $this->remove_where_array_in_table($this->relation, ['category_id' => $id]);
+        return $this->remove_where_array_in_table($this->tbl, ['id' => $id]);
     }
     public function check_changes(String $tbl,Int $id,Array $old,Array $new){
         if(!empty($tbl) && !empty($id))

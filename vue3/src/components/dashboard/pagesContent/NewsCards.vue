@@ -15,7 +15,7 @@
         <div class="media-inner">
           <MediaSlider v-if="Array.isArray(card.medias) && card.medias.length > 0" :medias="card.medias" />
         </div>
-        <div class="card-category" v-if="!newsStore.hasRule && Array.isArray(card.category) && card.category.length">
+        <div class="card-category" v-if="Array.isArray(card.category) && card.category.length > 0">
           <span class="category" v-for="category in card.category" :key="category.id">
             {{ category.title }}
           </span>

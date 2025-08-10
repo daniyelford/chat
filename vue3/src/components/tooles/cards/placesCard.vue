@@ -6,7 +6,8 @@
     <p>{{ truncateText(place.description) }}</p>
     <small>{{ truncateText(place.addresses?.[0]?.address) || '' }}</small>
     <a v-if="props.place.addresses?.[0]?.lat && props.place.addresses?.[0]?.lon" @click="$emit('openMap', place)">محل دقیق</a>
-    <a v-if="props.userAccountId === 1 || props.userAccountId === 2" @click="$emit('editPlace', place)">ویرایش</a>
+    <a v-if="props.highRule" @click="$emit('editPlace', place)">ویرایش</a>
+    <a v-if="props.highRule" @click="$emit('deletePlace', place.id)">حذف</a>
   </div>
 </template>
 
@@ -16,7 +17,7 @@ import MediaSlider from '@/components/tooles/media/MediaSlider.vue'
 
 const props = defineProps({
   place: Object,
-  userAccountId: Number,
+  highRule: Boolean,
 })
 
 const truncateText = (text, max = 50) => {

@@ -29,6 +29,10 @@ class Migration_Create_users_table extends CI_Migration {
                 'default' => 'active',
                 'null' => FALSE,
             ],
+            'ban_time' => [
+                'type' => 'DATETIME',
+                'null' => TRUE,
+            ],
             'created_at' => [
                 'type' => 'DATETIME',
                 'null' => TRUE,

@@ -25,6 +25,7 @@ class MY_Loader extends CI_Loader
     public Wallet_handler $wallet_handler;
     public Place_handler $place_handler;
     public Api_handler $api_handler;
+    public Category_handler $category_handler;
     public function __construct()
     {
         parent::__construct();
@@ -35,6 +36,7 @@ class MY_Loader extends CI_Loader
         require_once(APPPATH . 'libraries/Main/Login/Finger_print.php');
         require_once(APPPATH . 'libraries/Tools/Upload_handler.php');
         require_once(APPPATH . 'libraries/Main/Login/Login_handler.php');
+        require_once(APPPATH . 'libraries/Main/Dashboard/Category_handler.php');
         require_once(APPPATH . 'libraries/Main/Dashboard/User_handler.php');
         require_once(APPPATH . 'libraries/Main/Dashboard/News_handler.php');
         require_once(APPPATH . 'libraries/Main/Dashboard/Wallet_handler.php');
@@ -121,7 +123,14 @@ class MY_Loader extends CI_Loader
         $this->place_handler=new Place_handler(
             $this->user_handler,
             $this->place_model,
-            $this->security_handler
+            $this->security_handler,
+            $this->functions_handler,
+            $this->send_handler
+        );
+        $this->category_handler=new Category_handler(
+            $this->user_handler,
+            $this->functions_handler,
+            $this->category_model
         );
         $this->api_handler= new Api_handler(
             $this->upload_handler,
@@ -130,7 +139,8 @@ class MY_Loader extends CI_Loader
             $this->user_handler,
             $this->news_handler,
             $this->wallet_handler,
-            $this->place_handler
+            $this->place_handler,
+            $this->category_handler
         );
         // $CI->category_model=$this->category_model;
         // $CI->media_model=$this->media_model;
@@ -143,6 +153,7 @@ class MY_Loader extends CI_Loader
         // $CI->send_handler=$this->send_handler;
         // $CI->functions_handler=$this->functions_handler;
         $CI->security_handler=$this->security_handler;
+        $CI->category_handler=$this->category_handler;
         $CI->finger_print=$this->finger_print;
         $CI->upload_handler=$this->upload_handler;
         $CI->login_handler=$this->login_handler;

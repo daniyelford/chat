@@ -14,7 +14,7 @@ class User_handler
         Users_model $users_model,
         Media_model $media_model,
         Notification_model $notification_model,
-        Send_handler $send
+        Send_handler $send,
     ){
 		$this->CI =& get_instance();
         $this->rule_model = $rule_model;
@@ -150,4 +150,34 @@ class User_handler
         }
         return ['status'=>'error'];
     }
+    private function check_user(){
+        if($this->get_user_category_id()){
+            $user_category=array_map('intval',$this->get_user_category_id());
+            if(in_array(1,$user_category)) return true;
+        }
+        return false;
+    }
+    public function get_users($data){
+        if(!empty($data) && $this->check_user()){
+            $data=$this->users_model->get_all_user($data['limit']??10,$data['offset']??0);
+            // Category
+            // rule 
+            return ['status'=>'success','data'=>$data['data']??[],'has_more'=>$data['has_more']??false];
+        }
+        return ['status'=>'error'];
+    }
+    public function user_submit($data){
+        if(!empty($data) && $this->check_user()){
+
+        }
+        return ['status'=>'error'];
+    }
+    public function delete_user($data){
+        if($this->check_user() &&
+        !empty($data) && !empty($data['id']) && intval($data['id'])>0){
+
+        }
+        return ['status'=>'error'];
+    }
+    
 }

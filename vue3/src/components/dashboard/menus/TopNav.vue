@@ -1,5 +1,6 @@
 <script setup>
-  import { onMounted, onBeforeUnmount } from 'vue'
+  import { onMounted, onBeforeUnmount, computed } from 'vue'
+  import DashboardSetting from '@/components/dashboard/menus/DashboardSetting.vue'
   import { useUserStore } from '@/stores/user'
   import NotificationMenu from '@/components/tooles/nav/NotificationMenu.vue'
   import { useMenuStore } from '@/stores/menu'
@@ -14,6 +15,10 @@
   })
   onBeforeUnmount(() => {
     if (pollingInterval) clearInterval(pollingInterval)
+  })
+  const hasCategory1 = computed(() => {
+    if (!user.ruleInfo || !Array.isArray(user.ruleInfo)) return false
+    return user.ruleInfo.some(rule => String(rule.category_id) === '1')
   })
 </script>
 <template>
@@ -31,13 +36,14 @@
       <NotificationMenu v-if="user.isLoggedIn" />
     </div>
     <div class="logo">
-       <button class="hamburger" @click="menu.toggle">
+      <DashboardSetting v-if="hasCategory1" />
+      <button class="hamburger" @click="menu.toggle">
         <span></span><span></span><span></span>
       </button>
     </div>
   </div>
 </template>
-<style scoped>
+<style scoped >
   .hamburger {
     cursor: pointer;
     background: none;
