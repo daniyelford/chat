@@ -180,7 +180,7 @@ class User_handler
     public function user_submit($data) {
         if (!empty($data) && !empty($data['data']) && $this->check_user()) {
             if (!empty($data['edit'])) {
-                return $this->users_model->edit_user_admin($data['data']);
+                return $this->users_model->edit_user_admin($data);
             } else {
                 return $this->users_model->add_user_admin($data['data']);
             }
