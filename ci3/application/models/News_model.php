@@ -218,6 +218,7 @@ class News_model extends CI_Model
         if($this->just_run_time_report){
             $this->db->where('rl.run_time IS NOT NULL', null, false);
         }
+        $this->db->where('rl.show_status', 'do');
         $report_list = $this->db->get()->result_array();
         return $this->build_report_data($report_list);
     }

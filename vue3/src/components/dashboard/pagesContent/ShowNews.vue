@@ -1,12 +1,14 @@
 <script setup>
     import { onMounted, ref , defineProps } from 'vue'
     import { useNewsStore } from '@/stores/news'
+    import { useUserStore } from '@/stores/user'
     import MediaSlider from '@/components/tooles/media/MediaSlider.vue'
     import moment from 'moment-jalaali'
     const props=defineProps({
         id:Number
     })
     const store = useNewsStore()
+    const userStore = useUserStore()
     const news = ref(null)
     const restoreNews = async (id) => {
         await store.newsRestore(id)
@@ -17,6 +19,7 @@
         news.value = await store.fetchNewsById(props.id)
     }
     onMounted(async () => {
+        await userStore.fetchUserInfo()
         news.value = await store.fetchNewsById(props.id)
     })
 </script>
@@ -45,19 +48,27 @@
         <h3>{{ news.description }}</h3>
         <p v-if="news.location?.address" style="margin: 10px 0;">{{ news.location.address }}</p>
         <small>{{ moment(news.created_at).format('jYYYY/jMM/jDD') }}</small>
-        
-        <button
-        class="c-s"
-        v-if="news.show_status === 'dont'"
-        @click="restoreNews(news.id)">
-            پخش مجدد
-        </button>
-        <button
-        class="c-r"
-        v-if="news.show_status === 'do'"
-        @click="deleteNews(news.id)">
-            عدم پخش
-        </button>
+        <span v-if="userStore.status==='active'">
+            <button
+            class="c-s"
+            v-if="news.show_status === 'dont'"
+            @click="restoreNews(news.id)">
+                پخش مجدد
+            </button>
+            <button
+            class="c-r"
+            v-if="news.show_status === 'do'"
+            @click="deleteNews(news.id)">
+                عدم پخش
+            </button>
+        </span>
+        <div v-else class="ban">
+            این پست شما غیر فعال است
+            <span v-if="userStore.banTime">
+            تاریخ این اقدام
+            {{ moment(userStore.banTime).format('jYYYY/jMM/jDD') }}
+            </span>
+        </div>
     </div>
     <div v-else>
         <p>در حال بارگذاری...</p>

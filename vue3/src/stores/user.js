@@ -18,6 +18,10 @@ export const useUserStore = defineStore('user', {
     users: [],
     loading: false,
     error: null,
+    allCategories: [],
+    allRules: [],
+    status:'inactive',
+    banTime:null
   }),
 
   actions: {
@@ -32,6 +36,8 @@ export const useUserStore = defineStore('user', {
           this.wallet = res.wallet
           this.image = res.image
           this.finger = res.finger
+          this.status = res.user_status
+          this.banTime = res.user_ban
           this.tokenScore = res.token_score
           this.rule = Array.isArray(res.rules) && res.rules.length > 0
           this.ruleInfo = res.rules
@@ -43,7 +49,6 @@ export const useUserStore = defineStore('user', {
         console.error('Error fetching user:', err)
       }
     },
-
     async fetchUsers({ limite = 10, offset = 0 }) {
       this.loading = true
       this.error = null
@@ -53,9 +58,15 @@ export const useUserStore = defineStore('user', {
           control: 'user',
           data: { limite, offset }
         })
-        if (res.status === 'success') {
+        if (res.status === 'success' && Array.isArray(res.data)) {
           this.hasMore = res.has_more
-          this.users = res.data
+          if (offset === 0) {
+            this.users = res.data
+          } else {
+            this.users.push(...res.data)
+          }
+          this.allCategories = res.all_category
+          this.allRules = res.all_rule
         } else {
           this.error = res.message || 'خطا در دریافت کاربران'
         }
@@ -66,7 +77,6 @@ export const useUserStore = defineStore('user', {
         this.loading = false
       }
     },
-
     async submitUser(userData, edit = null) {
       try {
         const res = await sendApi({
@@ -74,23 +84,48 @@ export const useUserStore = defineStore('user', {
           control: 'user',
           data: { data: userData, edit: edit }
         })
-        return res
+        if (res.status === 'success' && res?.id) {
+          if (!edit) {
+            this.users.unshift(res.data)
+          } else {
+            const index = this.users.findIndex(c => Number(c.id) === Number(edit.user_id))
+            if (index !== -1) {
+              this.users[index] = res.data
+            } else {
+              this.users.unshift(res.data)
+            }
+          }
+        }
       } catch (err) {
         console.error(err)
       }
     },
-
-    async deleteUser(id) {
+    async enableUser(id) {
       try {
         const res = await sendApi({
-          action: 'delete_user',
+          action: 'enable_user',
           control: 'user',
           data: { id }
         })
         if (res.status === 'success') {
-          this.users = this.users.filter(u => u.id !== id)
+          return true
         }
-        return res
+        return false
+      } catch (err) {
+        console.error(err)
+      }
+    },
+    async disableUser(id) {
+      try {
+        const res = await sendApi({
+          action: 'disable_user',
+          control: 'user',
+          data: { id }
+        })
+        if (res.status === 'success') {
+          return true
+        }
+        return false
       } catch (err) {
         console.error(err)
       }

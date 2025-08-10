@@ -30,19 +30,19 @@
         <RouterLink class="choose" :to="{ path: `/show-news/${card.id}` }">
           مشاهده
         </RouterLink>
-        <a v-if="card.self" class="choose" @click="handleEdit(card.id,null)">
+        <a v-if="card.self && userStore.status==='active'" class="choose" @click="handleEdit(card.id,null)">
           ویرایش
         </a>
         <a
           class="choose"
-          v-if="newsStore.hasRule && !card.self"
+          v-if="userStore.status==='active' && newsStore.hasRule && !card.self"
           @click="handleReply(card.id)"
         >
           پاسخ
         </a>
         <a
           class="choose"
-          v-if="newsStore.hasRule && !card.self"
+          v-if="newsStore.hasRule && !card.self && userStore.status==='active'"
           @click="openCalendarModal(card.id,0)"
         >
           قرار ملاقات
@@ -75,12 +75,12 @@
               📅 تاریخ ملاقات {{ moment(report.run_time).format('jYYYY/jMM/jDD') }}
             </p>
             <div class="time">📅 {{ moment(report.created_at).format('jYYYY/jMM/jDD') }}</div>
-            <a v-if="report.reporter.self && report.description" class="choose" @click="handleEdit(card.id,report.id)">
+            <a v-if="userStore.status==='active' && report.reporter.self && report.description" class="choose" @click="handleEdit(card.id,report.id)">
               ویرایش
             </a>
             <a
             class="choose"
-            v-if="report.reporter.self && report.run_time"
+            v-if="userStore.status==='active' && report.reporter.self && report.run_time"
             @click="openCalendarModal(card.id,report.id)">
               ویرایش زمان ملاقات
             </a>
@@ -89,7 +89,7 @@
             </RouterLink>
             <a
               class="choose"
-              v-if="report.reporter.self && !report.run_time"
+              v-if="userStore.status==='active' && report.reporter.self && !report.run_time"
               @click="openCalendarModal(card.id,report.id)"
             >
               قرار ملاقات
@@ -115,11 +115,19 @@
     />
   </div>
   <AddNewsForm
+  v-if="userStore.status==='active'"
   :reply-to-id="replyToId"
   :edit-data="editCard"
   :edit-report="editReport"
   @clearReplyId="replyToId = 0; editCard = null; editReport = null"
   />
+  <div v-else class="ban">
+    دسترسی شما غیر فعال است
+    <span v-if="userStore.banTime">
+      تاریخ این اقدام
+      {{ moment(userStore.banTime).format('jYYYY/jMM/jDD') }}
+    </span>
+  </div>
   <BaseModal :show="showMapModal" @close="showMapModal = false">
     <SinglePlaceMap
     v-if="selectedPlace && selectedPlace.lat && selectedPlace.lon && userCoordinate && userCoordinate.lat && userCoordinate.lon"
@@ -139,6 +147,7 @@
   import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
   import AddNewsForm from '@/components/dashboard/pagesContent/AddNewsForm.vue'
   import { useNewsStore } from '@/stores/news'
+  import { useUserStore } from '@/stores/user'
   const toastMsg = ref('')
   const selectedNewsId = ref(null)
   const selectedReportId = ref(null)
@@ -152,6 +161,7 @@
   const showMapModal = ref(false)
   const selectedPlace = ref(null)
   const newsStore = useNewsStore()
+  const userStore = useUserStore()
   const truncateText = (text, max = 50) => {
     if (!text) return ''
     return text.length > max ? text.slice(0, max) + '...' : text
@@ -306,10 +316,11 @@
     showMapModal.value = true
   }
   onMounted(async () => {
+    const res = await newsStore.fetchAddNewsData()
     setTimeout(() => {
       setupObserver()
     }, 100)
-    const res = await newsStore.fetchAddNewsData()
+    await userStore.fetchUserInfo()
     if (res?.coordinate?.lat && res?.coordinate?.lon) {
       userCoordinate.value = res.coordinate
     }

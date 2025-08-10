@@ -8,6 +8,7 @@ class User_handler
     private Notification_model $notification_model;
     private Rule_model $rule_model;
     private Send_handler $send;
+    private Functions_handler $function;
     public function __construct(
         Security_handler $security_handler,
         Rule_model $rule_model,
@@ -24,6 +25,10 @@ class User_handler
         $this->security = $security_handler;
         $this->send = $send;
 	}
+    public function setCategoryHandler($function) {
+        $this->function = $function;
+    }
+
     // used
     public function subscribe($data){
         return (!empty($data) && !empty($this->get_user_account_id()) &&
@@ -159,24 +164,39 @@ class User_handler
     }
     public function get_users($data){
         if(!empty($data) && $this->check_user()){
+            $this->function->category_filtter_for_place=true;
+            $this->function->get_all_category_active();
             $data=$this->users_model->get_all_user($data['limit']??10,$data['offset']??0);
-            // Category
-            // rule 
-            return ['status'=>'success','data'=>$data['data']??[],'has_more'=>$data['has_more']??false];
+            return [
+                'status'=>'success',
+                'all_category'=>$this->function->category,
+                'all_rule'=>$this->rule_model->all_rules(),
+                'data'=>$data['data']??[],
+                'has_more'=>$data['has_more']??false
+            ];
         }
         return ['status'=>'error'];
     }
-    public function user_submit($data){
-        if(!empty($data) && $this->check_user()){
-
+    public function user_submit($data) {
+        if (!empty($data) && !empty($data['data']) && $this->check_user()) {
+            if (!empty($data['edit'])) {
+                return $this->users_model->edit_user_admin($data['data']);
+            } else {
+                return $this->users_model->add_user_admin($data['data']);
+            }
         }
-        return ['status'=>'error'];
+        return ['status' => 'error', 'message' => 'Invalid data'];
     }
-    public function delete_user($data){
+    public function enable_user($data){
         if($this->check_user() &&
-        !empty($data) && !empty($data['id']) && intval($data['id'])>0){
-
-        }
+        !empty($data) && !empty($data['id']) && intval($data['id'])>0 && $this->users_model->enable_user(intval($data['id'])))
+            return ['status'=>'success'];
+        return ['status'=>'error'];
+    }
+    public function disable_user($data){
+        if($this->check_user() &&
+        !empty($data) && !empty($data['id']) && intval($data['id'])>0 && $this->users_model->disable_user(intval($data['id'])))
+            return ['status'=>'success'];
         return ['status'=>'error'];
     }
     

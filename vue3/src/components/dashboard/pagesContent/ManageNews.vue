@@ -40,18 +40,27 @@
               :to="`/show-cartable/${news.reportList[0].id}`">
               پیگیری
             </RouterLink>
-            <button
-              class="c-s"
-              v-if="news.show_status === 'dont'"
-              @click="restoreNews(news.id)">
-              پخش مجدد
-            </button>
-            <button
-              class="c-r"
-              v-if="news.show_status === 'do'"
-              @click="deleteNews(news.id)">
-              عدم پخش
-            </button>
+            <span v-if="user.status==='active'">
+              <button
+                class="c-s"
+                v-if="news.show_status === 'dont'"
+                @click="restoreNews(news.id)">
+                پخش مجدد
+              </button>
+              <button
+                class="c-r"
+                v-if="news.show_status === 'do'"
+                @click="deleteNews(news.id)">
+                عدم پخش
+              </button>
+            </span>
+            <div v-else class="ban">
+              این پست شما غیر فعال است
+              <span v-if="user.banTime">
+                تاریخ این اقدام
+                {{ moment(user.banTime).format('jYYYY/jMM/jDD') }}
+              </span>
+            </div>
           </div>
         </li>
       </ul>
@@ -62,7 +71,10 @@
   import { onMounted, onUnmounted } from 'vue'
   import { useManageNewsStore } from '@/stores/manageNews'
   import MediaSlider from '@/components/tooles/media/MediaSlider.vue'
+  import moment from 'moment-jalaali'
+  import { useUserStore } from '@/stores/user'
   const store = useManageNewsStore()
+  const user = useUserStore()
   const getStatus = (status) => {
     switch (status) {
       case 'checking':
@@ -94,6 +106,9 @@
       store.stopPolling()
     }
   }
+  onMounted(async () => {
+    await user.fetchUserInfo()
+  })
   onMounted(() => {
     document.addEventListener('visibilitychange', handleVisibilityChange)
     if (document.visibilityState === 'visible') {

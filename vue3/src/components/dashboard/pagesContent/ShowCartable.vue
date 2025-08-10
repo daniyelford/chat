@@ -28,7 +28,8 @@
         {{ item.location.address }}
       </div>
     </section>
-    <button class="add" v-if="store.rule" @click="openModal">✏️</button>
+
+    <button class="add" v-if="user.status==='active' && store.rule" @click="openModal">✏️</button>
     <h2>پیوست</h2>
     <section class="report-section">
       <div class="report-header">
@@ -54,6 +55,11 @@
         <div class="times">
           <small v-if="report?.created_at">ثبت: {{ moment(report.created_at).format('jYYYY/jMM/jDD') }}</small>
           <small v-if="report?.run_time">ملاقات {{ moment(report.run_time).format('jYYYY/jMM/jDD') }}</small>
+          <!-- 
+          user.status==='active'  
+          
+          <button v-if="report?.show_status==='do'">عدم نمایش</button>
+          <button v-else>نمایش مجدد</button> -->
         </div>
       </div>
     </section>
@@ -78,14 +84,16 @@
   </div>
 </template>
 <script setup>
-  import { ref , defineProps , watch , computed } from 'vue'
+  import { ref , defineProps , watch , computed, onMounted } from 'vue'
   import { useCartableStore } from '@/stores/cartable'
+  import { useUserStore } from '@/stores/user'
   import { usePollingWithCompare } from '@/composables/usePollingWithCompare'
   import MediaSlider from '@/components/tooles/media/MediaSlider.vue'
   import UploaderManyMedia from '@/components/tooles/upload/UploaderManyMedia.vue'
   import moment from 'moment-jalaali'
   const props = defineProps({ id: Number })
   const store = useCartableStore()
+  const user = useUserStore()
   const item = ref(null)
   const isModalOpen = ref(false)
   const description = ref('')
@@ -151,6 +159,9 @@
 
   const report = computed(() => item.value?.reports[0] || {})
   const reporter = computed(() => report.value.reporter || {})
+  onMounted(async () => {
+    await user.fetchUserInfo()
+  })
 </script>
 <style scoped>
   .tel svg{

@@ -107,6 +107,7 @@ class Users_model extends CI_Model
             users.family AS family,
             CONCAT(users.name, ' ', users.family) AS fullName,
             users.status AS user_status,
+            users.ban_time AS user_ban,
             media.url AS image
         ");
         $this->db->from('user_account');
@@ -172,22 +173,16 @@ class Users_model extends CI_Model
     public function edit_account_weher_id($arr,$id){
         return (!empty($id) && intval($id)>0 && !empty($arr) && is_array($arr) && $this->edit_table($this->account,$arr,['id'=>intval($id)]));
     }
-
-
-
-
-    public function get_all_user($limit = 20, $offset = 0)
-    {
+    public function get_all_user($limit = 20, $offset = 0){
         $this->db->select("
             user_account.*,
-            user_account.balance AS wallet,
-            user_account.token_score AS token,
+            user_account.id AS id,
             user_mobile.phone AS mobile,
             user_mobile.id AS user_mobile_id,
             user_mobile.image_id AS user_image_id,
+            users.id AS user_id,
             users.name AS name,
             users.family AS family,
-            CONCAT(users.name, ' ', users.family) AS fullName,
             users.status AS user_status,
             media.url AS image
         ");
@@ -209,6 +204,8 @@ class Users_model extends CI_Model
                 r.description, 
                 c.id AS category_id,
                 c.title AS category_name,
+                uar.id AS user_account_relation_id,
+                cr.id AS category_relation_id
             ');
             $this->db->from('user_account_relations uar');
             $this->db->join('rules r', 'r.id = uar.target_id');
@@ -220,74 +217,14 @@ class Users_model extends CI_Model
         }
         return ['data'=>$users,'has_more'=>$has_more];
     }
-
-
-
-
-
-    public function save_relation($user_account_id, $target_table, $target_id, $category_id = null)
-    {
-        if (empty($user_account_id) || empty($target_table) || empty($target_id)) {
-            return false;
-        }
-
-        // ذخیره در جدول user_account_relations
-        $this->db->insert('user_account_relations', [
-            'user_account_id' => $user_account_id,
-            'target_id' => $target_id,
-            'target_table' => $target_table
+    public function enable_user($user_id){
+        $this->db->where('id', $user_id);
+        return $this->db->update('users', [
+            'status' => 'active',
+            'ban_time' => null
         ]);
-        $relation_id = $this->db->insert_id();
-
-        // اگر category_id داشت، ذخیره در category_relation
-        if (!empty($category_id)) {
-            $this->db->insert('category_relation', [
-                'target_table' => 'user_account_relations',
-                'target_id' => $relation_id,
-                'category_id' => $category_id
-            ]);
-        }
-
-        return $relation_id;
     }
-
-    public function delete_relation($user_account_id, $target_table, $target_id)
-    {
-        if (empty($user_account_id) || empty($target_table) || empty($target_id)) {
-            return false;
-        }
-
-        // پیدا کردن ID رابطه
-        $this->db->select('id');
-        $this->db->from('user_account_relations');
-        $this->db->where([
-            'user_account_id' => $user_account_id,
-            'target_id' => $target_id,
-            'target_table' => $target_table
-        ]);
-        $query = $this->db->get();
-        $relation = $query->row_array();
-
-        if ($relation) {
-            // حذف از category_relation
-            $this->db->where([
-                'target_table' => 'user_account_relations',
-                'target_id' => $relation['id']
-            ]);
-            $this->db->delete('category_relation');
-
-            // حذف از user_account_relations
-            $this->db->where('id', $relation['id']);
-            $this->db->delete('user_account_relations');
-
-            return true;
-        }
-
-        return false;
-    }
-
-
-    public function ban_user($user_id) {
+    public function disable_user($user_id) {
         $this->db->where('id', $user_id);
         $this->db->update('users', [
             'status' => 'inactive',
@@ -300,14 +237,178 @@ class Users_model extends CI_Model
         $accounts = $this->db->get()->result_array();
         if (!empty($accounts)) {
             foreach ($accounts as $acc) {
+                $this->db->select('target_id');
                 $this->db->where('target_table', 'news');
                 $this->db->where('user_account_id', $acc['id']);
-                $this->db->update('user_account_relations', ['show_status' => 'dont']);
+                $news_ids = $this->db->get('user_account_relations')->result_array();
+                if (!empty($news_ids)) {
+                    $news_ids_array = array_column($news_ids, 'target_id');
+                    $this->db->where_in('id', $news_ids_array);
+                    $this->db->update('news', ['show_status' => 'dont']);
+                }
+                $this->db->select('target_id');
                 $this->db->where('target_table', 'report_list');
                 $this->db->where('user_account_id', $acc['id']);
-                $this->db->update('user_account_relations', ['show_status' => 'dont']);
+                $report_ids = $this->db->get('user_account_relations')->result_array();
+                if (!empty($report_ids)) {
+                    $report_ids_array = array_column($report_ids, 'target_id');
+                    $this->db->where_in('id', $report_ids_array);
+                    $this->db->update('report_list', ['show_status' => 'dont']);
+                }
             }
         }
+        return true;
     }
-
+    public function add_user_admin($data) {
+        $this->db->trans_start();
+        $user_insert = [
+            'name'      => $data['name'],
+            'family'    => $data['family'],
+        ];
+        $this->db->insert('users', $user_insert);
+        $user_id = $this->db->insert_id();
+        $mobile_insert = [
+            'user_id'   => $user_id,
+            'phone'     => $data['mobile'],
+        ];
+        $this->db->insert('user_mobile', $mobile_insert);
+        $user_mobile_id = $this->db->insert_id();
+        $account_insert = [
+            'user_mobile_id' => $user_mobile_id
+        ];
+        $this->db->insert('user_account', $account_insert);
+        $user_account_id = $this->db->insert_id();
+        if (!empty($data['rule_id'])) {
+            $relation_insert = [
+                'user_account_id' => $user_account_id,
+                'target_table'    => 'rules',
+                'target_id'       => $data['rule_id'],
+            ];
+            $this->db->insert('user_account_relations', $relation_insert);
+            $relation_id = $this->db->insert_id();
+            if (!empty($data['category_id'])) {
+                $category_relation_insert = [
+                    'target_id'    => $relation_id,
+                    'target_table' => 'user_account_relations',
+                    'category_id'  => $data['category_id']
+                ];
+                $this->db->insert('category_relation', $category_relation_insert);
+            }
+        }
+        $this->db->trans_complete();
+        return [
+            'status' => $this->db->trans_status() ? 'success' : 'error',
+            'data' => $this->get_user($user_account_id)
+        ];
+    }
+    public function edit_user_admin($data) {
+        if (!empty($data) && !empty($data['edit']) && !empty($data['edit']) &&
+        !empty($data['edit']['id']) && intval($data['edit']['id'])>0 &&
+        !empty($data['edit']['user_id']) && intval($data['edit']['user_id'])>0) {
+            $id=intval($data['edit']['user_id']);
+            $user_account_id=intval($data['edit']['id']);
+        }else{
+            return ['status' => 'error', 'message' => 'User ID is required'];
+        }
+        $this->db->trans_start();
+        $user_update = [
+            'name'   => $data['data']['name'],
+            'family' => $data['data']['family']
+        ];
+        $this->db->where('id', $id);
+        $this->db->update('users', $user_update);
+        if (!empty($data['mobile'])) {
+            $this->db->where('user_id', $id);
+            $this->db->update('user_mobile', ['phone' => $data['data']['mobile']]);
+        }
+        $old_relation_id = end($data['edit']['rules'])['user_account_relation_id']??null;
+        $old_category_rel_id = end($data['edit']['rules'])['category_relation_id']??null; 
+        $new_rule_id = $data['data']['rule_id'] ?? null;
+        $new_category_id = $data['data']['category_id'] ?? null;
+        if ($new_rule_id) {
+            if ($old_relation_id) {
+                $this->db->where('id', $old_relation_id);
+                $this->db->update('user_account_relations', [
+                    'target_id'    => $new_rule_id,
+                    'target_table' => 'rules'
+                ]);
+            } else {
+                $this->db->insert('user_account_relations', [
+                    'user_account_id' => $user_account_id,
+                    'target_id'       => $new_rule_id,
+                    'target_table'    => 'rules'
+                ]);
+                $old_relation_id = $this->db->insert_id();
+            }
+            if ($new_category_id) {
+                if ($old_category_rel_id) {
+                    $this->db->where('id', $old_category_rel_id);
+                    $this->db->update('category_relation', [
+                        'category_id' => $new_category_id
+                    ]);
+                } else {
+                    $this->db->insert('category_relation', [
+                        'target_table' => 'user_account_relations',
+                        'target_id'    => $old_relation_id,
+                        'category_id'  => $new_category_id
+                    ]);
+                }
+            }
+        }elseif (!$new_rule_id && $old_relation_id) {
+            if ($old_category_rel_id) {
+                $this->db->where('id', $old_category_rel_id);
+                $this->db->delete('category_relation');
+            }
+            $this->db->where('id', $old_relation_id);
+            $this->db->delete('user_account_relations');
+        }
+        $this->db->trans_complete();
+        return [
+            'status' => $this->db->trans_status() ? 'success' : 'error',
+            'data'=> $this->get_user($user_account_id)
+        ];
+    }
+    private function get_user($user_account_id){
+        if(!empty($user_account_id)){
+            $this->db->select("
+                user_account.*,
+                user_account.id AS id,
+                user_mobile.phone AS mobile,
+                user_mobile.id AS user_mobile_id,
+                user_mobile.image_id AS user_image_id,
+                users.id AS user_id,
+                users.name AS name,
+                users.family AS family,
+                users.status AS user_status,
+                media.url AS image
+            ");
+            $this->db->from('user_account');
+            $this->db->join('user_mobile', 'user_account.user_mobile_id = user_mobile.id', 'left');
+            $this->db->join('users', 'user_mobile.user_id = users.id', 'left');
+            $this->db->join('media', 'user_mobile.image_id = media.id', 'left');
+            $this->db->where('user_account.id',$user_account_id);
+            $user = $this->db->get()->result_array();
+            if (!empty($user)) {
+                 $this->db->select('
+                    r.id AS rule_id, 
+                    r.name, 
+                    r.slug, 
+                    r.description, 
+                    c.id AS category_id,
+                    c.title AS category_name,
+                    uar.id AS user_account_relation_id,
+                    cr.id AS category_relation_id
+                ');
+                $this->db->from('user_account_relations uar');
+                $this->db->join('rules r', 'r.id = uar.target_id');
+                $this->db->join('category_relation cr', 'cr.target_id = uar.id AND cr.target_table = "user_account_relations"');
+                $this->db->join('category c', 'c.id = cr.category_id', 'left');
+                $this->db->where('uar.user_account_id', $user_account_id);
+                $this->db->where('uar.target_table', 'rules');
+                $user['rules'] = $this->db->get()->result_array();
+                return $user;
+            }
+        }
+        return [];
+    }
 }

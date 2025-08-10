@@ -3,6 +3,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Rule_model extends CI_Model {
 
+    private $tbl='rules';
     public function get_user_rule_info($user_account_id) {
         $this->db->select('uar.id AS relation_id, r.id AS rule_id, r.name, r.slug, r.description');
         $this->db->from('user_account_relations uar');
@@ -102,5 +103,8 @@ class Rule_model extends CI_Model {
             if(!empty($tokens)) return $tokens;
         }
         return [];
+    }
+    public function all_rules(){
+        return $this->db->get($this->tbl)->result_array();
     }
 }

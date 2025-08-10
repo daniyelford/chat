@@ -13,6 +13,7 @@ export const useCartableStore = defineStore('cartable', () => {
       created_at: news?.created_at || '',
       updated_at: news?.updated_at || '',
       status: news?.status || '',
+      show_status: news?.show_status || '',
       privacy: news?.privacy || '',
       self: news?.self || false,
       location: {
@@ -46,6 +47,7 @@ export const useCartableStore = defineStore('cartable', () => {
           news_id: reportInfo?.news_id || news?.id || null,
           description: reportInfo?.description || '',
           run_time: reportInfo?.run_time || null,
+          show_status: reportInfo?.show_status || null,
           created_at: reportInfo?.created_at || '',
           updated_at: reportInfo?.updated_at || '',
           status: reportInfo?.status || '',
