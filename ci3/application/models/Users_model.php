@@ -208,8 +208,7 @@ class Users_model extends CI_Model
                 r.slug, 
                 r.description, 
                 c.id AS category_id,
-                c.name AS category_name,
-                c.slug AS category_slug
+                c.title AS category_name,
             ');
             $this->db->from('user_account_relations uar');
             $this->db->join('rules r', 'r.id = uar.target_id');
