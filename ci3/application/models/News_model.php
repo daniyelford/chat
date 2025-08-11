@@ -307,9 +307,18 @@ class News_model extends CI_Model
         $news_data = $this->build_news_data($news_rows);
         return ['data' => $news_data, 'has_more' => $has_more,'type'=>2];
     }
-    public function get_news_by_id(int $id,int $user_account_id) {
-        $news=$this->select_where_array_table($this->tbl,['id'=>intval($id)]);
+    public function get_news_by_id(int $id,int $user_account_id,bool $has_rule) {
         $this->user_account_id=intval($user_account_id);
+        $news=$this->select_where_array_table($this->tbl,['id'=>intval($id)]);
+        if(!(!empty($news) && !empty($news['0']) && !empty($news['0']['privacy']))) return [];
+        if(!$has_rule && $news['0']['privacy'] === 'private') {
+            $relation=$this->db->get_where('user_account_relations',[
+                'user_account_id'=>intval($user_account_id),
+                'target_table'=>'news',
+                'target_id'=>intval($id)
+            ]);
+            if(!(!empty($relation) && !empty($relation['0']))) return [];
+        }
         return array_values($this->build_news_data($news))['0'];
     }
     public function get_news_by_user_account_id(int $user_account_id) {
@@ -384,12 +393,20 @@ class News_model extends CI_Model
             'has_more' => $has_more
         ];
     }
-    public function get_report_with_news_by_report_id(int $report_id, int $user_account_id): array {
+    public function get_report_with_news_by_report_id(int $report_id, int $user_account_id, bool $has_rule): array {
         if ($report_id <= 0) return [];
         $report = $this->select_where_array_table($this->report, ['id' => $report_id]);
         if (empty($report)) return [];
         $report = $report[0];
         $news_id = $report['news_id'];
+        if(!$has_rule){
+            $relation=$this->db->get_where('user_account_relations',[
+                'user_account_id'=>intval($user_account_id),
+                'target_table'=>'news',
+                'target_id'=>intval($news_id)
+            ]);
+            if(!(!empty($relation) && !empty($relation['0']))) return [];
+        }
         $report_data = $this->build_report_data([$report]);
         $this->just_news = true;
         $news_data = $this->get_news_by_ids([$news_id], $user_account_id);

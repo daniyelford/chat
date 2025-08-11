@@ -1,5 +1,5 @@
 <template>
-  <div v-if="loading" class="loading">
+  <div v-if="loading" class="loading"> 
     <div class="tiny-loader"></div>
   </div>
   <div v-else-if="items.length" class="cartable-inner">
@@ -21,7 +21,10 @@
         <div class="address" v-if="item.location?.address">
           موقعیت: {{ item.location?.address }}
         </div>
-        <RouterLink class="send" v-if="item.id" :to="{ path: `/show-news/${item.id}` }">
+        <div v-if="item.show_status==='dont'" class="disable">
+          این محتوا قابل ارائه نیست
+        </div>
+        <RouterLink class="send" v-else-if="item.id" :to="{ path: `/show-news/${item.id}` }">
           مشاهده
         </RouterLink>
       </div>
@@ -41,6 +44,9 @@
           <div class="report-description">
             <p v-if="report.description">{{ report.description }}</p>
             <p v-if="report.run_time">📅 تاریخ ملاقات {{ moment(report.run_time).format('jYYYY/jMM/jDD') }}</p>
+          </div>
+          <div v-if="report.show_status==='dont'" class="disable-report">
+            این گزارش غیر فعال است
           </div>
           <RouterLink class="send" v-if="report.id" :to="{ path: `/show-cartable/${report.id}` }">
             مشاهده گزارش
@@ -133,10 +139,12 @@
     direction: rtl;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: .5rem;
   }
   .cartable {
     display: flex;
+    position: sticky;
+    top: 5px;
     align-items: flex-start;
     background-color: #cbffc0;
     border-radius: 10px;
@@ -238,5 +246,16 @@
   }
   .report-item {
     margin-bottom: 15px;
+  }
+  .disable , .disable-report{
+    padding: 10px;
+    text-align: center;
+    font-size: small;
+    background: red;
+    color: white;
+    font-weight: bolder;
+  }
+  .disable {
+    border-radius: 0 0 10px 10px;
   }
 </style>

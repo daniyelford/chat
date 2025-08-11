@@ -137,12 +137,46 @@ export const useCartableStore = defineStore('cartable', () => {
       return false
     }
   }
+  const disableReport = async (id) => {
+    try {
+      const res = await sendApi({
+        control: 'news',
+        action: 'disable_report',
+        data: { id : id }
+      })
+      if (res.status === 'success'){
+        return true
+      }
+      return false
+    } catch (e) {
+      alert('خطا در ارتباط با سرور: ' + e.message)
+      return null
+    }
+  }
+  const enableReport = async (id) => {
+    try {
+      const res = await sendApi({
+        control: 'news',
+        action: 'enable_report',
+        data: { id : id }
+      })
+      if (res.status === 'success'){
+        return true
+      }
+      return false
+    } catch (e) {
+      alert('خطا در ارتباط با سرور: ' + e.message)
+      return null
+    }
+  }
   return {
     allItems,
     loading,
     rule,
     fetchCartables,
     getCartableById,
-    updateReport
+    updateReport,
+    disableReport,
+    enableReport,
   }
 })

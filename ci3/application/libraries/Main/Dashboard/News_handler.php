@@ -68,7 +68,8 @@ class News_handler
             'status'=>'success',
             'data'=>$this->news_model->get_news_by_id(
                 intval($data['id']),
-                intval($this->user->get_user_account_id())
+                intval($this->user->get_user_account_id()),
+                $this->function->has_category_id()
             ),
             'rule'=>$this->function->has_category_id()
         ]:['status'=>'error']);
@@ -405,7 +406,7 @@ class News_handler
     }
     public function get_cartable_by_id($data){
         return (!empty($data) && !empty($data['id']) && intval($data['id'])>0 && !empty($this->user->get_user_account_id()) && intval($this->user->get_user_account_id())>0?
-        ['status'=>'success','data'=>$this->news_model->get_report_with_news_by_report_id(intval($data['id']),intval($this->user->get_user_account_id())),'rule'=>(!empty($this->function->has_category_id()))]:
+        ['status'=>'success','data'=>$this->news_model->get_report_with_news_by_report_id(intval($data['id']),intval($this->user->get_user_account_id()),$this->function->has_category_id()),'rule'=>$this->function->has_category_id()]:
         ['status'=>'error']);
     }
     public function edit_report($data){
@@ -418,6 +419,19 @@ class News_handler
             $this->media_model->edit_medias_and_relations('report_list',intval($data['id']),$media);
             return ['status'=>'success','data'=>$data];
         }
+        return ['status'=>'error'];
+    }
+    public function disable_report($data){
+        if (!empty($data) && !empty($data['id']) && intval($data['id'])>0 &&
+        $this->report_model->edit_report_weher_id(['show_status'=>'dont'],intval($data['id'])))
+            return ['status'=>'success'];
+        return ['status'=>'error'];
+
+    }
+    public function enable_report($data){
+        if (!empty($data) && !empty($data['id']) && intval($data['id'])>0 &&
+        $this->report_model->edit_report_weher_id(['show_status'=>'do'],intval($data['id'])))
+            return ['status'=>'success'];
         return ['status'=>'error'];
     }
 }

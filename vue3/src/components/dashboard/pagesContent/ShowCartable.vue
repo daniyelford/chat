@@ -23,14 +23,11 @@
         </div>
       </div>
       <MediaSlider v-if="item.medias?.length>0" :medias="item.medias" />
-      <h3 style="margin: 10px;">{{ item.description }}</h3>
+      <h3>{{ item.description }}</h3>
       <div class="address" v-if="item.location?.address">
         {{ item.location.address }}
       </div>
     </section>
-
-    <button class="add" v-if="user.status==='active' && store.rule" @click="openModal">✏️</button>
-    <h2>پیوست</h2>
     <section class="report-section">
       <div class="report-header">
         <div v-if="!reporter.self" class="user-info">
@@ -49,17 +46,22 @@
           شما
         </div>
       </div>
-      <div class="report-content">
+      <div class="report-content"> 
         <MediaSlider v-if="report?.media?.length>0" :medias="report.media" />
         <h3 v-if="report?.description">{{ report.description }}</h3>
         <div class="times">
-          <small v-if="report?.created_at">ثبت: {{ moment(report.created_at).format('jYYYY/jMM/jDD') }}</small>
-          <small v-if="report?.run_time">ملاقات {{ moment(report.run_time).format('jYYYY/jMM/jDD') }}</small>
-          <!-- 
-          user.status==='active'  
-          
-          <button v-if="report?.show_status==='do'">عدم نمایش</button>
-          <button v-else>نمایش مجدد</button> -->
+          <span v-if="report?.created_at">ثبت: {{ moment(report.created_at).format('jYYYY/jMM/jDD') }}</span>
+          <span v-if="report?.run_time">ملاقات {{ moment(report.run_time).format('jYYYY/jMM/jDD') }}</span>
+        </div>
+        <div v-if="user.status==='active' && reporter.self" class="reports-actions">
+          <button class="bg-blue" v-if="user.status==='active' && store.rule" @click="openModal">✏️</button>
+          <button class="bg-red" v-if="report?.show_status==='do'" @click="disableReportAction(report.id)">عدم نمایش</button>
+          <button class="bg-green" v-else @click="enableReportAction(report.id)">نمایش مجدد</button>
+        </div>
+        <div v-else class="reports-actions">
+          <div class="bg-red">
+            اکانت شما مسدود است
+          </div>
         </div>
       </div>
     </section>
@@ -68,7 +70,9 @@
         <h3>پیوست گزارش</h3>
         <UploaderManyMedia 
           :url="'report_media/'"
+          :initial-medias="initialMedias"
           :toAction="'report'"
+          :HasStylePlace="true"
           v-model="mediaIds"
           @done="handleUploadResult" 
         />
@@ -98,6 +102,7 @@
   const isModalOpen = ref(false)
   const description = ref('')
   const mediaIds = ref([])
+  const initialMedias = ref([])
   const isFirstLoad = ref(true)
   const fetchSingleItem = async () => {
     if (isFirstLoad.value) store.loading = true
@@ -137,8 +142,21 @@
   const openModal = () => {
     const r = report.value
     description.value = r?.description || ''
-    mediaIds.value = Array.isArray(r?.media) ? r.media.map(m => m.id) : []
+    mediaIds.value = Array.isArray(r?.media) ? r.media.map(r => r.id) : []
+    initialMedias.value=Array.isArray(r?.media) ? r.media : []
     isModalOpen.value = true
+  }
+  const disableReportAction = async (id) => {
+    const ok = await store.disableReport(id)
+    if(ok){
+      report.value.show_status='dont'
+    }
+  }
+  const enableReportAction = async (id) => {
+    const ok = await store.enableReport(id)
+    if(ok){
+      report.value.show_status='do'
+    }
   }
   const handleUploadResult = (uploaded) => {
     mediaIds.value = uploaded.map(m => m.id)
@@ -164,6 +182,39 @@
   })
 </script>
 <style scoped>
+  .reports-actions {
+    height: 40px;
+    border-radius: 0 0 40px 40px;
+    overflow: hidden;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+  }
+  .reports-actions div{
+    width: 100%;
+    text-align: center;
+    padding-top: 8px;
+    font-size: large;
+    font-weight: bold;
+  }
+  .reports-actions button {
+    min-width: 50%;
+    max-width: 100%;
+    border: none;
+    outline: none;
+  }
+  .bg-blue{
+    background-color: blue;
+    color: whitesmoke;
+  }
+  .bg-red{
+    background-color: red;
+    color: whitesmoke;
+  }
+  .bg-green{
+    background-color: green;
+    color: whitesmoke;
+  }
   .tel svg{
     width: 25px;
     height: 25px;
@@ -180,47 +231,57 @@
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
-  .add{
-    background: #9cf0a4;
-    outline: none;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    float: left;
-  }
-  .address{
-    margin: 0 10px 20px 10px;
+  .address {
+    padding: 10px 5px;
     word-break: break-all;
+    background: #fdee6a;
+    border-radius: 0 0 10px 10px;
   }
-  .user,.times{
+  .user{
     display: flex;
     flex-wrap: nowrap;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
   }
   .times{
-    flex-direction: row;
+    text-align: center;
+    background: #fdee6a;
+    padding: 10px;
   }
-  .user{
-    width: 100%;
+  .items span{
+    display: block;
+    margin-bottom: 10px;
   }
   .cartable-details {
     padding: 1rem;
     direction: rtl;
+    display: flex;
+    align-items: flex-start;
+    background: #d5f2c1;
+  }
+  .news-section {
+    width: 45%;
+  } 
+  .report-section {
+    width: 55%;
   }
   .news-section, .report-section {
-    margin-bottom: 2rem;
-    border: 1px solid #eee;
-    border-radius: 10px;
-    overflow: hidden;
+    box-sizing: border-box;
+    padding: 5px;
   }
   .news-header,.report-header {
-    background: rgb(255, 242, 218);
-    padding: 10px;
-    margin-bottom: 0.7rem;
+    background: #fff2da;
+    padding: 10px 5px;
+    border-radius: 10px 10px 0 0;
   }
-  .report-content {
-    padding: 0 10px 15px;
+  h3 {
+    margin: 0;
+    padding: 10px 3px;
+    background: #6390b8;
+    color: whitesmoke;
+    text-align: center;
+    font-size: medium;
   }
   .user-info {
     display: flex;

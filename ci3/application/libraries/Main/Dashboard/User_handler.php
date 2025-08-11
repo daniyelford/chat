@@ -178,6 +178,8 @@ class User_handler
         return ['status'=>'error'];
     }
     public function user_submit($data) {
+        $this->users_model->security=[$this->security, 'string_secutory_week_check'];
+        $this->users_model->security_phone=[$this->security, 'validate_mobile_number'];
         if (!empty($data) && !empty($data['data']) && $this->check_user()) {
             if (!empty($data['edit'])) {
                 return $this->users_model->edit_user_admin($data);

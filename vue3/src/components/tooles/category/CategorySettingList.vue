@@ -22,14 +22,36 @@
     <div v-if="categoryStore.categoryListLoading">
       <div class="tiny-loader"></div>
     </div>
-    <ul v-else-if="categoryStore.allCategories.length>0">
-      <li v-for="cat in categoryStore.allCategories" :key="cat.id">
-        <span>{{ cat.title }} ({{ cat.status }}, مکان: {{ cat.for_place }}, اجباری: {{ cat.is_force }})</span>
-        <button @click="startEdit(cat)">ویرایش</button>
-        <button @click="deleteCategory(cat.id)">حذف</button>
-      </li>
-      <div ref="CategoryLoadTrigger" style="height: 1px;"></div>
-    </ul>
+    <div v-else-if="categoryStore.allCategories.length>0" class="categories">
+      <table>
+        <thead>
+          <tr>
+            <th>عنوان</th>
+            <th>مخصوص جایگاه مکانی</th>
+            <th>دارای اهمیت بالا</th>
+            <th>عملیات</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="cat in categoryStore.allCategories" :key="cat.id">
+            <td>
+              {{ cat.title }} 
+            </td>
+            <td>
+              {{ cat.for_place }}
+            </td>
+            <td>
+              {{ cat.is_force }}
+            </td>
+            <td>
+              <button @click="startEdit(cat)">ویرایش</button>
+              <button @click="deleteCategory(cat.id)">حذف</button>
+            </td>
+          </tr>
+          <tr ref="CategoryLoadTrigger" style="height: 1px;"></tr>
+        </tbody>
+      </table>
+    </div>
     <div v-else class="error">
       دسته بندی ساخته نشده
     </div>
@@ -94,33 +116,28 @@
 </script>
 
 <style scoped>
-.category-settings {
-  max-width: 600px;
-  margin: auto;
-  padding: 20px;
-}
-.category-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-.category-form input,
-.category-form select {
-  flex: 1 1 150px;
-}
-ul {
-  max-height: 350px;
-  overflow: auto;
-  list-style: none;
-  padding: 0;
-}
-li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 5px 0;
-}
+  .category-settings {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+  }
+  .category-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  .category-form input,
+  .category-form select {
+    flex: 1 1 150px;
+  }
+  table{
+    text-align: center;
+  }
+  .categories {
+    max-height: 350px;
+    overflow: auto;
+  }
   .tiny-loader {
     width: 20px;
     height: 20px;

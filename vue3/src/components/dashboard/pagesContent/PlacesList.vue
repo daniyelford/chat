@@ -16,23 +16,25 @@
       />
       <div ref="placeLoadTrigger" class="load-trigger" style="margin-top: -750px;"></div>
     </div>
-    <BaseModal :show="showMapModal" @close="showMapModal = false">
-      <SinglePlaceMap
-      v-if="selectedPlace && selectedPlace.lat && selectedPlace.lon && userCenter && userCenter.lat && userCenter.lon"
-      :user-center="userCenter"
-      :place="selectedPlace"
-      />
-    </BaseModal>
-    <BaseModal :show="showAddPlace" @close="handleCloseAddPlace">
-      <AddPlaceForm :editPlace="editingPlace" @done="handleCloseAddPlace" />
-    </BaseModal>
   </div>
   <div v-else-if="placeStore.categoryListLoading || placeStore.placeListLoading">
       <div class="tiny-loader"></div>
   </div>
   <div v-else class="error">
     محل نزدیکی برای ارائه به شما وجود ندارد
+    <br>
+    <a v-if="placeStore?.highRule" @click="showAddPlace=true">افزودن محل</a>
   </div>
+  <BaseModal :show="showMapModal" @close="showMapModal = false">
+    <SinglePlaceMap
+      v-if="selectedPlace && selectedPlace.lat && selectedPlace.lon && userCenter && userCenter.lat && userCenter.lon"
+      :user-center="userCenter"
+      :place="selectedPlace"
+      />
+  </BaseModal>
+  <BaseModal :show="showAddPlace" @close="handleCloseAddPlace">
+    <AddPlaceForm :editPlace="editingPlace" @done="handleCloseAddPlace" />
+  </BaseModal>
 </template>
 <script setup>
   import {  computed, ref, watch, onMounted } from 'vue'

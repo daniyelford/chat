@@ -47,7 +47,7 @@ const toggleToolsMenu = () => {
   align-items: center;
   gap: 4px;
   padding: 6px 22px;
-  background: #f8f8f8;
+  background: #88c6ff;
   border: 1px solid #ddd;
   border-radius: 6px;
   cursor: pointer;

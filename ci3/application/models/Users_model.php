@@ -13,6 +13,8 @@ class Users_model extends CI_Model
 	private $address='addresses';
 	private $address_relation='address_relation'; 
 	private $credential='user_credentials';
+    public $security;
+    public $security_phone;
 	private function select_where_array_table($tbl,$arr){
 	    return (!empty($tbl) && is_string($tbl) && !empty($arr) && is_array($arr)?$this->db->get_where($tbl,$arr)->result_array():false);
 	}
@@ -260,10 +262,13 @@ class Users_model extends CI_Model
         return true;
     }
     public function add_user_admin($data) {
+        if(!(is_callable($this->security_phone) ? ($this->security_phone)($data['mobile'] ?? '') : $data['mobile']??'')){
+            return ['status' => 'error', 'message' => 'phone number is wrong'];
+        }
         $this->db->trans_start();
         $user_insert = [
-            'name'      => $data['name'],
-            'family'    => $data['family'],
+            'name'      => is_callable($this->security) ? ($this->security)($data['name'] ?? '') : $data['name']??'',
+            'family'    => is_callable($this->security) ? ($this->security)($data['family'] ?? '') : $data['family']??''
         ];
         $this->db->insert('users', $user_insert);
         $user_id = $this->db->insert_id();
@@ -282,21 +287,21 @@ class Users_model extends CI_Model
             $relation_insert = [
                 'user_account_id' => $user_account_id,
                 'target_table'    => 'rules',
-                'target_id'       => $data['rule_id'],
+                'target_id'       => (int) $data['rule_id'],
             ];
             $this->db->insert('user_account_relations', $relation_insert);
             $relation_id = $this->db->insert_id();
             $category_relation_insert = [
                 'target_id'    => $relation_id,
                 'target_table' => 'user_account_relations',
-                'category_id'  => $data['category_id']
+                'category_id'  => (int) $data['category_id']
             ];
             $this->db->insert('category_relation', $category_relation_insert);
         }
         $this->db->trans_complete();
         return [
             'status' => $this->db->trans_status() ? 'success' : 'error',
-            'data' => $this->get_user($user_account_id)
+            'data' => $this->get_user((int) $user_account_id)
         ];
     }
     public function edit_user_admin($data) {
