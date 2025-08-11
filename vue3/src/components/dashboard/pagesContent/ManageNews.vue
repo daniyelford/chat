@@ -1,6 +1,8 @@
 <template>
   <div class="news-wrapper">
-    <div v-if="store.loading" class="loading">در حال بارگذاری...</div>
+    <div v-if="store.loading" class="loading">
+      <div class="tiny-loader"></div>
+    </div>
     <div v-else>
       <div v-if="store.newsList.length === 0" class="no-news">
         شما هنوز خبری ثبت نکردید.
@@ -31,16 +33,16 @@
           </p>
           <small class="news-status">وضعیت: {{ getStatus(news.status) }}</small>
           <div class="actions">
-            <RouterLink class="c-d" :to="`/show-news/${news.id}`">
-              مشاهده
-            </RouterLink>
-            <RouterLink
-              v-if="news.status === 'seen' && news?.reportList?.[0]?.id"
-              class="c-b"
-              :to="`/show-cartable/${news.reportList[0].id}`">
-              پیگیری
-            </RouterLink>
             <span v-if="user.status==='active'">
+              <RouterLink class="c-d" :to="`/show-news/${news.id}`">
+                مشاهده
+              </RouterLink>
+              <RouterLink
+                v-if="news.status === 'seen' && news?.reportList?.[0]?.id"
+                class="c-b"
+                :to="`/show-cartable/${news.reportList[0].id}`">
+                پیگیری
+              </RouterLink>
               <button
                 class="c-s"
                 v-if="news.show_status === 'dont'"
@@ -55,11 +57,22 @@
               </button>
             </span>
             <div v-else class="ban">
-              این پست شما غیر فعال است
+              <RouterLink class="c-d" :to="`/show-news/${news.id}`">
+                مشاهده
+              </RouterLink>
+              <RouterLink
+                v-if="news.status === 'seen' && news?.reportList?.[0]?.id"
+                class="c-b"
+                :to="`/show-cartable/${news.reportList[0].id}`">
+                پیگیری
+              </RouterLink>
+              <br>
+              اکانت شما
               <span v-if="user.banTime">
-                تاریخ این اقدام
+                از تاریخ
                 {{ moment(user.banTime).format('jYYYY/jMM/jDD') }}
               </span>
+              غیر فعال است
             </div>
           </div>
         </li>
@@ -150,12 +163,17 @@
     align-items: center;
   }
   .news-item {
-    width: 50%;
+    width: 90%;
     box-sizing: border-box;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    border: none;
+    border-radius: 30px;
     padding: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    background: wheat;
+    box-shadow: 0 0 12px gray;
+    text-align: center;
   }
   .news-header {
     display: flex;
@@ -213,13 +231,17 @@
     text-decoration: none;
     color: #000;
   }
+  .ban{
+    color: red;
+  }
   .actions {
     display: flex;
     justify-content: space-around;
-    margin-top: 1rem;
+    margin: 1rem 0;
+    align-items: center;
   }
   .actions button ,.c-b,.c-d{
-    width: 50%;
+    width: 150px;
     display: block;
     text-align: center;
     padding: 6px 12px;
@@ -238,10 +260,22 @@
   .c-r {
     background: #ac3427 !important;
   }
-  .c-s{
+  .c-s {
     background: #29921b !important;
   }
   .actions button:hover {
     opacity: 0.9;
+  }
+    .tiny-loader {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ccc;
+    border-top-color: #333;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 10px auto;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
 </style>

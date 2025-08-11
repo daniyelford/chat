@@ -84,15 +84,15 @@ export const useUserStore = defineStore('user', {
           control: 'user',
           data: { data: userData, edit: edit }
         })
-        if (res.status === 'success' && res?.id) {
+        if (res.status === 'success' && res.data){
           if (!edit) {
-            this.users.unshift(res.data)
+            this.users.unshift([res.data])
           } else {
-            const index = this.users.findIndex(c => Number(c.id) === Number(edit.user_id))
+            const index = this.users.findIndex(c => Number(c.id) === Number(edit.id))
             if (index !== -1) {
-              this.users[index] = res.data
+              this.users[index] = [res.data]
             } else {
-              this.users.unshift(res.data)
+              this.users.unshift([res.data])
             }
           }
         }

@@ -278,7 +278,7 @@ class Users_model extends CI_Model
         ];
         $this->db->insert('user_account', $account_insert);
         $user_account_id = $this->db->insert_id();
-        if (!empty($data['rule_id'])) {
+        if (!empty($data['rule_id']) && !empty($data['category_id'])) {
             $relation_insert = [
                 'user_account_id' => $user_account_id,
                 'target_table'    => 'rules',
@@ -286,14 +286,12 @@ class Users_model extends CI_Model
             ];
             $this->db->insert('user_account_relations', $relation_insert);
             $relation_id = $this->db->insert_id();
-            if (!empty($data['category_id'])) {
-                $category_relation_insert = [
-                    'target_id'    => $relation_id,
-                    'target_table' => 'user_account_relations',
-                    'category_id'  => $data['category_id']
-                ];
-                $this->db->insert('category_relation', $category_relation_insert);
-            }
+            $category_relation_insert = [
+                'target_id'    => $relation_id,
+                'target_table' => 'user_account_relations',
+                'category_id'  => $data['category_id']
+            ];
+            $this->db->insert('category_relation', $category_relation_insert);
         }
         $this->db->trans_complete();
         return [
@@ -321,11 +319,15 @@ class Users_model extends CI_Model
             $this->db->where('user_id', $id);
             $this->db->update('user_mobile', ['phone' => $data['data']['mobile']]);
         }
-        $old_relation_id = end($data['edit']['rules'])['user_account_relation_id']??null;
-        $old_category_rel_id = end($data['edit']['rules'])['category_relation_id']??null; 
+        $lastRule = (!empty($data['edit']['rules']) && is_array($data['edit']['rules']))
+            ? end($data['edit']['rules'])
+            : null;
+
+        $old_relation_id = $lastRule['user_account_relation_id'] ?? null;
+        $old_category_rel_id = $lastRule['category_relation_id'] ?? null;
         $new_rule_id = $data['data']['rule_id'] ?? null;
         $new_category_id = $data['data']['category_id'] ?? null;
-        if ($new_rule_id) {
+        if ($new_rule_id && $new_category_id) {
             if ($old_relation_id) {
                 $this->db->where('id', $old_relation_id);
                 $this->db->update('user_account_relations', [
@@ -354,11 +356,9 @@ class Users_model extends CI_Model
                     ]);
                 }
             }
-        }elseif (!$new_rule_id && $old_relation_id) {
-            if ($old_category_rel_id) {
-                $this->db->where('id', $old_category_rel_id);
-                $this->db->delete('category_relation');
-            }
+        }else {
+            $this->db->where('id', $old_category_rel_id);
+            $this->db->delete('category_relation');
             $this->db->where('id', $old_relation_id);
             $this->db->delete('user_account_relations');
         }
@@ -388,8 +388,9 @@ class Users_model extends CI_Model
             $this->db->join('media', 'user_mobile.image_id = media.id', 'left');
             $this->db->where('user_account.id',$user_account_id);
             $user = $this->db->get()->result_array();
-            if (!empty($user)) {
-                 $this->db->select('
+            if (!empty($user) && !empty($user['0'])) {
+                $user=$user['0'];
+                $this->db->select('
                     r.id AS rule_id, 
                     r.name, 
                     r.slug, 

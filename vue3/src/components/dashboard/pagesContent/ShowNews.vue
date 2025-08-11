@@ -46,7 +46,7 @@
             {{ cat.title }}
         </span> 
         <h3>{{ news.description }}</h3>
-        <p v-if="news.location?.address" style="margin: 10px 0;">{{ news.location.address }}</p>
+        <p v-if="news.location?.address" class="address">{{ news.location.address }}</p>
         <small>{{ moment(news.created_at).format('jYYYY/jMM/jDD') }}</small>
         <span v-if="userStore.status==='active'">
             <button
@@ -63,15 +63,16 @@
             </button>
         </span>
         <div v-else class="ban">
-            این پست شما غیر فعال است
+            اکانت شما
             <span v-if="userStore.banTime">
-            تاریخ این اقدام
-            {{ moment(userStore.banTime).format('jYYYY/jMM/jDD') }}
+                از تاریخ
+                {{ moment(userStore.banTime).format('jYYYY/jMM/jDD') }}
             </span>
+            غیر فعال است
         </div>
     </div>
     <div v-else>
-        <p>در حال بارگذاری...</p>
+        <div class="tiny-loader"></div>
     </div>
 </template>
 <style scoped>
@@ -92,13 +93,12 @@
         border-radius: 50px;
     }
     .media {
-        margin-top: 15px;
+        margin: 15px 0;
         text-align: center;
     }
     .pub,.pri{
         padding: 2px;
         border-radius: 5px;
-        float: left;
     }
     .pub{
         background: #03b403;
@@ -107,5 +107,65 @@
     .pri{
         background: #cc0303;
         color: #ec8065;
+    }
+    .category {
+        background: lightgrey;
+        border-radius: 5px;
+        padding: 4px 10px;
+        margin: 5px 1px;
+        display: inline-block;
+    }
+    h3 {
+        margin: 15px 0 0 0;
+        text-align: center;
+        background: yellow;
+        padding: 5px;
+    }
+    .address{
+        margin: 0 0 10px 0;
+        background: beige;
+        padding: 19px;
+        border-radius: 0 0 20px 20px;
+        text-align: center;
+    }
+    small {
+        margin-top: 5px;
+        float: left;
+    }
+    .c-r,.c-s{
+        width: 150px;
+        display: block;
+        text-align: center;
+        padding: 6px 12px;
+        border: none;
+        background: #4e3a85;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        margin-top: 10px;
+        box-sizing: border-box;
+    }
+    .c-r {
+        background: #ac3427 !important;
+    }
+    .c-s {
+        background: #29921b !important;
+    }
+    .ban{
+        color: red;
+        padding: 5px;
+    }
+    .tiny-loader {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #ccc;
+        border-top-color: #333;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 10px auto;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
 </style>

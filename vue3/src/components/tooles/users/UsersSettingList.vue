@@ -2,38 +2,6 @@
   <div>
     <button style="float: left;" @click="openForm()">افزودن کاربر</button>
     <h2>مدیریت کاربران</h2>
-    <div v-if="loading">
-      <div class="tiny-loader"></div>
-    </div>
-    <table v-else-if="users.length > 0">
-      <tbody>
-        <tr v-for="u in users" :key="u.id">
-          <td class="p-2">
-            <img v-if="u.image" :src="u.image" alt="avatar"/>
-            <svg v-else data-v-0c463e07="" xmlns="http://www.w3.org/2000/svg" fill="#000000" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g data-v-0c463e07=""><rect data-v-0c463e07="" fill="none" height="24" width="24"></rect></g><g data-v-0c463e07=""><path data-v-0c463e07="" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20z"></path></g></svg>
-          </td>
-          <td class="p-2">{{ u.name }}</td>
-          <td class="p-2">{{ u.family }}</td>
-          <td class="p-2">{{ u.mobile }}</td>
-          <td class="p-2">
-            <div v-if="u.rules?.length">
-              <div v-for="(rule,index) in u.rules" :key="index">
-                <span>{{ rule.category_name }}</span> - {{ rule.name }}
-              </div>
-            </div>
-            <span v-else>بدون نقش</span>
-          </td>
-          <td class="p-2">
-            <button @click="openForm(u)">ویرایش</button>
-            <button v-if="u.user_status === 'active'" @click="onDisableUser(u.user_id)">غیر فعال</button>
-            <button v-else @click="onEnableUser(u.user_id)">فعال</button>
-          </td>
-        </tr>
-        <tr ref="UsersLoadTrigger" style="height: 1px;"></tr>
-      </tbody>
-    </table>
-    <div v-else class="error">{{ error }}</div>
-
     <div v-if="showForm" class="mt-6 border p-4 rounded bg-gray-50">
       <h3 class="font-bold mb-2">{{ editUser ? 'ویرایش کاربر' : 'افزودن کاربر' }}</h3>
       <form @submit.prevent="submitForm">
@@ -62,6 +30,39 @@
         </button>
       </form>
     </div>
+    <div v-if="loading">
+      <div class="tiny-loader"></div>
+    </div>
+    <div class="table" v-else-if="users.length > 0">
+      <table>
+        <tbody>
+          <tr v-for="u in users" :key="u.id">
+            <td class="p-2">
+              <img v-if="u.image" :src="u.image" alt="avatar"/>
+              <svg v-else data-v-0c463e07="" xmlns="http://www.w3.org/2000/svg" fill="#000000" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g data-v-0c463e07=""><rect data-v-0c463e07="" fill="none" height="24" width="24"></rect></g><g data-v-0c463e07=""><path data-v-0c463e07="" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20z"></path></g></svg>
+            </td>
+            <td class="p-2">{{ u.name }}</td>
+            <td class="p-2">{{ u.family }}</td>
+            <td class="p-2">{{ u.mobile }}</td>
+            <td class="p-2">
+              <div v-if="u.rules?.length">
+                <div v-for="(rule,index) in u.rules" :key="index">
+                  <span>{{ rule.category_name }}</span> - {{ rule.name }}
+                </div>
+              </div>
+              <span v-else>بدون نقش</span>
+            </td>
+            <td class="p-2">
+              <button @click="openForm(u)">ویرایش</button>
+              <button v-if="u.user_status === 'active'" @click="onDisableUser(u.user_id)">غیر فعال</button>
+              <button v-else @click="onEnableUser(u.user_id)">فعال</button>
+            </td>
+          </tr>
+          <tr ref="UsersLoadTrigger" style="height: 1px;"></tr>
+        </tbody>
+      </table>
+    </div>
+    <div v-else class="error">{{ error }}</div>
   </div>
 </template>
 
@@ -142,7 +143,7 @@
 
 <style scoped>
 
-  table {
+  .table {
     max-height: 300px;
     overflow: auto;
   }
