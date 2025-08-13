@@ -1013,7 +1013,7 @@
         position: relative;
         background: linear-gradient(180deg, $bg-light 0%, $bg-light 50%, $light-shade 50%, $light-shade 80%, $bg-blue 80%,  $bg-blue 100%);
         width: 100%;
-        height: 350px;
+        height: 275px;
         border-radius: 30px;
         overflow: hidden;
     }

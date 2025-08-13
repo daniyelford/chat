@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '@/views/home/LoginView.vue';
 import RegisterView from '@/views/home/RegisterView.vue';
 import MainDashboard from '@/views/dashboard/MainDashboard.vue';
+import NotFoundPage from '@/components/NotFoundPage.vue';
 import { sendApi } from '@/utils/api';
 import { useMenuStore } from '@/stores/menu'
 import { useNotificationStore } from '@/stores/notification'
@@ -76,6 +77,11 @@ const routes = [
     props: route => ({ view: 'show-news', id: route.params.id }),
     meta: { requiresAuth: true }
   },
+  { 
+    path: '/:pathMatch(.*)*', 
+    name: 'NotFound', 
+    component: NotFoundPage 
+  }
 ]
 
 const router = createRouter({
