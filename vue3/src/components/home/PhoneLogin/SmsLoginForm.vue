@@ -108,10 +108,6 @@
             resendDisabled.value=true
         }
     }
-    onMounted(() => {
-        updatecountdown()
-        interval = setInterval(updatecountdown, 1000)
-    })
     onUnmounted(() => {
         if (interval) clearInterval(interval)
     })

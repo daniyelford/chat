@@ -89,6 +89,7 @@ defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest auto
 // define('DBNAME','myhomeir_tbl');
 // // sms.ir
 // define('SMSIRTEMPID','763111');
+// // define('SMSIRTEMPID','904491');
 // define('SMSIRKEY','01ZtycjQXUQFlarNuAVGMRmaJHFQilUrKSbGeIUBaeD2ZI6Q');
 // define('WEATHER_API','YCC2W5RH259642CZEHCF9JN4S');
 
