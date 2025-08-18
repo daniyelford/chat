@@ -20,13 +20,24 @@ class Place_handler
         $this->function = $function;
         $this->send = $send;
     }
+    public function get_cities($data){
+        $offset = isset($data['offset']) ? (int)$data['offset'] : 0;
+        $limit = isset($data['limit']) ? (int)$data['limit'] : 20;
+        $city = $this->place_model->get_cities($offset, $limit);
+        return [
+            'status' => 'success',
+            'data' => $city['data']??[],
+            'has_more' => $city['has_more']??false
+        ];
+    }
     public function get_places($data){
         if (!empty($this->user->get_user_account_id())) {
             $id = isset($data['id']) ? (int)$data['id'] : null;
             $offset = isset($data['offset']) ? (int)$data['offset'] : 0;
             $limit = isset($data['limit']) ? (int)$data['limit'] : 10;
             $category_id = isset($data['category_id']) ? $data['category_id'] : null;
-            $places = $this->place_model->get_place_with_relations($offset, $limit, $id, $category_id);
+            $city_id = isset($data['city_id']) ? $data['city_id'] : null;
+            $places = $this->place_model->get_place_with_relations($offset, $limit, $id, $category_id,$city_id);
             $high_rule=false;
             if($this->function->has_category_id()){
                 $user_category=array_map('intval',$this->user->get_user_category_id());

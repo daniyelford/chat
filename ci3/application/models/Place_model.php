@@ -5,106 +5,116 @@ class Place_model extends CI_Model
     public $send;
     public $user;
     private $delete_extera_relations=false;
-    public function get_place_with_relations($offset = 0, $limit = 10, $id = null, $category_id = null) {
-        $fetchLimit = $limit + 1;
-        $this->db->select('p.*');
-        $this->db->from('places p');
-        if(!empty($id)){
-            $this->db->where('id',(int) $id);
-        }else{
-            if (!empty($category_id)) {
-                $this->db->join('category_relation cr', 'cr.target_id = p.id AND cr.target_table = "places"', 'inner');
-                $this->db->where('cr.category_id', (int) $category_id);
+    public function get_cities($offset, $limit) {
+        $this->db->distinct();
+        $this->db->select('a.id, a.city');
+        $this->db->from('addresses a');
+        $this->db->join('address_relation ar', 'ar.address_id = a.id AND ar.target_table = "places"', 'inner');
+        $this->db->limit($limit + 1, $offset);
+        $citiesResult = $this->db->get()->result_array();
+        if (!$citiesResult) return ['data' => [], 'has_more' => false];
+        $hasMore = count($citiesResult) > $limit;
+        if ($hasMore) array_pop($citiesResult);
+        $uniqueCities = [];
+        foreach ($citiesResult as $row) {
+            $cityName = trim($row['city']);
+            $normalized = mb_strtolower($cityName); // برای یکسان‌سازی حروف
+            if (!in_array($normalized, array_map('mb_strtolower', $uniqueCities))) {
+                $uniqueCities[] = ['id'=>$row['id'],'city'=>$cityName];
             }
-            $this->db->order_by('id','DESC');
-            $this->db->limit($fetchLimit, $offset);
         }
-        $places = $this->db->get()->result_array();
-        if (!$places) return ['data'=>[],'has_more'=>false];
-        $hasMore = count($places) > $limit;
-        if ($hasMore) array_pop($places);
-        $placeIds = array_column($places, 'id');
-        $categoryRelations = [];
-        if (!empty($placeIds)) {
-            $categoryRelations = $this->db
+        return [
+            'data' => $uniqueCities,
+            'has_more' => $hasMore
+        ];
+    }
+    public function get_place_with_relations($offset = 0, $limit = 10, $id = null, $category_id = null, $address_id = null) {
+        $fetchLimit = $limit + 1;
+        $cityAddresses = [];
+        if (!empty($address_id)) {
+            $baseAddress = $this->db->where('id', (int)$address_id)->get('addresses')->row_array();
+            if ($baseAddress) {
+                $cityAddresses = $this->db
+                    ->where('city', $baseAddress['city'])
+                    ->get('addresses')
+                    ->result_array();
+            }
+        }
+
+        $placeIdsFromCity = [];
+        if (!empty($cityAddresses)) {
+            $addressIds = array_column($cityAddresses, 'id');
+            $relations = $this->db
                 ->where('target_table', 'places')
-                ->where_in('target_id', $placeIds)
-                ->get('category_relation')
-                ->result_array();
-        }
-        $categoryIds = array_column($categoryRelations, 'category_id');
-        $categories = [];
-        if (!empty($categoryIds)) {
-            $categories = $this->db
-                ->where_in('id', $categoryIds)
-                ->get('category')
-                ->result_array();
-        }
-        $mediaRelations = [];
-        if (!empty($placeIds)) {
-            $mediaRelations = $this->db
-                ->where('target_table', 'places')
-                ->where_in('target_id', $placeIds)
-                ->get('media_relation')
-                ->result_array();
-        }
-        $mediaIds = array_column($mediaRelations, 'media_id');
-        $medias = [];
-        if (!empty($mediaIds)) {
-            $medias = $this->db
-                ->where_in('id', $mediaIds)
-                ->get('media')
-                ->result_array();
-        }
-        $addressRelations = [];
-        if (!empty($placeIds)) {
-            $addressRelations = $this->db
-                ->where('target_table', 'places')
-                ->where_in('target_id', $placeIds)
+                ->where_in('address_id', $addressIds)
                 ->get('address_relation')
                 ->result_array();
+            $placeIdsFromCity = array_column($relations, 'target_id');
         }
-        $addressIds = array_column($addressRelations, 'address_id');
-        $addresses = [];
-        if (!empty($addressIds)) {
-            $addresses = $this->db
-                ->where_in('id', $addressIds)
-                ->get('addresses')
-                ->result_array();
+
+        // query اصلی برای places
+        $this->db->select('p.*');
+        $this->db->from('places p');
+
+        if (!empty($id)) {
+            $this->db->where('p.id', (int)$id);
+        } else {
+            if (!empty($category_id)) {
+                $this->db->join('category_relation cr', 'cr.target_id = p.id AND cr.target_table = "places"', 'inner');
+                $this->db->where('cr.category_id', (int)$category_id);
+            }
+
+            // اگر city filter داریم، فقط placeهایی که در $placeIdsFromCity هستند
+            if (!empty($placeIdsFromCity)) {
+                $this->db->where_in('p.id', $placeIdsFromCity);
+            }
+
+            $this->db->order_by('p.id','DESC');
+            $this->db->limit($fetchLimit, $offset);
         }
-        $categoryMap = [];
-        foreach ($categories as $cat) {
-            $categoryMap[$cat['id']] = $cat;
-        }
-        $mediaMap = [];
-        foreach ($medias as $media) {
-            $mediaMap[$media['id']] = $media;
-        }
-        $addressMap = [];
-        foreach ($addresses as $address) {
-            $addressMap[$address['id']] = $address;
-        }
+
+        $places = $this->db->get()->result_array();
+        if (!$places) return ['data'=>[],'has_more'=>false];
+
+        $hasMore = count($places) > $limit;
+        if ($hasMore) array_pop($places);
+
+        $placeIds = array_column($places, 'id');
+
+        // attach کردن categories, medias و addresses مثل قبل
+        $categoryRelations = !empty($placeIds) ? $this->db->where('target_table','places')->where_in('target_id',$placeIds)->get('category_relation')->result_array() : [];
+        $categoryIds = array_column($categoryRelations, 'category_id');
+        $categories = !empty($categoryIds) ? $this->db->where_in('id',$categoryIds)->get('category')->result_array() : [];
+
+        $mediaRelations = !empty($placeIds) ? $this->db->where('target_table','places')->where_in('target_id',$placeIds)->get('media_relation')->result_array() : [];
+        $mediaIds = array_column($mediaRelations,'media_id');
+        $medias = !empty($mediaIds) ? $this->db->where_in('id',$mediaIds)->get('media')->result_array() : [];
+
+        $addressRelations = !empty($placeIds) ? $this->db->where('target_table','places')->where_in('target_id',$placeIds)->get('address_relation')->result_array() : [];
+        $addressIds = array_column($addressRelations,'address_id');
+        $addresses = !empty($addressIds) ? $this->db->where_in('id',$addressIds)->get('addresses')->result_array() : [];
+
+        // map
+        $categoryMap = []; foreach($categories as $cat) $categoryMap[$cat['id']] = $cat;
+        $mediaMap = []; foreach($medias as $media) $mediaMap[$media['id']] = $media;
+        $addressMap = []; foreach($addresses as $addr) $addressMap[$addr['id']] = $addr;
+
         foreach ($places as &$place) {
             $place['categories'] = [];
             foreach ($categoryRelations as $rel) {
-                if ($rel['target_id'] == $place['id'] && isset($categoryMap[$rel['category_id']])) {
-                    $place['categories'][] = $categoryMap[$rel['category_id']];
-                }
+                if ($rel['target_id']==$place['id'] && isset($categoryMap[$rel['category_id']])) $place['categories'][] = $categoryMap[$rel['category_id']];
             }
             $place['medias'] = [];
             foreach ($mediaRelations as $rel) {
-                if ($rel['target_id'] == $place['id'] && isset($mediaMap[$rel['media_id']])) {
-                    $place['medias'][] = $mediaMap[$rel['media_id']];
-                }
+                if ($rel['target_id']==$place['id'] && isset($mediaMap[$rel['media_id']])) $place['medias'][] = $mediaMap[$rel['media_id']];
             }
             $place['addresses'] = [];
             foreach ($addressRelations as $rel) {
-                if ($rel['target_id'] == $place['id'] && isset($addressMap[$rel['address_id']])) {
-                    $place['addresses'][] = $addressMap[$rel['address_id']];
-                }
+                if ($rel['target_id']==$place['id'] && isset($addressMap[$rel['address_id']])) $place['addresses'][] = $addressMap[$rel['address_id']];
             }
         }
-        return ['data'=>$places,'has_more'=>$hasMore];
+
+        return ['data'=>$places, 'has_more'=>$hasMore];
     }
     public function get_categories($offset = 0, $limit = 20, $get_all = false, $search = '') {
         if($get_all){

@@ -14,18 +14,20 @@ export const useUserStore = defineStore('user', {
     rule: false,
     hasMore: false,
     isLoaded: false,
+    infoIsLoaded: false,
     ruleInfo: [],
     users: [],
     loading: false,
     error: null,
     allCategories: [],
     allRules: [],
-    status:'inactive',
+    status:'',
     banTime:null
   }),
 
   actions: {
     async fetchUserInfo() {
+      this.infoIsLoaded=true
       try {
         const res = await sendApi({ action: 'get_user_info', control: 'user' })
         if (res.status === 'success') {
@@ -47,6 +49,8 @@ export const useUserStore = defineStore('user', {
         }
       } catch (err) {
         console.error('Error fetching user:', err)
+      } finally {
+        this.infoIsLoaded = false
       }
     },
     async fetchUsers({ limite = 10, offset = 0 }) {

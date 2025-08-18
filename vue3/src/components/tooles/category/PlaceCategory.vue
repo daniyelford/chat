@@ -63,24 +63,27 @@ onMounted(() => {
 </script>
 <style scoped>
 .category {
-  height: 100%;
-  float: right;
-  width: 30%;
+  height: 50%;
+  box-sizing: border-box;
+  padding: 10px;
+  border-radius: 10px;
+  background: #80808045;
+  box-shadow: 0 0 5px #290707;
 }
 .search-box {
-  height: 30px;
+  height: 55px;
   width: 100%;
   margin: 5px auto;
   box-sizing: border-box;
   border-radius: 5px;
   outline: none;
   border: 0;
-  background: #e5dede;
+  background: #e5dede7a;
   box-shadow: 0 0 5px;
   direction: rtl;
 }
 .category-list {
-  height: calc(100% - 30px);
+  height: calc(100% - 80px);
   width: 100%;
   overflow: auto;
   display: flex;
@@ -89,13 +92,16 @@ onMounted(() => {
   align-items: stretch;
   justify-content: flex-start;
   gap: 2px;
+  margin-top: 8px;
 }
 .category-list button {
   color: white;
-  background: #4a6b75;
+  background: #4a6b7540;
+  height: 50px;
   padding: 8px;
   border: none;
   outline: none;
+  margin-bottom: 5px;
   border-radius: 10px;
   box-shadow: 0 0 5px green;
 }

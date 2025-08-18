@@ -46,44 +46,35 @@ $secondaryColor:rgb(0,0,0);
 $candleInsetShadow:#95c6f2;
 $smokeColor:grey;
 //sizes
-$floorWidth: 350px;
+$floorWidth: 100%;
 $floorHeight:5px;
 $candleWidth:35px;
 $candleHeight:100px;
 $stickWidth:3px;
 $stickHeight:15px;
 
-body
+.wrapper
 {
   background-color:$lightsOnBg;
   animation:change-background 3s infinite linear;
 }
-.wrapper
-{
-   position:absolute;
-  left:50%;
-  top:70%;
-  transform:scale(1.5,1.5) translate(-50%,-50%);
-}
+
 .floor
 {
-  position:absolute;
-  left:50%;
-  top:50%;
+
   width:$floorWidth;
   height:$floorHeight;
   background:$candleShadow;
-  transform:translate(-50%,-50%);
   box-shadow:0px 2px 5px #111;
   z-index:2;
 }
 .candles
 {
-  position:absolute;
+  position:relative;
   left:50%;
-  top:50%;
+  top:173px;
   width:250px;
-  height:150px;
+  height:166px;
   // background:$secondaryColor;
   // opacity:0.8;
   transform:translate(-50%,-100%);

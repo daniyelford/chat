@@ -65,8 +65,9 @@
         justify-content: flex-end;
     }
     .menu-content {
-        width: 290px;
-        background: white;
+        width: 220px;
+        background: #aaa7c1;
+        color: #20a81d;
         height: 100%;
     }
     .close-btn {

@@ -24,11 +24,27 @@
          setTimeout(() => {
             map.value.invalidateSize()
         }, 300)
-        if (props.center?.lat && props.center?.lon) {
-            map.value.flyTo([props.center.lat, props.center.lon], 13, {
-                animate: true,
-                duration: 1.2,
-            })
+        if (navigator.geolocation) {
+            navigator.permissions.query({ name: "geolocation" }).then((result) => {    
+            if (result.state === "granted") {
+                navigator.geolocation.watchPosition((pos) => {
+                    map.value.flyTo([pos.coords.latitude, pos.coords.longitude], 13, {
+                        animate: true,
+                        duration: 1.2,
+                    })
+                }, (err) => {
+                    console.error("خطا در دریافت موقعیت:", err)
+                    if (props.center?.lat && props.center?.lon) {
+                       map.value.flyTo([props.center.lat, props.center.lon], 13, {
+                           animate: true,
+                           duration: 1.2,
+                       })
+                   }
+                }, {
+                    enableHighAccuracy: true,
+                    maximumAge: 0
+                })
+            }})
         }
         if (marker.value && map.value.hasLayer(marker.value)){
             map.value.removeLayer(marker.value)

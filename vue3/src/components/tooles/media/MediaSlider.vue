@@ -46,8 +46,8 @@
         color: #333;
     }
     .media {
-        width: 200px;
-        height: 150px;
+        width: 100%;
+        height: 260px;
     }
     .media img,
     .media video {

@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, onMounted, watch, createApp, defineProps, nextTick } from 'vue'
+  import { ref, onMounted, watch, createApp, defineProps, nextTick, onUnmounted } from 'vue'
   import MediaSlider from '@/components/tooles/media/MediaSlider.vue'
   import PlacePopup from '@/components/tooles/places/PlacePopup.vue'
   import L from 'leaflet'
@@ -20,6 +20,53 @@
     iconSize: [32, 32],
     iconAnchor: [16, 32]
   })
+  const userMarkerRef = ref(null)
+  const userCircleRef = ref(null)
+  let watchId = null
+  function startLiveLocation() {
+    if (!("geolocation" in navigator)) {
+      console.warn("مرورگر از Geolocation پشتیبانی نمی‌کند.")
+      return
+    }
+    navigator.permissions.query({ name: "geolocation" }).then((result) => {
+      if (result.state === "granted") {
+        watchId = navigator.geolocation.watchPosition(
+          (pos) => {
+            const lat = pos.coords.latitude
+            const lon = pos.coords.longitude
+            const acc = pos.coords.accuracy
+            console.log('ok');
+            if (!userMarkerRef.value) {
+              userMarkerRef.value = L.marker([lat, lon], {
+                icon: L.icon({
+                  iconUrl: BASE_URL + "/assets/images/user-marker.svg",
+                  iconSize: [24, 24],
+                  iconAnchor: [12, 12]
+                })
+              }).addTo(map.value)
+              userCircleRef.value = L.circle([lat, lon], {
+                radius: acc,
+                color: "#136aec",
+                fillColor: "#136aec",
+                fillOpacity: 0.2
+              }).addTo(map.value)
+              map.value.setView([lat, lon], 15)
+            } else {
+              userMarkerRef.value.setLatLng([lat, lon])
+              userCircleRef.value.setLatLng([lat, lon])
+              userCircleRef.value.setRadius(acc)
+            }
+            console.log('ok');
+            drawRoute({ lat, lon }, props.place)
+          },
+          (err) => {
+            console.warn("Geolocation error:", err)
+          },
+          { enableHighAccuracy: true }
+        )
+      }
+    })
+  }
   function createORSRouter(apiKey, profile = 'driving-car') {
     return {
       route(waypoints, callback, context) {
@@ -141,10 +188,16 @@
       return
     }
     initMap()
+    startLiveLocation()
+    onUnmounted(() => {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId)
+      }
+    })
   })
 </script>
 <template>
-  <div :id="mapId" style="width: 100%; height: 400px;"></div>
+  <div :id="mapId" style="width: 100%; height: 540px;"></div>
 </template>
 <style scoped>
   .map-wrapper {

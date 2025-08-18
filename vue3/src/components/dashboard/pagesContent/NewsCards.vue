@@ -114,19 +114,21 @@
     @submit="onCalendarSubmit"
     />
   </div>
-  <AddNewsForm
-  v-if="userStore.status==='active'"
+  <AddNewsForm v-if="userStore.status==='active'"
   :reply-to-id="replyToId"
   :edit-data="editCard"
   :edit-report="editReport"
   @clearReplyId="replyToId = 0; editCard = null; editReport = null"
   />
-  <div v-else class="ban">
+  <div v-else-if="userStore.status==='inactive'" class="ban">
     دسترسی شما غیر فعال است
     <span v-if="userStore.banTime">
       تاریخ این اقدام
       {{ moment(userStore.banTime).format('jYYYY/jMM/jDD') }}
     </span>
+  </div>
+  <div v-else-if="userStore.infoIsLoaded" class="load">
+    <div class="tiny-loader"></div>
   </div>
   <BaseModal :show="showMapModal" @close="showMapModal = false">
     <SinglePlaceMap
@@ -327,6 +329,26 @@
   })
 </script>
 <style scoped>
+  .ban,.load{
+    position: fixed;
+    border-radius: 45px 45px 0 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 55px;
+    text-align: center;
+    color: white;
+    font-size: 16.5px;
+    padding-top: 10px;
+    font-weight: bolder;
+    box-sizing: border-box;
+  }
+  .ban{
+    background: red;
+  }
+  .load{
+    background: rgb(122, 6, 122);
+  }
   .inner-posts {
     position: fixed;
     top: 60px;
@@ -357,7 +379,7 @@
     border-left: 5px solid #e17cfd;
     box-sizing: border-box;
     width: 100%;
-    padding: 1rem;
+    padding: 0.5rem 2rem 2rem;
     border-radius: 0 50px 50px 50px;
     /* border-radius: 0 50px 50px 0px; */
     background-color: #fff6c1;
@@ -378,7 +400,7 @@
     /* border-radius: 50px 0px 0px 50px; */
     background-color: #b3ffd0;
   }
-  .card.my-news::before {
+  /* .card.my-news::before {
     content: "";
     position: absolute;
     top: 12px;
@@ -395,7 +417,7 @@
     border-width: 10px;
     border-style: solid;
     border-color: transparent #f1f1f1 transparent transparent;
-  }
+  } */
   .user-info {
     display: flex;
     align-items: center;
@@ -403,8 +425,8 @@
     margin-bottom: 0.5rem;
   }
   .user-info img ,.user-info svg {
-    width: 32px;
-    height: 32px;
+    width: 45px;
+    height: 45px;
     object-fit: cover;
     border-radius: 50%;
   }

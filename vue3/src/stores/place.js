@@ -12,9 +12,34 @@ export const usePlaceStore = defineStore('place', () => {
   const placeListLoading = ref(false)
   const placeOffset = ref(0)
   const categoryId = ref(0)
+  const selectedCityId = ref(0)
   const categoryOffset = ref(0)
   const hasMorePlaces = ref(true)
   const hasMoreCategories = ref(true)
+  const allCities = ref([])
+  const cityOffset = ref(0)
+  const hasMoreCities = ref(true)
+  const cityListLoading = ref(false)
+  const fetchCitiesPaginated = async (offset = 0, limit = 16) => {
+    cityListLoading.value = true
+    try {
+      const res = await sendApi({
+        control: 'place',
+        action: 'get_cities',
+        data: { offset, limit }
+      })
+      if (res.status === 'success' && Array.isArray(res.data)) {
+        if (offset === 0) allCities.value = res.data
+        else allCities.value.push(...res.data)
+        hasMoreCities.value = res.has_more
+        cityOffset.value += res.data.length
+      }
+    } catch (error) {
+      console.error('fetchCitiesPaginated error:', error)
+    } finally {
+      cityListLoading.value = false
+    }
+  }
   const fetchCategoriesPaginated = async (offset = 0, limit = 16) => {
     categoryListLoading.value = true
     try{
@@ -37,19 +62,20 @@ export const usePlaceStore = defineStore('place', () => {
       categoryListLoading.value = false
     }
   }
-  const fetchPlacesPaginated = async ({ offset = null, category_id = null, limit = 10 }) => {
+  const fetchPlacesPaginated = async ({ city_id = null, offset = null, category_id = null, limit = 10 }) => {
     placeListLoading.value = true
-    if(offset) placeOffset.value = offset
-    if (categoryId.value !== category_id) resetPlaces()
+    if (offset !== null && offset !== undefined) placeOffset.value = offset
+    if (categoryId.value !== category_id || selectedCityId.value !== city_id) resetPlaces()
     try{
       const res = await sendApi({
         control: 'place',
         action: 'get_places',
-        data: { offset:placeOffset.value, category_id:category_id, limit:limit }
+        data: { offset:placeOffset.value, category_id:category_id, limit:limit, city_id: city_id, }
       })
       if (res.status === 'success') {
         if (Array.isArray(res.data)) {
           if (categoryId.value !== category_id) categoryId.value = category_id
+          if (selectedCityId.value !== city_id) selectedCityId.value = city_id
           if (placeOffset.value === 0) allPlaces.value = res.data
           else allPlaces.value.push(...res.data)
           if (res.cord) userCoordinate.value = res.cord
@@ -163,6 +189,11 @@ export const usePlaceStore = defineStore('place', () => {
     fetchCategories,
     submitPlace,
     resetPlaces,
-    deletePlace
+    deletePlace,
+    allCities,
+    cityOffset,
+    hasMoreCities,
+    cityListLoading,
+    fetchCitiesPaginated
   }
 })

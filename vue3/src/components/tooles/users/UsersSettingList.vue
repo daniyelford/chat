@@ -11,14 +11,14 @@
         <label class="block font-bold mt-2">نقش‌ها</label>
         <select v-model="form.rule_id" class="border p-2 w-full mb-2">
           <option value="">انتخاب کنید</option>
-          <option v-for="r in allRules" :key="r.id" :value="r.id">
+          <option v-for="r in store.allRules" :key="r.id" :value="r.id">
             {{ r.name }}
           </option>
         </select>
         <label class="block font-bold mt-2">دسته‌بندی</label>
         <select v-model="form.category_id" class="border p-2 w-full mb-4">
           <option value="">انتخاب کنید</option>
-          <option v-for="c in allCategories" :key="c.id" :value="c.id">
+          <option v-for="c in store.allCategories" :key="c.id" :value="c.id">
             {{ c.title }}
           </option>
         </select>
@@ -30,13 +30,13 @@
         </button>
       </form>
     </div>
-    <div v-if="loading">
+    <div v-if="store.loading">
       <div class="tiny-loader"></div>
     </div>
-    <div class="table" v-else-if="users.length > 0">
+    <div class="table" v-else-if="store.users.length > 0">
       <table>
         <tbody>
-          <tr v-for="u in users" :key="u.id">
+          <tr v-for="u in store.users" :key="u.id">
             <td class="p-2">
               <img v-if="u.image" :src="u.image" alt="avatar"/>
               <svg v-else data-v-0c463e07="" xmlns="http://www.w3.org/2000/svg" fill="#000000" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g data-v-0c463e07=""><rect data-v-0c463e07="" fill="none" height="24" width="24"></rect></g><g data-v-0c463e07=""><path data-v-0c463e07="" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20z"></path></g></svg>
@@ -62,7 +62,7 @@
         </tbody>
       </table>
     </div>
-    <div v-else class="error">{{ error }}</div>
+    <div v-else class="error">{{ store.error }}</div>
   </div>
 </template>
 
@@ -70,10 +70,7 @@
   import { ref, onMounted } from 'vue'
   import { useUserStore } from '@/stores/user'
   import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
-  import { storeToRefs } from 'pinia'
   const store = useUserStore()
-  const { users, hasMore, loading, error, allCategories, allRules } = storeToRefs(store)
-  const { fetchUsers, submitUser, disableUser, enableUser } = store
   const showForm = ref(false)
   const editUser = ref(null)
   const form = ref({
@@ -84,18 +81,18 @@
     category_id: ''
   })
   async function onDisableUser(id) {
-    const ok = await disableUser(id)
+    const ok = await store.disableUser(id)
     if(ok){
-      const user = users.value.find(u => u.user_id === id)
+      const user = store.users.value.find(u => u.user_id === id)
       if (user) {
         user.user_status = 'inactive'
       }
     }
   }
   async function onEnableUser(id) {
-    const ok = await enableUser(id)
+    const ok = await store.enableUser(id)
     if(ok){
-      const user = users.value.find(u => u.user_id === id)
+      const user = store.users.value.find(u => u.user_id === id)
       if (user) {
         user.user_status = 'active'
       }
@@ -123,17 +120,17 @@
     showForm.value = true
   }
   async function submitForm() {
-    await submitUser(form.value, editUser.value ?? null)
+    await store.submitUser(form.value, editUser.value ?? null)
     showForm.value = false
   }
   const {
     loadMoreTrigger: UsersLoadTrigger,
     setupObserver:setupUsersObserver,
-  } = useInfiniteScroll(async ({offset}) => {
-    await fetchUsers(10,offset)
+  } = useInfiniteScroll(async (offset) => {
+    await store.fetchUsers({ limite: 10, ...offset })
     return {
-      items: users,
-      has_more: hasMore,
+      items: store.users,
+      has_more: store.hasMore,
     }
   })
   onMounted(async () => {
