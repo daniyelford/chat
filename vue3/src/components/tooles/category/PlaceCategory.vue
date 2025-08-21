@@ -63,7 +63,7 @@ onMounted(() => {
 </script>
 <style scoped>
 .category {
-  height: 50%;
+  height: calc(50% - 30px);
   box-sizing: border-box;
   padding: 10px;
   border-radius: 10px;

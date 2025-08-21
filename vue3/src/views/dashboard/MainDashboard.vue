@@ -3,14 +3,62 @@
         <TopNav />
     </div>
     <div class="content" :style="contentStyle">
-        <NewsCards v-if="props.view === 'dashboard'" />
-        <ReportList v-else-if="props.view === 'report-list'" />
-        <PlacesList v-else-if="props.view === 'places'" />
-        <ManageNews v-else-if="props.view === 'manage-news'" />
-        <UserSetting v-else-if="props.view === 'user-setting'" />
-        <AllCartables v-else-if="props.view === 'cartable'" />
-        <ShowCartable v-else-if="props.view === 'show-cartable'" :id="props.id" />
-        <ShowNews v-else-if="props.view === 'show-news'" :id="props.id" />
+        <TouchPage v-if="props.view === 'dashboard'"
+        :gestures="{
+            left: 'places',
+            right: 'user-setting'
+        }">
+            <NewsCards/>
+        </TouchPage>
+        <TouchPage v-else-if="props.view === 'places'"
+        :gestures="{
+            left: 'report-list',
+            right: 'dashboard'
+        }">
+            <PlacesList/>
+        </TouchPage>
+        <TouchPage v-else-if="props.view === 'report-list'"
+        :gestures="{
+            left: 'manage-news',
+            right: 'places'
+        }">
+            <ReportList/>
+        </TouchPage>
+        <TouchPage v-else-if="props.view === 'manage-news'"
+        :gestures="{
+            left: user.rule?'cartable':'user-setting',
+            right: 'report-list'
+        }">
+            <ManageNews/>
+        </TouchPage>
+        <TouchPage v-else-if="props.view === 'show-news'"
+        :gestures="{
+            left: user.rule?'cartable':'user-setting',
+            right: 'manage-news',
+        }">
+            <ShowNews :id="props.id"/>
+        </TouchPage>
+        <TouchPage v-else-if="props.view === 'cartable'"
+        :gestures="{
+            left: 'user-setting',
+            right: 'manage-news'
+        }">
+            <AllCartables/>
+        </TouchPage>
+        <TouchPage v-else-if="props.view === 'show-cartable'"
+        :gestures="{
+            left: 'user-setting',
+            right: 'cartable'
+        }">
+            <ShowCartable :id="props.id"/>
+        </TouchPage>
+        <TouchPage v-else-if="props.view === 'user-setting'"
+        :gestures="{
+            left: 'dashboard',
+            right: user.rule?'cartable':'manage-news',
+        }">
+            <UserSetting/>
+        </TouchPage>
         <p v-else>نمایش مشخصی یافت نشد</p>
     </div>
     <div v-if="menu.isOpen" class="menu-modal" @click.self="menu.close">
@@ -39,9 +87,11 @@
     import ShowCartable from '@/components/dashboard/pagesContent/ShowCartable.vue';
     import ShowNews from '@/components/dashboard/pagesContent/ShowNews.vue';
     import UserSetting from '@/components/dashboard/pagesContent/UserSetting.vue';
-    import { defineProps , ref , computed } from 'vue'
+    import { defineProps , ref , computed, onMounted } from 'vue'
     import { useMenuStore } from '@/stores/menu'
     import { BASE_URL } from '@/config';
+    import { useUserStore } from '@/stores/user';
+    import TouchPage from '@/components/tooles/touch/TouchPage.vue';
     const menu = useMenuStore()
     const backgroundImage=ref(BASE_URL+'/assets/images/content.jpg')
     const props = defineProps({
@@ -53,7 +103,10 @@
         backgroundSize: 'cover',
         backgroundPosition: 'center',
     }))
-
+    const user = useUserStore()
+    onMounted(async () => {
+        await user.fetchUserInfo()
+    })
 </script> 
 <style scoped>
     .menu-modal {

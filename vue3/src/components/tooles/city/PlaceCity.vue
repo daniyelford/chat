@@ -62,8 +62,7 @@ onMounted(() => {
 </script>
 <style scoped>
 .city {
-  height: calc(50% - 10px);
-  margin-top: 10px;
+  height: calc(50% - 30px);
   box-sizing: border-box;
   padding: 10px;
   border-radius: 10px;

@@ -8,6 +8,7 @@
             type="text"
             placeholder="کد تأیید"
             required
+            autocomplete="one-time-code"
         />
         <button type="submit" style="width: 49%;display: inline-block;margin-left: 1%;">تأیید کد</button>
         <button type="button" @click="editPhone" style="width: 49%;background-color: orangered;display: inline-block;margin-right: 1%;">

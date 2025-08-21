@@ -157,11 +157,13 @@
     list-style: none;
     padding: 0;
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
+    flex-wrap: nowrap;
     align-items: center;
   }
   .news-item {
+    position: sticky;
+    top: 0;
     width: 90%;
     box-sizing: border-box;
     border: none;

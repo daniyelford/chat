@@ -34,6 +34,7 @@ composer config -g repo.packagist composer https://repo.packagist.org
 composer clear-cache
 composer require --dev kenjis/ci-phpunit-test
 php vendor/kenjis/ci-phpunit-test/install.php
+npm install hammerjs
 
 ./vendor/bin/phpunit --migrate-configuration
 

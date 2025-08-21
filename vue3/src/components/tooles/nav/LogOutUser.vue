@@ -2,6 +2,7 @@
   import { sendApi } from '@/utils/api'
   import { useNotificationStore } from '@/stores/notification'
   import { useNewsStore } from '@/stores/news'
+  import { useSecurityStore } from '@/stores/security'
   export default {
     name: 'LogOutUser',
     methods: {
@@ -13,7 +14,9 @@
           window.dispatchEvent(new Event("storage"))
           this.isLoggedIn = false
           const NewsStore = useNewsStore()
+          const security= useSecurityStore()
           NewsStore.reset()
+          security.reset()
           const notificationStore = useNotificationStore()
           notificationStore.$reset()
           this.$router.push("/")

@@ -3,9 +3,9 @@ import LoginView from '@/views/home/LoginView.vue';
 import RegisterView from '@/views/home/RegisterView.vue';
 import MainDashboard from '@/views/dashboard/MainDashboard.vue';
 import NotFoundPage from '@/components/NotFoundPage.vue';
-import { sendApi } from '@/utils/api';
 import { useMenuStore } from '@/stores/menu'
 import { useNotificationStore } from '@/stores/notification'
+import { useSecurityStore } from '@/stores/security';
 import { BASE_URL } from '@/config';
 const icon=BASE_URL+'/assets/images/fav.png'
 const routes = [
@@ -83,46 +83,30 @@ const routes = [
     component: NotFoundPage 
   }
 ]
-
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
 })
-
 router.beforeEach(async (to, from, next) => {
+  const security = useSecurityStore()
   if (to.name) {
     document.title = to.name;
   }
   const link = document.querySelector("link[rel~='icon']") || document.createElement('link');
   link.href = icon;
-  try {
-    const meta = to.meta;
-    if (meta.requiresAuth) {
-      const res = await sendApi({ 
-        action: 'check_auth' ,
-        control:'security'
-       });
-      if (res.status !== 'success') return next('/');
-    }
-    if (meta.checkHasMobileId) {
-      const res = await sendApi({ 
-        action: 'check_has_mobile',
-        control:'security'
-      });
-      if (res.status !== 'success') return next('/');
-    }
-    if (meta.onlyAuth) {
-      const res = await sendApi({ 
-        action: 'check_auth',
-        control:'security'
-      });
-      if (res.status === 'success') return next('/dashboard');
-    }
-    next();
-  } catch (e) {
-    console.error('Router Guard Error:', e);
-    next('/');
+  if (to.meta.requiresAuth) {
+    const ok = await security.checkAuth()
+    if (!ok) return next('/')
   }
+  if (to.meta.checkHasMobileId) {
+    const ok = await security.checkHasMobile()
+    if (!ok) return next('/')
+  }
+  if (to.meta.onlyAuth) {
+    const ok = await security.checkOnlyAuth()
+    if (ok) return next('/dashboard')
+  }
+  next()
 });
 router.afterEach(() => {
   const menuStore = useMenuStore()

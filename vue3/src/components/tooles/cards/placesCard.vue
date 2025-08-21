@@ -12,59 +12,60 @@
     </div>
   </div>
 </template>
-
 <script setup>
-import { defineProps } from 'vue'
-import MediaSlider from '@/components/tooles/media/MediaSlider.vue'
-
-const props = defineProps({
-  place: Object,
-  highRule: Boolean,
-})
-
-const truncateText = (text, max = 50) => {
-  if (!text) return ''
-  return text.length > max ? text.slice(0, max) + '...' : text
-}
+  import { defineProps } from 'vue'
+  import MediaSlider from '@/components/tooles/media/MediaSlider.vue'
+  const props = defineProps({
+    place: Object,
+    highRule: Boolean,
+  })
+  const truncateText = (text, max = 50) => {
+    if (!text) return ''
+    return text.length > max ? text.slice(0, max) + '...' : text
+  }
 </script>
-
+<style>
+  .media {
+    height: 230px !important;
+  }
+</style>
 <style scoped>
-.actions{
-  display: flex;
-  justify-content: center;
-  gap: 2px;
-}
-.place-item {
-  position: sticky;
-  top: 0;
-  padding: 10px;
-  box-sizing: border-box;
-  background: #bcebbc;
-  border-radius: 10px;
-  width: 100%;
-  text-align: center;
-}
-h4, p, small {
-  margin: 0 0 5px 0;
-}
-small {
-  display: block;
-}
-.place-item a {
-  width: 100%;
-  display: inline-block;
-  padding: 10px;
-  background: yellow;
-  border-radius: 10px;
-  box-sizing: border-box;
-  text-align: center;
-  cursor: pointer;
-}
-.cat {
-  padding: 3px 5px;
-  background: lightgrey;
-  border-radius: 5px;
-  display: inline-block;
-  margin: 5px;
-}
+  .actions{
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+  }
+  .place-item {
+    position: sticky;
+    top: 0;
+    padding: 10px;
+    box-sizing: border-box;
+    background: #bcebbc;
+    border-radius: 30px;
+    width: 100%;
+    text-align: center;
+  }
+  h4, p, small {
+    margin: 0 0 5px 0;
+  }
+  small {
+    display: block;
+  }
+  .place-item a {
+    width: 100%;
+    display: inline-block;
+    padding: 10px;
+    background: yellow;
+    border-radius: 10px;
+    box-sizing: border-box;
+    text-align: center;
+    cursor: pointer;
+  }
+  .cat {
+    padding: 3px 5px;
+    background: lightgrey;
+    border-radius: 5px;
+    display: inline-block;
+    margin: 5px;
+  }
 </style>

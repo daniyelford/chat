@@ -244,9 +244,6 @@
   .send:hover {
     opacity: 0.6;
   }
-  .report-item {
-    margin-bottom: 15px;
-  }
   .disable , .disable-report{
     padding: 10px;
     text-align: center;

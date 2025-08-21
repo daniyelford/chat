@@ -8,11 +8,11 @@
       </select>
       <select v-model="form.for_place">
         <option value="yes">برای مکان</option>
-        <option value="no">بدون مکان</option>
+        <option value="no">برای ارگان</option>
       </select>
       <select v-model="form.is_force">
-        <option value="1">اجباری</option>
-        <option value="0">غیراجباری</option>
+        <option value="yes">پر اهمیت</option>
+        <option value="no">کم اهمیت</option>
       </select>
       <button type="submit">
         {{ editId ? 'ویرایش دسته‌بندی' : 'افزودن دسته‌بندی' }}
@@ -24,24 +24,22 @@
     </div>
     <div v-else-if="categoryStore.allCategories.length>0" class="categories">
       <table>
-        <thead>
-          <tr>
-            <th>عنوان</th>
-            <th>مخصوص جایگاه مکانی</th>
-            <th>دارای اهمیت بالا</th>
-            <th>عملیات</th>
-          </tr>
-        </thead>
         <tbody>
           <tr v-for="cat in categoryStore.allCategories" :key="cat.id">
             <td>
               {{ cat.title }} 
             </td>
             <td>
-              {{ cat.for_place }}
+              <span v-if="cat.for_place==='yes'">برای مکان</span>
+              <span v-else>برای ارگان</span>
             </td>
             <td>
-              {{ cat.is_force }}
+              <span v-if="cat.is_force==='yes'">پر اهمیت</span>
+              <span v-else>کم اهمیت</span>
+            </td>
+            <td>
+              <span v-if="cat.status==='active'">فعال</span>
+              <span v-else>غیرفعال</span>
             </td>
             <td>
               <button @click="startEdit(cat)">ویرایش</button>
@@ -68,7 +66,7 @@
     title: '',
     status: 'active',
     for_place: 'no',
-    is_force: '0'
+    is_force: 'no'
   })
   const handleSubmit = async () => {
     if (!form.value.title.trim()) return
@@ -94,7 +92,7 @@
       title: '',
       status: 'active',
       for_place: 'no',
-      is_force: '0'
+      is_force: 'no'
     }
   }
   const deleteCategory = async (id) => {

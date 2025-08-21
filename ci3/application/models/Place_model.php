@@ -15,11 +15,12 @@ class Place_model extends CI_Model
         if (!$citiesResult) return ['data' => [], 'has_more' => false];
         $hasMore = count($citiesResult) > $limit;
         if ($hasMore) array_pop($citiesResult);
-        $uniqueCities = [];
+        $uniqueCities = $city_array = [];
         foreach ($citiesResult as $row) {
             $cityName = trim($row['city']);
-            $normalized = mb_strtolower($cityName); // برای یکسان‌سازی حروف
-            if (!in_array($normalized, array_map('mb_strtolower', $uniqueCities))) {
+            $normalized = mb_strtolower($cityName);
+            if (!in_array($normalized, $city_array)) {
+                $city_array[]=$normalized;
                 $uniqueCities[] = ['id'=>$row['id'],'city'=>$cityName];
             }
         }
