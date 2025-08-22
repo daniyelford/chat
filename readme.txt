@@ -28,6 +28,7 @@ npm run build
 npx cap copy
 npx cap sync
 npx cap open android
+composer require cboden/ratchet
 composer require --dev phpunit/phpunit ^10.3
 composer config -g --unset repos.packagist
 composer config -g repo.packagist composer https://repo.packagist.org
