@@ -1,18 +1,30 @@
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { io } from 'socket.io-client'
-
-const socket = io('http://localhost:3000')
-const realtimeData = ref(null)
-
-socket.on('connect', () => {
-  console.log('Connected to WebSocket server')
-})
-
-socket.on('data-updated', (data) => {
-  console.log('Realtime update received:', data)
-  realtimeData.value = data
-})
-
-onBeforeUnmount(() => {
-  socket.disconnect()
-})
+import { ref, onMounted, onUnmounted } from "vue"
+import { io } from "socket.io-client"
+import axios from "axios"
+export function useRealtime({ baseUrl = "http://localhost:3000", route, eventName }) {
+  const items = ref([])
+  let socket
+  const loadData = async () => {
+    try {
+      const res = await axios.get(`${baseUrl}/${route}`)
+      items.value = res.data
+    } catch (err) {
+      console.error("Error fetching data:", err)
+    }
+  }
+  onMounted(async () => {
+    socket = io(baseUrl)
+    await loadData()
+    socket.on(eventName, (newItem) => {
+      console.log(`Realtime [${eventName}]`, newItem)
+      items.value.push(newItem)
+    })
+  })
+  onUnmounted(() => {
+    if (socket) socket.disconnect()
+  })
+  return {
+    items,
+    reload: loadData
+  }
+}

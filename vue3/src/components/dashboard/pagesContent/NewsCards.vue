@@ -500,9 +500,14 @@
   .none-cart-error{
     text-align: center;
     background-color: #dc6a6a;
-    height: 100%;
+    position: fixed;
+    bottom: calc(50% - 150px);
+    top: calc(50% - 150px);
+    left: calc(50% - 150px);
+    right: calc(50% - 150px);
+    height: 300px;
     overflow: hidden;
-    width: 100%;
+    width: 300px;
     font-size: x-large;
     border-radius: 50%;
     font-weight: bolder;

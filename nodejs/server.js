@@ -22,6 +22,8 @@ app.post('/notify', (req, res) => {
   io.emit('data-updated', data)
   res.json({ status: 'ok' })
 })
-
+app.get('/', (req, res) => {
+  res.send('Node.js WebSocket Server is running 🚀');
+});
 const PORT = 3000
 server.listen(PORT, () => console.log(`Node.js server running on port ${PORT}`))

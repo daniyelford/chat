@@ -29,7 +29,9 @@
       <div class="tiny-loader"></div>
   </div>
   <div v-else class="errorp">
-    محل نزدیکی برای ارائه به شما وجود ندارد
+    <span>
+      محل نزدیکی برای ارائه به شما وجود ندارد
+    </span>
     <br>
     <a v-if="placeStore?.highRule" @click="showAddPlace=true" class="addP">افزودن محل</a>
   </div>
@@ -260,23 +262,33 @@
     box-sizing: border-box;
     background: #80808045;
     box-shadow: 0 0 5px #290707;
-
   }
   .errorp{
-width: 300px;
-    height: 300px;
-    padding: 140px 0;
-    border-radius: 160px;
     text-align: center;
-    background-color: red;
-    color: #fff;
-    font-size: large;
-    font-weight: bolder;
-    box-sizing: border-box;
+    background-color: #dc6a6a;
     position: fixed;
-    top: 200px;
+    bottom: calc(50% - 150px);
+    top: calc(50% - 150px);
     left: calc(50% - 150px);
     right: calc(50% - 150px);
+    height: 300px;
+    overflow: hidden;
+    width: 300px;
+    font-size: x-large;
+    border-radius: 50%;
+    font-weight: bolder;
+    box-sizing: border-box;
+    box-shadow: 0 0 20px #1e1212;
+  }
+  .errorp span{
+    display: block;
+    background: #fff;
+    top: 40%;
+    height: 20%;
+    box-sizing: border-box;
+    color: #000;
+    position: relative;
+    padding-top: 5%;
   }
   .tiny-loader {
     width: 20px;
