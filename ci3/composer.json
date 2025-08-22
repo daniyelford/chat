@@ -13,7 +13,8 @@
 	"require": {
 		"php": ">=5.3.7",
 		"lbuchs/webauthn": "^1.0",
-		"minishlink/web-push": "^9.0"
+		"minishlink/web-push": "^9.0",
+		"cboden/ratchet": "^0.4.4"
 	},
 	"suggest": {
 		"paragonie/random_compat": "Provides better randomness in PHP 5.x"
