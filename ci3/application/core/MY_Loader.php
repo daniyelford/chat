@@ -26,12 +26,16 @@ class MY_Loader extends CI_Loader
     public Place_handler $place_handler;
     public Api_handler $api_handler;
     public Category_handler $category_handler;
+    public Socket_handler $socket_handler;
+
+
     public function __construct()
     {
         parent::__construct();
         $CI =& get_instance();
         require_once(APPPATH . 'libraries/Tools/Send_handler.php');
         require_once(APPPATH . 'libraries/Tools/Functions_handler.php');
+        require_once(APPPATH . 'libraries/Tools/Socket_handler.php');
         require_once(APPPATH . 'libraries/Tools/Security_handler.php');
         require_once(APPPATH . 'libraries/Main/Login/Finger_print.php');
         require_once(APPPATH . 'libraries/Tools/Upload_handler.php');
@@ -53,7 +57,6 @@ class MY_Loader extends CI_Loader
         $this->model('Report_model', 'report_model');
         $this->model('Order_model', 'order_model');
         $this->model('Place_model', 'place_model');
-        
 
         $this->category_model = $CI->category_model;
         $this->media_model = $CI->media_model;
@@ -67,6 +70,7 @@ class MY_Loader extends CI_Loader
         $this->place_model = $CI->place_model;
 
         $this->send_handler= new Send_handler();
+        $this->socket_handler= new Socket_handler();
         $this->security_handler= new Security_handler();
         $this->finger_print= new Finger_print();
         $this->user_handler= new User_handler(
@@ -157,6 +161,7 @@ class MY_Loader extends CI_Loader
         $CI->category_handler=$this->category_handler;
         $CI->finger_print=$this->finger_print;
         $CI->upload_handler=$this->upload_handler;
+        $CI->socket_handler=$this->socket_handler;
         $CI->login_handler=$this->login_handler;
         $CI->user_handler=$this->user_handler;
         $CI->news_handler=$this->news_handler;
