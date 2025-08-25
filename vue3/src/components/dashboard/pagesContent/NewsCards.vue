@@ -214,22 +214,17 @@
     isDifferent: (oldData, newData) => {
       if (!Array.isArray(oldData) || !Array.isArray(newData)) return true
       if (oldData.length !== newData.length) return true
-
       for (let i = 0; i < newData.length; i++) {
         const oldItem = oldData[i]
         const newItem = newData[i]
-
         if (oldItem.id !== newItem.id) return true
-
+        if (oldItem.show_status !== newItem.show_status) return true
         const oldReports = oldItem.reports || []
         const newReports = newItem.reports || []
-
         if (oldReports.length !== newReports.length) return true
-
         for (let j = 0; j < newReports.length; j++) {
           const oldReport = oldReports[j]
           const newReport = newReports[j]
-
           if (
             oldReport.id !== newReport.id ||
             oldReport.updated_at !== newReport.updated_at ||
@@ -240,12 +235,14 @@
           }
         }
       }
-
       return false
     },
     onChange: async (newCards) => {
+      newsStore.cards = newsStore.cards.filter(card =>
+        newCards.some(newItem => Number(newItem.id) === Number(card.id))
+      )
       for (const newItem of newCards) {
-        const index = newsStore.cards.findIndex(c => c.id === newItem.id)
+        const index = newsStore.cards.findIndex(c => Number(c.id) === Number(newItem.id))
         if (index !== -1) {
           const card = newsStore.cards[index]
           const updatedCard = { ...card, reports: newItem.reports }

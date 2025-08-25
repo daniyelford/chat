@@ -99,14 +99,12 @@
   const user = useUserStore()
   const restoreNews = async (id) => {
     const ok = await store.restoreNews(id)
-    console.log(ok);
     if (ok) {
       store.toggleShowStatus(id)
     } 
   }
   const deleteNews = async (id) => {
     const ok = await store.deleteNews(id)
-    console.log(ok);
     if (ok) {
       store.toggleShowStatus(id)
     }
