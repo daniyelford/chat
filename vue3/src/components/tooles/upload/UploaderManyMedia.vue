@@ -39,9 +39,10 @@
     HasStylePlace:{
       type: Boolean,
       default: false
-    }
+    },
+    editMode: { type: Boolean, default: false }
   })
-  const emit = defineEmits(['update:modelValue', 'done'])
+  const emit = defineEmits(['update:modelValue', 'done','delete'])
   const mediaList = ref([...props.initialMedias])
   const handleDrop = (e) => {
     const files = e.dataTransfer.files
@@ -99,6 +100,12 @@
     }
   }
   const deleteMedia = async (media, index) => {
+    if (props.editMode) {
+      mediaList.value.splice(index, 1)
+      emit('update:modelValue', mediaList.value.map(m => m.id))
+      emit('delete', media.id)
+      return
+    }
     try {
       const res = await sendApi({
         control: 'upload',

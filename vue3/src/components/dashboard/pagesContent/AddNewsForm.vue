@@ -19,10 +19,12 @@
     <UploaderManyMedia
     :url="'news_media/'"
     :toAction="'addNews'"
-    v-model="form.media_id"
     :initial-medias="medias"
+    :edit-mode="!!props.editData || !!props.editReport"
+    v-model="form.media_id"
     ref="uploaderRef"
-    @done="handleUploadResult" />
+    @done="handleUploadResult" 
+    @delete="id => pendingDeletes.value.push(id)"/>
   </div>
   <form @submit.prevent="submitForm">
     <textarea v-model="form.description" rows="4" required placeholder="متن خبر"></textarea>
@@ -74,6 +76,7 @@
   import BaseModal from '@/components/tooles/modal/BaseModal.vue'
   import { useNewsStore } from '@/stores/news'
   const replyCard = ref(null)
+  const pendingDeletes = ref([])
   const newsStore = useNewsStore()
   const props = defineProps({
     replyToId: {
@@ -163,12 +166,14 @@
       ...form.value,
       reply_to_id: props.replyToId,
       edit: props.editData?.id || null,
-      edit_report: props.editReport?.id || null
+      edit_report: props.editReport?.id || null,
+      delete_media: pendingDeletes.value
     }
     try {
       const res = await newsStore.addNews(finalData)
       if (res.status === 'success') {
         showModal.value = false
+        pendingDeletes.value = []
         clearReply()
         uploaderRef.value?.reset()
       } else {
