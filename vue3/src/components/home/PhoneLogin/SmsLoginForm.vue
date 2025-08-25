@@ -122,6 +122,7 @@
                 signal: ac.signal
             }).then(otp => {
                 code.value = otp.code;
+                submitCode()
             }).catch(err => {
                 console.warn('OTP retrieval error:', err);
             });

@@ -2,12 +2,16 @@
   import { ref , defineAsyncComponent, onMounted } from 'vue'
   import { useNewsStore } from '@/stores/news'
   import ReportListModal from '@/components/tooles/news/ReportListModal.vue'
+  import dayjs from "dayjs"
+  import jalaliday from "jalaliday"
   const store = useNewsStore()
   const showModal = ref(false)
   const selectedEvent = ref(null)
+  dayjs.extend(jalaliday)
   const jalaliCalendar = defineAsyncComponent(() =>
     import('vue3-jalali-calendar').then(mod => mod.jalaliCalendar)
   )
+  const safeToday = dayjs().calendar("gregory").toDate()
   const showEventModal = (event) => {
     selectedEvent.value = event.raw
     showModal.value = true
@@ -22,6 +26,7 @@
 </script>
 <template>
   <jalaliCalendar
+    :show-date="safeToday"
     :eventsList="store.events"
     disablePastDays
     @on-event-click="showEventModal"

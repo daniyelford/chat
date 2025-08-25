@@ -70,7 +70,7 @@ class News_handler
         !empty($data['description']) &&  
         !empty($data['user_address']) && 
         !empty($data['user_address']['type'])){
-            if(!empty($data['delete_media']) && is_array($data['delete_media']))
+            if(!empty($data['delete_media']) && is_array($data['delete_media'])){
                 foreach($data['delete_media'] as $id){
                     if ($id > 0 && 
                     ($a = $this->media_model->select_where_id($id))!==false &&
@@ -80,16 +80,18 @@ class News_handler
                         $this->media_model->remove_where_id($id);
                     }
                 }
+            }
             $category = array_map('intval', $data['category_id']);
             $address_handler=$this->function->get_address_id($data['user_address']);
             $address_id=$address_handler['address_id']??0;
             $change_address=$address_handler['change_address']??false;
             if(!(!empty($address_id) && intval($address_id)>0)) return ['status'=>'error','msg'=>'1','id'=>$address_id];
             if(!empty($data['edit']) && intval($data['edit'])>0){
-                if(!empty($data['edit_report']) && intval($data['edit_report'])>0)
+                if(!empty($data['edit_report']) && intval($data['edit_report'])>0){
                     if(!$this->function->edit_report($data,$address_id,$change_address)) return ['status'=>'error','msg'=>'2'];
-                else
+                }else{
                     if(!$this->function->edit_news($data,$category,$address_id,$change_address)) return ['status'=>'error','msg'=>'3'];
+                }
                 return ['status'=>'success','id'=>intval($data['edit'])];
             }else{
                 if(!empty($data['reply_to_id']) && intval($data['reply_to_id'])>0){

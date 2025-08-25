@@ -10,161 +10,77 @@ class CategorySeeder extends CI_Controller {
     private function place(){
         $data = [];
         $data[] = [
-            'title' => "آموزشگاه زبان",
+            'title' => "سلامت و زیبایی",
             'for_place'=>'yes',
             'is_force'=>'no',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
         $data[] = [
-            'title' => "آموزشگاه رانندگی",
+            'title' => "غذا و خوراکی",
             'for_place'=>'yes',
             'is_force'=>'no',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
         $data[] = [
-            'title' => "آموزشگاه رباتیک",
+            'title' => "تولیدی",
             'for_place'=>'yes',
             'is_force'=>'no',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
         $data[] = [
-            'title' => "آموزشگاه برنامه نویسی",
+            'title' => "آموزشی",
             'for_place'=>'yes',
             'is_force'=>'no',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
         $data[] = [
-            'title' => "آموزشگاه طراحی",
+            'title' => "گردشگری",
             'for_place'=>'yes',
             'is_force'=>'no',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
         $data[] = [
-            'title' => "آموزشگاه فنی حرفه ای",
+            'title' => "پزشکی",
             'for_place'=>'yes',
             'is_force'=>'no',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
         $data[] = [
-            'title' => "آموزشگاه دولتی",
+            'title' => "ورزش و سرگرمی",
             'for_place'=>'yes',
             'is_force'=>'no',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
         $data[] = [
-            'title' => "آموزشگاه غیر انتفاعی",
+            'title' => "پوشاک و مزون",
             'for_place'=>'yes',
             'is_force'=>'no',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
         $data[] = [
-            'title' => "آموزشگاه خصوصی",
+            'title' => "موبایل و کامپیوتر",
             'for_place'=>'yes',
             'is_force'=>'no',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
         $data[] = [
-            'title' => "کفاشی",
+            'title' => "لوازم خانگی",
             'for_place'=>'yes',
             'is_force'=>'no',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
         $data[] = [
-            'title' => "شیرینی پزی",
-            'for_place'=>'yes',
-            'is_force'=>'no',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ];
-        $data[] = [
-            'title' => "هایپر مارکت",
-            'for_place'=>'yes',
-            'is_force'=>'no',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ];
-        $data[] = [
-            'title' => "بانک",
-            'for_place'=>'yes',
-            'is_force'=>'no',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ];
-        $data[] = [
-            'title' => "دادگستری",
-            'for_place'=>'yes',
-            'is_force'=>'no',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ];
-        $data[] = [
-            'title' => "تعمییرات خودرو",
-            'for_place'=>'yes',
-            'is_force'=>'no',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ];
-        $data[] = [
-            'title' => "صافکاری",
-            'for_place'=>'yes',
-            'is_force'=>'no',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ];
-        $data[] = [
-            'title' => "رستوران",
-            'for_place'=>'yes',
-            'is_force'=>'no',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ];
-        $data[] = [
-            'title' => "طلا فروشی",
-            'for_place'=>'yes',
-            'is_force'=>'no',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ];
-        $data[] = [
-            'title' => "کافی شاپ",
-            'for_place'=>'yes',
-            'is_force'=>'no',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ];
-        $data[] = [
-            'title' => "پت شاپ",
-            'for_place'=>'yes',
-            'is_force'=>'no',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ];
-        $data[] = [
-            'title' => "قهوه خانه",
-            'for_place'=>'yes',
-            'is_force'=>'no',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ];
-        $data[] = [
-            'title' => "بیمارستان",
-            'for_place'=>'yes',
-            'is_force'=>'no',
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ];
-        $data[] = [
-            'title' => "خیاطی",
+            'title' => "مکانیکی",
             'for_place'=>'yes',
             'is_force'=>'no',
             'created_at' => date('Y-m-d H:i:s'),

@@ -24,7 +24,7 @@
     v-model="form.media_id"
     ref="uploaderRef"
     @done="handleUploadResult" 
-    @delete="id => pendingDeletes.value.push(id)"/>
+    @delete="id => pendingDeletes.push(id) "/>
   </div>
   <form @submit.prevent="submitForm">
     <textarea v-model="form.description" rows="4" required placeholder="متن خبر"></textarea>

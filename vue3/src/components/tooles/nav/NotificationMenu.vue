@@ -6,7 +6,7 @@
   import { usePollingWithCompare } from '@/composables/usePollingWithCompare'
   import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
   import { subscribeToPush } from '@/utils/pushService';
-  const logo = BASE_URL + '/assets/images/logo.png'
+  const logo = BASE_URL + '/assets/images/fav.png'
   const song = BASE_URL + '/assets/song/notif.mp3'
   const notifSound = ref(null)
   const loadMoreTrigger = ref(null)
@@ -17,13 +17,33 @@
   }
   function showNativeNotification(title, body) {
     if (Notification.permission === 'granted') {
-      const notification = new Notification(title, {
-        body,
-        icon: logo,
-      })
-      notification.onclick = () => {
-        window.focus()
-        notification.close()
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then(registration => {
+          if (registration) {
+            registration.showNotification(title, {
+              body,
+              icon: logo,
+            });
+          } else {
+            const notification = new Notification(title, {
+              body,
+              icon: logo,
+            });
+            notification.onclick = () => {
+              window.focus();
+              notification.close();
+            };
+          }
+        });
+      } else {
+        const notification = new Notification(title, {
+          body,
+          icon: logo,
+        });
+        notification.onclick = () => {
+          window.focus();
+          notification.close();
+        };
       }
     }
   }

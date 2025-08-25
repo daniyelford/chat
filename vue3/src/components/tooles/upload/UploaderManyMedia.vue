@@ -103,7 +103,9 @@
     if (props.editMode) {
       mediaList.value.splice(index, 1)
       emit('update:modelValue', mediaList.value.map(m => m.id))
-      emit('delete', media.id)
+      if(media.id){
+        emit('delete', Number(media.id))
+      }
       return
     }
     try {
