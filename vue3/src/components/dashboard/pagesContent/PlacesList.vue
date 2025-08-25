@@ -252,8 +252,8 @@
     position: fixed;
     top: 120px;
     bottom: 60px;
-    left: 0;
-    right: 0;
+    left: 30px;
+    right: 30px;
     height: auto;
     width: auto;
     padding: 10px;

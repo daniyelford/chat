@@ -354,8 +354,8 @@
     top: 60px;
     bottom: 45px;
     overflow: hidden;
-    left: 0;
-    right: 0;
+    left: 30px;
+    right: 30px;
   }
   .scroll-trigger{
     position: relative;

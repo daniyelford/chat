@@ -12,37 +12,43 @@ class Functions_handler
     // public $news_manager=[];
     // public $result_cartables=[];
     // private Wallet_model $wallet_model;
-    // private Media_model $media_model;
-    // private News_model $news_model;
+    private Media_model $media_model;
+    private Report_model $report_model;
+    private News_model $news_model;
     private User_handler $user;
+    private Security_handler $security;
     private Category_model $category_model;
     private Users_model $users_model;
     private Notification_model $notification_model;
     private Rule_model $rule_model;
     private Send_handler $send_handler;
     // Wallet_model $wallet_model,
-    // Media_model $media_model,
-    // News_model $news_model,
     public function __construct(
+        Security_handler $security_handler,
         User_handler $user_handler,
         Send_handler $send_handler,
         Category_model $category_model,
         Users_model $users_model,
         Notification_model $notification_model,
         Rule_model $rule_model,
+        Media_model $media_model,
+        Report_model $report_model,
+        News_model $news_model,
     ){
         $this->user = $user_handler;
+        $this->security=$security_handler;
         $this->send_handler = $send_handler;
         $this->category_model = $category_model;
         $this->users_model = $users_model;
         $this->notification_model = $notification_model;
         $this->rule_model=$rule_model;
+        $this->media_model = $media_model;
+        $this->report_model = $report_model;
+        $this->news_model = $news_model;
 	}
     // $this->wallet_model = $wallet_model;
-    // $this->media_model = $media_model;
-    // $this->news_model = $news_model;
     public function has_category_id(){
-        return (!empty($this->user->get_user_category_id()) && intval($this->user->get_user_category_id())>0);
+        return (!empty($this->user->get_user_category_id()) && (intval($this->user->get_user_category_id())>0 || (is_array($this->user->get_user_category_id()) && count($this->user->get_user_category_id())>0)));
     }
     public function get_all_category_active(){
         if($this->category_filtter_for_place)
@@ -50,41 +56,55 @@ class Functions_handler
         else
             $this->category = $this->category_model->select_category_where_active();
     }
-    public function send_add_news_notification($category,$news_id){
-        if(!empty($category) && is_array($category)){
-            $a=$this->rule_model->get_users_rule_in_category($category);
-            $rule_notif_id=$this->notification_model->add_return_id([
-                'title'=>'گزارش کاربران',
-                'body'=>'یک خبر جدید برای سازمان شما توسط کاربران ثبت شده است',
+    public function send_add_news_notification($category,$news_id,$description){
+        $ids=$tokens=[];
+        if($this->user->check_user_force()){
+            $users=$this->users_model->all_account();
+            $ids=array_column($users,'id');
+            $tokens=array_column($users,'notification_token');
+            $notif_id=$this->notification_model->add_return_id([
+                'title'=>'خبر فوری',
+                'body'=>$description??'یک خبر فوری برای شما ثبت شده است',
                 'url'=>'/show-news/'.intval($news_id)
             ]);
-            $user_notif_id=$this->notification_model->add_return_id([
-                'title'=>'ثبت گزارش',
-                'body'=>'گزارش شما برای سازمان مورد نظر ارسال شد',
-                'url'=>'/show-news/'.intval($news_id)
-            ]);
-            $this->users_model->add_account_relations([
-                'user_account_id'=>intval($this->user->get_user_account_id()),
-                'target_table'=>'notification',
-                'target_id'=>intval($user_notif_id)
-            ]);
-            $arr=[];
-            if(!empty($a))
-                foreach ($a as $b) {
-                    if(!empty($b) && !empty($b['id']) && intval($b['id'])>0 && intval($b['id'])!==$this->user->get_user_account_id())
-                        $arr[]=[
-                            'user_account_id'=>intval($b['id']),
-                            'target_table'=>'notification',
-                            'target_id'=>intval($rule_notif_id)
-                        ];
-                }
-            if(!empty($arr)) $this->users_model->add_all_account_relations($arr);
+        }else{
+            if(!empty($category) && is_array($category)){
+                $user_notif_id=$this->notification_model->add_return_id([
+                    'title'=>'ثبت خبر',
+                    'body'=>$description??'گزارش شما برای سازمان مورد نظر ارسال شد',
+                    'url'=>'/show-news/'.intval($news_id)
+                ]);
+                $this->users_model->add_account_relations([
+                    'user_account_id'=>intval($this->user->get_user_account_id()),
+                    'target_table'=>'notification',
+                    'target_id'=>intval($user_notif_id)
+                ]);
+                $notif_id=$this->notification_model->add_return_id([
+                    'title'=>'گزارش کاربران',
+                    'body'=>$description??'یک خبر جدید برای سازمان شما توسط کاربران ثبت شده است',
+                    'url'=>'/show-news/'.intval($news_id)
+                ]);
+                $users=$this->rule_model->get_users_rule_in_category($category);
+                $ids=array_column($users,'id');
+                $tokens=array_column($users,'notification_token');
+            }
         }
-        $token=$this->rule_model->force_action($category,$news_id);
-        if(!empty($token))
-            foreach ($token as $t) {
+        if(!empty($notif_id) && intval($notif_id)>0){
+            $this->users_model->add_all_account_relations(array_map(function($id) use ($notif_id) {
+                return [
+                    'user_account_id'=>$id,
+                    'target_table'=>'notification',
+                    'target_id'=>intval($notif_id)
+                ];
+            }, $ids));
+        }
+        if(!empty($tokens))
+            foreach ($tokens as $t) {
                 if(!empty($t))
-                    $this->send_handler->send_notification('هشدار خبر فوری','برای اطلاع بیشتر از اخبار به آدرس '.base_url('show-news/'.intval($news_id)).' بروید',json_decode($t));
+                    $this->send_handler->send_notification(
+                    $this->user->check_user_force()?'خبر فوری':'ثبت خبر',
+                    $description??'برای اطلاع بیشتر از اخبار به آدرس '.base_url('show-news/'.intval($news_id)).' بروید',
+                    json_decode($t));
             }
         return true;
     }
@@ -108,6 +128,212 @@ class Functions_handler
             if(!empty($res)) return $res;
         }
         return '';
+    }
+    public function get_address_id($data){
+        $address_id=0;
+        $change_address=true;
+        if(!empty($data))
+            if($data['type']==='location' && !empty($data['value'])){
+                if(!empty($data['value']['total'])){
+                    $address_id=$this->users_model->add_address_return_id([
+                        'address'=> $this->security->string_secutory_week_check($data['value']['total']['display_name']??''),
+                        'country'=>$data['value']['total']['address']['country']??'',
+                        'region'=>$data['value']['total']['address']['province']??'',
+                        'city'=>$data['value']['total']['address']['city']??$data['value']['total']['address']['town']??$data['value']['total']['address']['village']??'',
+                        'lat'=>$data['value']['total']['lat']??'',
+                        'lon'=>$data['value']['total']['lon']??'',
+                        'code_posti'=>$data['value']['total']['address']['postcode']??'',
+                    ]);
+                }else{
+                    if(!empty($data['value']['address_id']) && intval($data['value']['address_id'])>0){
+                        $change_address=false;
+                        $address_id=intval($data['value']['address_id']);
+                    }else{
+                        if(!empty($data['value']['lat']) && !empty($data['value']['lon']) && !empty($data['value']['address'])){
+                            if(trim($data['value']['address'])==="خطا در دریافت آدرس"){
+                                $address=$this->send_handler->get_address_lat_lon($data['value']['lat'],$data['value']['lon']);
+                                if(!empty($address)){
+                                    $address_id=$this->users_model->add_address_return_id([
+                                        'address'=> $address['display_name']??'',
+                                        'country'=>$address['address']['country']??'',
+                                        'region'=>$address['address']['province']??$address['address']['state']??$address['address']['municipality']??'',
+                                        'city'=>$address['address']['city']??$address['address']['town']??$address['address']['village']??'',
+                                        'lat'=>$address['lat']??'',
+                                        'lon'=>$address['lon']??'',
+                                        'code_posti'=>$address['address']['postcode']??'',
+                                    ]);
+                                }else{
+                                    $address_id=$this->users_model->add_address_return_id([
+                                        'lat'=>$data['value']['lon'],
+                                        'lon'=>$data['value']['lon'],
+                                    ]);
+                                }
+                            }else{
+                                $address_id=$this->users_model->add_address_return_id([
+                                    'address'=> $data['value']['address'],
+                                    'lat'=>$data['value']['lon'],
+                                    'lon'=>$data['value']['lon'],
+                                ]);
+                            }
+                        }else{
+                            return null;
+                        }
+                    }
+                }
+            }else{
+                $address_id=$this->user->get_user_address_id();
+            }
+        return ['address_id'=>$address_id,'change_address'=>$change_address];
+    }
+    public function edit_report(Array $data,Int $address_id,$change_address){
+        if(!empty($data) && !empty($data['edit_report']) && intval($data['edit_report'])>0 && !empty($address_id) && intval($address_id)>0){
+            $this->report_model->edit_report_weher_id(['description'=>$this->security->string_secutory_week_check($data['description'])],intval($data['edit_report']));
+            $old_media_ids=$new_media_ids=[];
+            $old_medias=$this->media_model->select_relation_where_array(['target_table'=>'report_list','target_id'=>intval($data['edit_report'])]);
+            if(!empty($old_medias)) $old_media_ids=array_column($old_medias, 'media_id');
+            if(!empty($data['media_id'])) $new_media_ids=$data['media_id'];
+            $this->media_model->check_changes('report_list',intval($data['edit_report']),$old_media_ids,$new_media_ids);
+            if($change_address){
+                $old_address=$this->users_model->select_address_relation_where_report_id(intval($data['edit_report']));
+                $this->change_address('report_list',$old_address,intval($data['edit_report']),intval($address_id));
+            }
+            return true;
+        }
+        return false;
+    }
+    private function change_address(String $table,$old_address,Int $target_id,Int $address_id){
+        if(!empty($old_address) && !empty(end($old_address)) && 
+        !empty(end($old_address)['id']) && intval(end($old_address)['id'])>0 &&
+        !empty(end($old_address)['address_id']) && intval(end($old_address)['address_id'])>0){
+            $this->users_model->edit_address_relation_weher_id([
+                'target_table'=>'user_account',
+                'target_id'=>$this->user->get_user_account_id()
+            ],intval(end($old_address)['id']));
+            $this->users_model->add_address_relation([
+                'target_table'=>$table,
+                'address_id'=>$address_id,
+                'target_id'=>intval($target_id)
+            ]);
+        }
+    }
+    public function edit_news($data,$category,$address_id,$change_address){
+        if(!empty($data) && !empty($data['edit']) && intval($data['edit'])>0){
+            $this->news_model->change_description_where_id(intval($data['edit']),$this->security->string_secutory_week_check($data['description']));
+            $old_media_ids=$new_media_ids=[];
+            $old_medias=$this->media_model->select_relation_where_array(['target_table'=>'news','target_id'=>intval($data['edit'])]);
+            if(!empty($old_medias)) $old_media_ids=array_column($old_medias, 'media_id');
+            if(!empty($data['media_id'])) $new_media_ids=$data['media_id'];
+            $this->media_model->check_changes('news',intval($data['edit']),$old_media_ids,$new_media_ids);
+            $old_category=$this->category_model->select_relation_where_array(['target_table'=>'news','target_id'=>intval($data['edit'])]);
+            $this->category_model->check_changes('news',intval($data['edit']),$old_category,$category);
+            if($change_address){
+                $old_address=$this->users_model->select_address_relation_where_news_id(intval($data['edit']));
+                $this->change_address('news',$old_address,intval($data['edit']),intval($address_id));
+            }
+            return true;
+        }
+        return false;
+    }
+    private function add_media_relation($table,$target_id,$media_id){
+        $this->media_model->change_used_status_where_array_ids($media_id);
+        $this->media_model->add_relation_batch(array_map(function($id) use ($target_id,$table) {
+            return [
+                'media_id' => $id, 
+                'target_id'=>intval($target_id),
+                'target_table' => $table,
+            ];
+        }, $media_id));
+    }
+    public function add_report($data,$address_id){
+        if(!empty($data) && !empty($data['reply_to_id']) && intval($data['reply_to_id'])>0){
+            $news_creator_user_account=$this->users_model->select_user_account_id_where_news_id(intval($data['reply_to_id']));
+            if($this->has_category_id() && 
+            intval($this->user->get_user_account_id())>0 && 
+            !empty($news_creator_user_account) && !empty(end($news_creator_user_account))){
+                $report_id=$this->report_model->add_report_return_id([
+                    'news_id'=>intval($data['reply_to_id']),
+                    'description'=>$this->security->string_secutory_week_check($data['description'])
+                ]);
+                if(!empty($report_id) && intval($report_id)>0){
+                    $this->users_model->add_account_relations([
+                        'user_account_id'=>intval($this->user->get_user_account_id()),
+                        'target_table'=>'report_list',
+                        'target_id'=>intval($report_id)
+                    ]);
+                    $this->users_model->add_address_relation([
+                        'address_id'=>intval($address_id),
+                        'target_table'=>'report_list',
+                        'target_id'=>intval($report_id),
+                    ]);
+                    $this->news_model->seen_weher_id(intval($data['reply_to_id']));
+                    if(!empty(end($news_creator_user_account)['user_account_id']) && 
+                    intval(end($news_creator_user_account)['user_account_id'])>0){
+                        $user_news_creator_notif_id=$this->notification_model->add_return_id([
+                            'title'=>'بررسی خبر',
+                            'body'=>'خبری که شما در سیستم قرار دادید در حال بررسی می باشد',
+                            'url'=>'/show-cartable/'.intval($report_id),
+                        ]);
+                        $this->users_model->add_account_relations([
+                            'user_account_id'=>intval(end($news_creator_user_account)['user_account_id']),
+                            'target_table'=>'notification',
+                            'target_id'=>intval($user_news_creator_notif_id)
+                        ]);
+                    }
+                    $user_report_creator_notif_id=$this->notification_model->add_return_id([
+                        'title'=>'بررسی جدید',
+                        'body'=>'شما یک خبر جدید را به لیست خود اضافه کردید',
+                        'url'=>'/show-cartable/'.intval($report_id),
+                    ]);
+                    $this->users_model->add_account_relations([
+                        'user_account_id'=>intval($this->user->get_user_account_id()),
+                        'target_table'=>'notification',
+                        'target_id'=>intval($user_report_creator_notif_id)
+                    ]);
+                    if(!empty($data['media_id'])){
+                        $this->add_media_relation('report_list',intval($report_id),$data['media_id']);
+                    }
+                    return ['status'=>'success','id'=>intval($data['reply_to_id'])];
+                }else{
+                    return ['status'=>'error','msg'=>'4'];
+                }
+            }
+            return ['status'=>'error','msg'=>'5'];
+        }
+        return ['status'=>'error','msg'=>'6'];
+    }
+    public function add_news($data,$category,$address_id){
+        if(!empty($data)){
+            $news_id=$this->news_model->add_return_id([
+                'privacy' => ($this->has_category_id()?'public':'private'),
+                'description'=>$this->security->string_secutory_week_check($data['description'])
+            ]);
+            if(!empty($news_id) && intval($news_id)>0){
+                $this->users_model->add_account_relations([
+                    'user_account_id'=>intval($this->user->get_user_account_id()),
+                    'target_table'=>'news',
+                    'target_id'=>intval($news_id)
+                ]);
+                $this->users_model->add_address_relation([
+                    'address_id'=>intval($address_id),
+                    'target_table'=>'news',
+                    'target_id'=>intval($news_id),
+                ]);
+                $this->category_model->insert_relation_batch(array_map(function($id) use ($news_id) {
+                    return [
+                        'target_id' => intval($news_id),
+                        'target_table'=>'news',
+                        'category_id' => intval($id)
+                    ];
+                },$category));
+                $this->send_add_news_notification($category,intval($news_id),$this->security->string_secutory_week_check($data['description']));
+                if(!empty($data['media_id'])){
+                    $this->add_media_relation('news',intval($news_id),$data['media_id']);
+                }
+                return ['status'=>'success','id'=>intval($news_id)];
+            }
+            return ['status'=>'error','msg'=>'7'];
+        }
+        return ['status'=>'error','msg'=>'8'];
     }
 }
     // public function get_all_media_used_news(){

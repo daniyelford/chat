@@ -77,6 +77,25 @@ class User_handler
         !empty($this->CI->session->userdata('category_id'))?
             $this->CI->session->userdata('category_id'):null);
     }
+    public function get_user_category_info(){
+        $category=[]; 
+        if($this->function->has_category_id()){
+            $this->function->category_filtter_for_place=true;
+            $this->function->get_all_category_active();
+            $user_category=array_map('intval',$this->get_user_category_id());
+            if(!empty($user_category))
+                foreach ($user_category as $u) {
+                    if(!empty($u) && intval($u)>0)
+                        $category[]=$this->function->search_id_return_value_in_key($this->function->category,intval($u),'id',['id','title','is_force']);
+                }
+        }
+        return $category;  
+    }
+    public function check_user_force(){
+        return ($this->function->has_category_id() && 
+        !empty($this->get_user_category_info()) &&
+        in_array('yes',array_map('trim',array_column($this->get_user_category_info(),'is_force'))));
+    }
     public function get_user_id(){
         return ($this->CI->session->has_userdata('id') && 
         !empty($this->CI->session->userdata('id')) &&
@@ -155,8 +174,8 @@ class User_handler
         }
         return ['status'=>'error'];
     }
-    private function check_user(){
-        if($this->get_user_category_id()){
+    public function check_user(){
+        if($this->function->has_category_id()){
             $user_category=array_map('intval',$this->get_user_category_id());
             if(in_array(1,$user_category)) return true;
         }

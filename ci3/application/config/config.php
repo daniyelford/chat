@@ -400,16 +400,16 @@ $config['encryption_key'] = '';
 */
 $conn = new mysqli(HOST, USERNAME, PASSWORD, DBNAME);
 $tableCheck = $conn->query("SHOW TABLES LIKE 'ci_sessions'");
-$useDatabase = $tableCheck && $tableCheck->num_rows > 0;
+$useDatabase = $tableCheck && $tableCheck->num_rows > 0; 
 $conn->close();
 $config['sess_driver'] = $useDatabase ? 'database' : 'files';
-$config['sess_save_path'] = $useDatabase ? 'ci_sessions' : NULL;
+$config['sess_save_path'] = $useDatabase ? 'ci_sessions' : APPPATH.'sessions';
 $config['sess_cookie_name'] = 'ci_session';
 $config['sess_expiration'] = 86400 * 30;
-$config['sess_time_to_update'] = 86400;
+$config['sess_time_to_update'] = 300;
 $config['cookie_lifetime'] = 86400 * 30;
 $config['sess_samesite'] = 'Lax';
-$config['sess_match_ip'] = TRUE;
+$config['sess_match_ip'] = FALSE;
 $config['sess_regenerate_destroy'] = FALSE;
 /*
 |--------------------------------------------------------------------------

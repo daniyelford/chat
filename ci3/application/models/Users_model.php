@@ -34,6 +34,9 @@ class Users_model extends CI_Model
         return (!empty($tbl) && is_string($tbl) && !empty($arr) && is_array($arr) && !empty($where) && is_array($where) && $this->db->update($tbl,$arr,$where));
     }
     // costum
+    public function all_account(){
+        return $this->db->get($this->account)->result_array();
+    }
     // login used 
     public function select_where_id($id){
 	    return (!empty($id) && intval($id)?$this->select_where_id_table($this->tbl,intval($id)):false);

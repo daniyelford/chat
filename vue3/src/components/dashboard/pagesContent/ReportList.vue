@@ -39,6 +39,7 @@
     }
     #persian-calendar #vpc_header {
       padding: 20px 5px !important;
+      justify-content: center;
     }
     #persian-calendar #vpc_header #vpc_date-control .vpc_today-btn {
       margin: 0 5px !important;

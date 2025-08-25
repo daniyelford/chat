@@ -140,7 +140,7 @@
         text-align: center;
     }
     li{
-        height: 55px;
+        height: 50px;
         width: 100%;
         box-shadow: 0 0 5px grey;
     }
@@ -157,7 +157,7 @@
         background: #efc7c77d;
         text-decoration: none;
         color: #005051;
-        font-size: large;
+        /* font-size: large; */
         font-weight: bold;
     }
     svg{

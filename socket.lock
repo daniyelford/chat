@@ -1,0 +1,5 @@
+ [2025-08-23 02:19:43] Socket server initialized.
+[2025-08-23 02:19:43] WebSocket server running on ws://0.0.0.0:8585
+[2025-08-23 02:24:04] New connection: 58
+[2025-08-23 02:24:08] Message from 58: salam socket
+[2025-08-23 03:20:34] Connection 58 closed

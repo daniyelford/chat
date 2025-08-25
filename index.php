@@ -343,3 +343,11 @@ if (!is_file($migratedFlag)) {
         file_put_contents($migratedFlag, date('Y-m-d H:i:s'));
     }
 }
+$lockFile = FCPATH . 'socket.lock';
+if (!file_exists($lockFile)) {
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        pclose(popen("start /B php " . APPPATH . "libraries/Tools/Socket_handler.php", "r"));
+    } else {
+        exec('php ' . APPPATH . 'libraries/Tools/Socket_handler.php > /dev/null 2>&1 &');
+    }
+}

@@ -26,7 +26,6 @@ class MY_Loader extends CI_Loader
     public Place_handler $place_handler;
     public Api_handler $api_handler;
     public Category_handler $category_handler;
-    public Socket_handler $socket_handler;
 
 
     public function __construct()
@@ -35,7 +34,6 @@ class MY_Loader extends CI_Loader
         $CI =& get_instance();
         require_once(APPPATH . 'libraries/Tools/Send_handler.php');
         require_once(APPPATH . 'libraries/Tools/Functions_handler.php');
-        require_once(APPPATH . 'libraries/Tools/Socket_handler.php');
         require_once(APPPATH . 'libraries/Tools/Security_handler.php');
         require_once(APPPATH . 'libraries/Main/Login/Finger_print.php');
         require_once(APPPATH . 'libraries/Tools/Upload_handler.php');
@@ -70,7 +68,6 @@ class MY_Loader extends CI_Loader
         $this->place_model = $CI->place_model;
 
         $this->send_handler= new Send_handler();
-        $this->socket_handler= new Socket_handler();
         $this->security_handler= new Security_handler();
         $this->finger_print= new Finger_print();
         $this->user_handler= new User_handler(
@@ -82,23 +79,22 @@ class MY_Loader extends CI_Loader
             $this->send_handler
         );
         // $this->wallet_model,
-        // $this->media_model,
-        // $this->news_model,
         $this->functions_handler= new Functions_handler(
+            $this->security_handler,
             $this->user_handler,
             $this->send_handler,
             $this->category_model,
             $this->users_model,
             $this->notification_model,
             $this->rule_model,
+            $this->media_model,
+            $this->report_model,
+            $this->news_model,
         );
         $this->user_handler->setCategoryHandler($this->functions_handler);
         $this->news_handler= new News_handler(
-            $this->security_handler,
             $this->user_handler,
-            $this->send_handler,
             $this->functions_handler,
-            $this->category_model,
             $this->news_model,
             $this->notification_model,
             $this->users_model,
@@ -134,7 +130,6 @@ class MY_Loader extends CI_Loader
         );
         $this->category_handler=new Category_handler(
             $this->user_handler,
-            $this->functions_handler,
             $this->category_model
         );
         $this->api_handler= new Api_handler(
@@ -161,7 +156,6 @@ class MY_Loader extends CI_Loader
         $CI->category_handler=$this->category_handler;
         $CI->finger_print=$this->finger_print;
         $CI->upload_handler=$this->upload_handler;
-        $CI->socket_handler=$this->socket_handler;
         $CI->login_handler=$this->login_handler;
         $CI->user_handler=$this->user_handler;
         $CI->news_handler=$this->news_handler;

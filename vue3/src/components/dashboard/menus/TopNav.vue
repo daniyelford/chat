@@ -2,6 +2,7 @@
   import { onMounted, onBeforeUnmount, computed } from 'vue'
   import DashboardSetting from '@/components/dashboard/menus/DashboardSetting.vue'
   import { useUserStore } from '@/stores/user'
+  import FingerPrintRegister from '@/components/tooles/nav/FingerPrintRegister.vue'
   import NotificationMenu from '@/components/tooles/nav/NotificationMenu.vue'
   import { useMenuStore } from '@/stores/menu'
   const menu = useMenuStore()
@@ -40,6 +41,7 @@
       <NotificationMenu v-if="user.isLoggedIn" />
     </div>
     <div class="logo">
+      <FingerPrintRegister :hasFinger="false"/>
       <DashboardSetting v-if="hasCategory1" />
       <button class="hamburger" @click="menu.toggle">
         <span></span><span></span><span></span>

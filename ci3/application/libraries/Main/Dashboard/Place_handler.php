@@ -38,11 +38,7 @@ class Place_handler
             $category_id = isset($data['category_id']) ? $data['category_id'] : null;
             $city_id = isset($data['city_id']) ? $data['city_id'] : null;
             $places = $this->place_model->get_place_with_relations($offset, $limit, $id, $category_id,$city_id);
-            $high_rule=false;
-            if($this->function->has_category_id()){
-                $user_category=array_map('intval',$this->user->get_user_category_id());
-                if(in_array(1,$user_category)) $high_rule=true;
-            }
+            $high_rule=$this->user->check_user();
             return [
                 'status' => 'success',
                 'data' => $places['data']??[],
@@ -86,10 +82,12 @@ class Place_handler
         }
     }
     public function delete_place($data){
-        if($this->function->has_category_id() && !empty($data) && !empty($data['id']) && intval($data['id'])>0){
-            $user_category=array_map('intval',$this->user->get_user_category_id());
-            if(in_array(1,$user_category) && $this->place_model->delete_place(intval($data['id']))) return ['status'=>'success'];
-        }
+        if($this->function->has_category_id() && 
+        !empty($data) && !empty($data['id']) && 
+        intval($data['id'])>0 && $this->user->check_user() && 
+        $this->place_model->delete_place(intval($data['id'])))
+            return ['status'=>'success'];
+        
         return ['status'=>'error'];
     }
 }

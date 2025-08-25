@@ -307,7 +307,7 @@ class News_model extends CI_Model
         $news_data = $this->build_news_data($news_rows);
         return ['data' => $news_data, 'has_more' => $has_more,'type'=>2];
     }
-    public function get_news_by_id(int $id,int $user_account_id,bool $has_rule) {
+    public function get_news_by_id(int $id,int $user_account_id,$has_rule) {
         $this->user_account_id=intval($user_account_id);
         $news=$this->select_where_array_table($this->tbl,['id'=>intval($id)]);
         if(!(!empty($news) && !empty($news['0']) && !empty($news['0']['privacy']))) return [];
@@ -316,7 +316,7 @@ class News_model extends CI_Model
                 'user_account_id'=>intval($user_account_id),
                 'target_table'=>'news',
                 'target_id'=>intval($id)
-            ]);
+            ])->result_array();
             if(!(!empty($relation) && !empty($relation['0']))) return [];
         }
         return array_values($this->build_news_data($news))['0'];

@@ -42,7 +42,7 @@
 
           </small>
           <div class="actions">
-            <span v-if="user.status==='active'">
+            <span v-if="user.status==='active'" class="active-span">
               <RouterLink class="c-d" :to="`/show-news/${news.id}`">
                 مشاهده
               </RouterLink>
@@ -133,6 +133,11 @@
   })
 </script>
 <style scoped>
+  .active-span{
+    display: flex;
+    width: 100%;
+    gap: 2px;
+  }
   .news-wrapper {
     max-width: 800px;
     margin: 0 auto;
