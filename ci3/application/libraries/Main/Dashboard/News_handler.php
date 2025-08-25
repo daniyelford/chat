@@ -70,6 +70,16 @@ class News_handler
         !empty($data['description']) &&  
         !empty($data['user_address']) && 
         !empty($data['user_address']['type'])){
+            if(!empty($data['delete_media']) && is_array($data['delete_media']))
+                foreach($data['delete_media'] as $id){
+                    if ($id > 0 && 
+                    ($a = $this->media_model->select_where_id($id))!==false &&
+                    !empty($a) && !empty(end($a)) && !empty(end($a)['id']) && 
+                    intval(end($a)['id'])>0 && !empty(end($a)['url'])){
+                        @unlink(FCPATH . str_replace(base_url(), '', end($a)['url']));
+                        $this->media_model->remove_where_id($id);
+                    }
+                }
             $category = array_map('intval', $data['category_id']);
             $address_handler=$this->function->get_address_id($data['user_address']);
             $address_id=$address_handler['address_id']??0;
