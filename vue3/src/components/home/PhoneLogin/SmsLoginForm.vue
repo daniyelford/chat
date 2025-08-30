@@ -1,7 +1,6 @@
 <template>
     <form @submit.prevent="submitCode">
         <p class="msg" v-if="message">{{ message }}</p>
-        {{ code }}
         <OtpInput v-model="code" length="6" />
         <!-- <label for="code">کد پیامک شده</label> -->
         <!-- <input
