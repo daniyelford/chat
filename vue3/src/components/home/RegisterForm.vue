@@ -1,7 +1,6 @@
 <template>
   <div>
     <form @submit.prevent="submitRegister">
-      <h2>تکمیل ثبت‌ نام</h2>
       <p class="msg" v-if="message">{{ message }}</p>
       <label for="name">نام</label>
       <input id="name" v-model="name" type="text" required />
@@ -53,10 +52,6 @@
   div{
     width: 100%;
     box-sizing: border-box;
-    border-radius: 10px;
-    background: #e0e4ed;
-    padding: 20px;
-    box-shadow: 0 0 10px grey;
   }
   form {
     width: 100%;

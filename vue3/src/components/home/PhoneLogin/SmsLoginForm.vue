@@ -1,15 +1,28 @@
 <template>
     <form @submit.prevent="submitCode">
         <p class="msg" v-if="message">{{ message }}</p>
-        <label for="code">کد پیامک شده</label>
-        <input
+        {{ code }}
+        <OtpInput v-model="code" length="6" />
+        <!-- <label for="code">کد پیامک شده</label> -->
+        <!-- <input
+        type="text"
+        class="digit-box"
+        v-for="(el, ind) in digits"
+        :key="el+ind"
+        v-model="digits[ind]"
+        :autofocus="ind === 0"
+        :placeholder="ind+1"
+        maxlength="1"
+        > -->
+
+        <!-- <input
             id="code"
             v-model="code"
             type="text"
             placeholder="کد تأیید"
             required
             autocomplete="one-time-code"
-        />
+        /> -->
         <button type="submit" style="width: 49%;display: inline-block;margin-left: 1%;">تأیید کد</button>
         <button type="button" @click="editPhone" style="width: 49%;background-color: orangered;display: inline-block;margin-right: 1%;">
             ویرایش شماره
@@ -27,6 +40,7 @@
 <script setup>
     import { ref,onMounted,onUnmounted,defineProps,defineEmits } from 'vue'
     import { sendApi } from '@/utils/api'
+    import OtpInput from 'vue-otp-autofill'
     import router from '@/router'
     const emit = defineEmits(['back'])
     const message=ref('')
@@ -115,19 +129,19 @@
     onMounted(() => {
         updatecountdown()
         interval = setInterval(updatecountdown, 1000)
-        if ('OTPCredential' in window) {
-            const ac = new AbortController();
-            navigator.credentials.get({
-                otp: { transport: ['sms'] },
-                signal: ac.signal
-            }).then(otp => {
-                code.value = otp.code;
-                submitCode()
-            }).catch(err => {
-                console.warn('OTP retrieval error:', err);
-            });
-            setTimeout(() => ac.abort(), 60000);
-        }
+        // if ('OTPCredential' in window) {
+        //     const ac = new AbortController();
+        //     navigator.credentials.get({
+        //         otp: { transport: ['sms'] },
+        //         signal: ac.signal
+        //     }).then(otp => {
+        //         code.value = otp.code;
+        //         submitCode()
+        //     }).catch(err => {
+        //         console.warn('OTP retrieval error:', err);
+        //     });
+        //     setTimeout(() => ac.abort(), 60000);
+        // }
     })
 </script>
 <style scoped>

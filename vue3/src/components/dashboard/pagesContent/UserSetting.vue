@@ -103,10 +103,11 @@
         text-align: center;
         font-size: 22px;
         font-weight: bold;
-        margin-bottom: 20px;
+        /* margin-bottom: 20px; */
+        margin:0;
     }
     .form-group {
-        margin-bottom: 16px;
+        /* margin-bottom: 16px; */
     }
     .form-label {
         display: block;

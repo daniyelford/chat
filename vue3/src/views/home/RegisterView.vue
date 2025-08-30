@@ -1,5 +1,6 @@
 <template>
   <div class="home">
+    <h2>تکمیل ثبت‌ نام</h2>
     <div class="image-inner">
       <UploadSingleImage toAction="user_mobile" url="register/" @uploaded="handleImageUpload" />
     </div>
@@ -21,7 +22,7 @@ const handleImageUpload = (id) => {
 <style scoped>
   .home{
     display: flex;
-    flex-direction: row-reverse;
+    flex-direction: column;
     flex-wrap: nowrap;
     direction: rtl;
     justify-content: space-evenly;
@@ -29,18 +30,26 @@ const handleImageUpload = (id) => {
     margin-top: 50px;
     width: 100%;
     gap: 20px;
+    background: #e0e4ed;
+    padding: 20px;
+    box-shadow: 0 0 10px grey;
+    box-sizing: border-box;
+    border-radius: 10px;
   }
-  .image-inner,.register-inner{
-    width: 40%;
-    margin: 0 5%;
-    height: 300px;
+  h2{
+    margin: 0;
+  }
+  .register-inner{
+    width: 100%;
   }
   .image-inner{
-    background-color: #92cfe6;
+    width: auto;
+    height: 150px;
+    background-color: #a6a6a6;
     border-radius: 10px;
     box-shadow: 0 0 10px grey;
   }
-  @media screen and (max-width:600px){
+  /* @media screen and (max-width:600px){
     .home{
       flex-direction: column;
       margin-top: 20px;
@@ -49,4 +58,5 @@ const handleImageUpload = (id) => {
       width: 90%;
     }
   }
+  */
 </style>
