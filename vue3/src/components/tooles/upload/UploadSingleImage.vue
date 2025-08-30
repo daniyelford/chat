@@ -100,34 +100,16 @@
   input[type="file"] {
     width: 0;
     height: 0;
-    /*
-    top: -25px;
-    box-sizing: border-box;
-    height: calc(100% + 25px);
-    z-index: 999;
-    color: transparent;
-    position: relative;
-    background: transparent; */
     visibility: hidden;
   }
   svg{
-    /* position: relative; */
-    /* top: -360px; */
     width: 100%;
     height: 100%;
   }
-  /* p{
-    position: relative;
-    top: -420px;
-    text-align: center;
-    color: #17171c;
-    font-size: 20px;
-  } */
   .preview {
-      width: 100%;
+      width: auto;
       height: 100%;
-      /* position: relative; */
-      /* top: -700px; */
+      margin: auto;
       padding: 20px;
       box-sizing: border-box;
   }

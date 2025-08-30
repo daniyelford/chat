@@ -43,9 +43,9 @@ const handleImageUpload = (id) => {
     width: 100%;
   }
   .image-inner{
-    width: auto;
+    width: 100%;
     height: 150px;
-    background-color: #a6a6a6;
+    background-color: #aba31340;
     border-radius: 10px;
     box-shadow: 0 0 10px grey;
   }
