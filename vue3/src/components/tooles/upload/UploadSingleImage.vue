@@ -121,9 +121,7 @@
       width: 96%;
       background: #eee;
       border: 1px solid #ccc;
-      /* top: -220px; */
       height: 22px;
-      /* position: relative; */
       border-radius: 6px;
       overflow: hidden;
       margin: 0 2%;

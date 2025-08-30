@@ -2,26 +2,6 @@
     <form @submit.prevent="submitCode">
         <p class="msg" v-if="message">{{ message }}</p>
         <OtpInput v-model="code" length="6" />
-        <!-- <label for="code">کد پیامک شده</label> -->
-        <!-- <input
-        type="text"
-        class="digit-box"
-        v-for="(el, ind) in digits"
-        :key="el+ind"
-        v-model="digits[ind]"
-        :autofocus="ind === 0"
-        :placeholder="ind+1"
-        maxlength="1"
-        > -->
-
-        <!-- <input
-            id="code"
-            v-model="code"
-            type="text"
-            placeholder="کد تأیید"
-            required
-            autocomplete="one-time-code"
-        /> -->
         <button type="submit" style="width: 49%;display: inline-block;margin-left: 1%;">تأیید کد</button>
         <button type="button" @click="editPhone" style="width: 49%;background-color: orangered;display: inline-block;margin-right: 1%;">
             ویرایش شماره
