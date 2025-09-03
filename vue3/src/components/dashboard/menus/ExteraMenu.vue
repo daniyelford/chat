@@ -112,6 +112,7 @@
         height: auto;
         width: 100%;
         border-radius: 150px;
+        max-height: 300px;
     }
     .fullName {
         text-align: center;

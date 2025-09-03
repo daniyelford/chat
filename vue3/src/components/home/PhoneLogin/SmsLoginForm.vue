@@ -2,15 +2,15 @@
     <form @submit.prevent="submitCode">
         <p class="msg" v-if="message">{{ message }}</p>
         <OtpInput v-model="code" length="6" />
-        <button type="submit" style="width: 49%;display: inline-block;margin-left: 1%;">تأیید کد</button>
-        <button type="button" @click="editPhone" style="width: 49%;background-color: orangered;display: inline-block;margin-right: 1%;">
+        <button type="submit" :disabled="submited" class="submitBtn">تأیید کد</button>
+        <button type="button" @click="editPhone" class="editPhone">
             ویرایش شماره
         </button>
         <button
             type="button"
             @click="resendCode"
             :disabled="resendDisabled"
-            style="background-color: goldenrod;">
+            class="resendBtn">
             ارسال مجدد کد
             <span v-if="resendDisabled">({{ countdown }} ثانیه)</span>
         </button>
@@ -26,6 +26,7 @@
     const code=ref('') 
     const resendDisabled=ref(false)
     const countdown=ref(0)
+    const submited = ref(false)
     const props = defineProps({
         phone: String
     })
@@ -35,6 +36,7 @@
         emit('back',true)
     }
     const submitCode=async()=>{
+        submited.value=true
         try {
             const response = await sendApi({
                 action: 'verify_sms_code',
@@ -60,6 +62,8 @@
         } catch (error) {
             message.value = 'خطا در تأیید کد.'
             console.error(error)
+        }finally{
+            submited.value=false
         }
     }
     const resendCode = async () => {
@@ -108,19 +112,6 @@
     onMounted(() => {
         updatecountdown()
         interval = setInterval(updatecountdown, 1000)
-        // if ('OTPCredential' in window) {
-        //     const ac = new AbortController();
-        //     navigator.credentials.get({
-        //         otp: { transport: ['sms'] },
-        //         signal: ac.signal
-        //     }).then(otp => {
-        //         code.value = otp.code;
-        //         submitCode()
-        //     }).catch(err => {
-        //         console.warn('OTP retrieval error:', err);
-        //     });
-        //     setTimeout(() => ac.abort(), 60000);
-        // }
     })
 </script>
 <style scoped>
@@ -135,21 +126,14 @@
         text-align: center;
         margin: 5px auto;
     }
-    label,
-    input,
-    button {
-        display: block;
-        width: 100%;
-    }
-    label{
-        text-align: center;
-    }
     button{
-        background-color: green;
         color: white;
         padding: 9px;
+        display: inline-block;
         border-radius: 10px;
         border: none;
+        width: 49%;
+        cursor: pointer;
         margin-top: 10px;
     }
     button[disabled] {
@@ -157,12 +141,17 @@
         background-color: rgb(143, 141, 141);
         cursor: not-allowed;
     }
-    input {
-        box-sizing: border-box;
-        padding: 7px;
-        border: none;
-        outline: none;
-        border-radius: 10px;
-        background-color: #edefff;
+    .submitBtn{
+        background-color: green;
+        margin-left: 1%;
+    }
+    .editPhone{
+        background-color: orangered;
+        margin-right: 1%;
+    }
+    .resendBtn{
+        width: 100%;
+        display: block;
+        background-color: goldenrod;
     }
 </style>

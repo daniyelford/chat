@@ -153,7 +153,7 @@ export const useNewsStore = defineStore('news', ()=> {
         if (index !== -1) {
           cards.value[index] = newCard
         } else {
-          cards.value.unshift(newCard)
+          cards.value.push(newCard)
         }
       }
     }

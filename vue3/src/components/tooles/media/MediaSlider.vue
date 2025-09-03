@@ -48,11 +48,13 @@
     .media {
         width: 100%;
         height: 260px;
+        text-align: center;
     }
     .media img,
     .media video {
-        width: 100%;
+        width: auto;
         height: 100%;
+        max-width: 100%;
     }
     .media-dots {
         display: flex;

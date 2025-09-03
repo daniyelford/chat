@@ -27,7 +27,7 @@ const handleImageUpload = (id) => {
     direction: rtl;
     justify-content: space-evenly;
     align-items: center;
-    margin-top: 50px;
+    margin-top: 15px;
     width: 100%;
     gap: 20px;
     background: #e0e4ed;
@@ -43,8 +43,8 @@ const handleImageUpload = (id) => {
     width: 100%;
   }
   .image-inner{
-    width: 100%;
-    height: 150px;
+    width: 80%;
+    margin: auto;
     background-color: #aba31340;
     border-radius: 10px;
     box-shadow: 0 0 10px grey;

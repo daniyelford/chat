@@ -85,8 +85,12 @@
 </script>
 <style scoped>
     .image-inner{
-        width: 50%;
-        margin: auto;
+        width: 80%;
+        margin: 10px auto;
+        background: #f9f2e8;
+        border-radius: 10px;
+        padding: 7px;
+        box-sizing: border-box;
     }
     .tx-c{
         text-align: center;
@@ -103,11 +107,7 @@
         text-align: center;
         font-size: 22px;
         font-weight: bold;
-        /* margin-bottom: 20px; */
         margin:0;
-    }
-    .form-group {
-        /* margin-bottom: 16px; */
     }
     .form-label {
         display: block;
@@ -130,6 +130,9 @@
         outline: none;
         border-color: #007bff;
         background-color: #fff;
+    }
+    .form-group{
+        margin-bottom: 5px;
     }
     .form-file {
         width: 100%;
