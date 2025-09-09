@@ -3,27 +3,27 @@
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0,0,256,256"><g fill="#031c66" fill-rule="evenodd" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(0.05905,0.05905)"><path d="M161,824h192v192v1209v1209h3735v-2418h-2490v-192h2490h192v0v2610v192h-192h-3735h-192v0v-2610zM1333,3280l1277,-1125l503,359l646,-479l192,186v1060h-2618zM611,643v1093v181v199c0,0 26,312 346,312c321,0 381,-251 381,-359v-292v-934c0,-34 28,-61 61,-61v0c34,0 61,28 61,61v934v296c0,0 0,4 0,11c0,267 -159,487 -467,487c-482,0 -504,-460 -504,-482v-173h-1v-1235v-101c0,-5 1,-9 2,-14v0c0,0 44,-316 312,-328c227,-10 365,192 365,398v474v772c0,66 -4,135 -4,206c0,0 -17,156 -181,156c-229,0 -233,-161 -224,-332v0v-988c0,-34 28,-61 61,-61v0c34,0 61,28 61,61v679v309c0,60 -9,197 79,197c74,0 85,-78 85,-193v-160v-721v-454c0,0 -9,-213 -201,-213c-192,0 -232,145 -232,276z"></path></g></g></svg>
     <input type="file" multiple accept="image/*,video/*" ref="fileInput" class="hidden-input" @change="handleFiles" />
   </div>
-  <div v-if="uploading" class="uploading-box">
+  <div v-if="uploading" :class="props.HasStylePlace?'uploading-place-box':'uploading-box'">
     <circleProgress :readProgress="progress" />
   </div>
   <div v-if="mediaList.length > 0" class="innerList">
     <div class="preview-list">
       <div v-for="(item, i) in mediaList" :key="item.id || i" class="preview-item">
         <button @click="deleteMedia(item, i)" class="delete-button">×</button>
-        <img v-if="item.type === 'image'" :src="item.url" class="preview-image" />
-        <video v-else-if="item.type === 'video'" :src="item.url" controls class="preview-video" />
+        <img v-if="item.type === 'image'" :src="item.url" class="preview-image" @error="handleImageError(item)"/>
+        <video v-else-if="item.type === 'video'" :src="item.url" controls class="preview-video" @error="handleVideoError(item)"/>
       </div> 
     </div>
   </div>
 </template>
 <script setup>
   import { ref, defineProps, defineEmits, watch, defineExpose } from 'vue'
-  import { sendApi,sendApiWithProgress } from '@/utils/api'
+  import { sendApi } from '@/utils/api'
   import imageCompression from 'browser-image-compression'
-  import { compressVideo } from '@/utils/ffmpeg'
+  import { uploadVideoInChunks,uploadImages } from '@/utils/upload'
+  import { filesToBase64 } from '@/utils/base64'
   import circleProgress from '@/components/tooles/upload/circleProgress.vue';
   const fileInput = ref(null)
-  const selectedFilesBase64 = ref([])
   const progress = ref(0)
   const uploading = ref(false)
   const props = defineProps({
@@ -45,6 +45,25 @@
   })
   const emit = defineEmits(['update:modelValue', 'done','delete'])
   const mediaList = ref([...props.initialMedias])
+  const videoInfo=ref([])
+  const imageInfo=ref([])
+  const handleVideoError = (item) => {
+    console.error("خطا در لود :", item.url)
+  // مثلا می‌تونی آیتم رو پاک کنی یا پیام خطا نشون بدی
+  // mediaList.value = mediaList.value.filter(m => m.id !== item.id)
+  }
+  const handleImageError = (item) => {
+    console.error("خطا در لود :", item.url)
+  // مثلا می‌تونی آیتم رو پاک کنی یا پیام خطا نشون بدی
+  // mediaList.value = mediaList.value.filter(m => m.id !== item.id)
+  }
+  props.initialMedias.forEach(m => {
+    if (m.type === 'image') {
+      imageInfo.value.push(m)
+    } else if (m.type === 'video') {
+      videoInfo.value.push(m)
+    }
+  })
   const handleDrop = (e) => {
     const files = e.dataTransfer.files
     handleFiles({ target: { files } })
@@ -52,7 +71,6 @@
   const handleFiles = async (e) => {
     const files = Array.from(e.target.files)
     if (!files.length) return
-    selectedFilesBase64.value = []
     uploading.value = true
     progress.value = 0
     let count = 0
@@ -65,58 +83,43 @@
             maxWidthOrHeight: 1280,
             useWebWorker: true,
             onProgress: (p) => {
-              progress.value = Math.round((count / files.length) * 100 * (p / 100) * 0.5)
+              progress.value = Math.round(p)
             },
           })
+          const base64 = await filesToBase64(processedFile)
+          const imageResult = await uploadImages([base64],props.url,props.toAction)
+          imageInfo.value.push(...imageResult)
         } else if (file.type.startsWith('video/')) {
-          processedFile = await compressVideo(file, (ratio) => {
-            progress.value = Math.round((count + ratio) / files.length * 50);
+          const result = await uploadVideoInChunks(file , props.url , props.toAction , 1 , (ratio) => {
+            progress.value = Math.round(ratio);
           })
+          videoInfo.value.push(...result)
         }
-        const reader = new FileReader()
-        reader.onload = () => {
-          const base64 = reader.result
-          selectedFilesBase64.value.push(base64)
-          count++
-          progress.value = Math.round((count / files.length) * 100)
-          resolve()
-        }
-        reader.readAsDataURL(processedFile)
+        count++
+        resolve()
       })
     }
-    await uploadFiles()
     uploading.value = false
     fileInput.value.value = null
   }
-  const uploadFiles = async () => {
-    try {
-      const response = await sendApiWithProgress({
-        control: 'upload',
-        action: 'upload_many_media',
-        data: {
-          url: props.url,
-          data: selectedFilesBase64.value,
-          toAction: props.toAction,
-        },
-      },(p)=>{progress.value= 50 + (p/2) })
-      if (response.status === 'success') {
-        const uploaded = response.data
-        const existingIds = mediaList.value.map(m => m.id)
-        const newItems = uploaded.filter(m => !existingIds.includes(m.id))
-        mediaList.value.push(...newItems)
-        selectedFilesBase64.value = []
-        emit('update:modelValue', mediaList.value.map(m => m.id))
-        emit('done', mediaList.value)
-      } else {
-        alert('آپلود با خطا مواجه شد: ' + response.message)
-      }
-    } catch (err) {
-      alert('خطا در ارسال: ' + err.message)
+  watch([videoInfo, imageInfo], ([newVideos, newImages]) => {
+    const uploaded = [
+      ...newVideos.flat(),
+      ...newImages.flat()
+    ];
+    const existingIds = mediaList.value.map(m => m.id);
+    const newItems = uploaded.filter(m => !existingIds.includes(m.id));
+    if (newItems.length > 0) {
+      mediaList.value.push(...newItems);
+      emit('update:modelValue', mediaList.value.map(m => m.id));
+      emit('done', mediaList.value);
     }
-  }
-  const deleteMedia = async (media, index) => {
+  }, { deep: true });
+  const deleteMedia = async (media, index) => {    
     if (props.editMode) {
       mediaList.value.splice(index, 1)
+      videoInfo.value = videoInfo.value.filter(item => item.id !== media.id)
+      imageInfo.value = imageInfo.value.filter(item => item.id !== media.id)
       emit('update:modelValue', mediaList.value.map(m => m.id))
       if(media.id){
         emit('delete', Number(media.id))
@@ -131,6 +134,8 @@
       })
       if (res.status === 'success') {
         mediaList.value.splice(index, 1)
+        videoInfo.value = videoInfo.value.filter(item => item.id !== media.id)
+        imageInfo.value = imageInfo.value.filter(item => item.id !== media.id)
         emit('update:modelValue', mediaList.value.map(m => m.id))
         emit('done', mediaList.value)
       } else {
@@ -141,7 +146,8 @@
     }
   }
   const reset = () => {
-    selectedFilesBase64.value = []
+    videoInfo.value = []
+    imageInfo.value = []
     progress.value = 0
     uploading.value = false
     if (fileInput.value) {
@@ -165,6 +171,7 @@
       mediaList.value.push(...extras)
     }
   }, { immediate: true })
+  
 </script>
 <style scoped>
   .innerList{
@@ -207,16 +214,29 @@
     cursor: pointer;
     margin-top: 0.5rem;
   }
+  .uploading-place-box{
+    background: #a9a9a9a8;
+    position: fixed;
+    text-align: center;
+    bottom: 20%;
+    top: 20%;
+    left: 40px;
+    padding: 25%;
+    right: 40px;
+    z-index: 99999;
+  }
   .uploading-box {
     background: #a9a9a9a8;
     height: 74px;
     position: fixed;
-    padding-bottom: 45px;
+    padding-top: 60px;
+    padding-bottom: 65px;
     text-align: center;
     border-radius: 50px 50px 0 0;
     bottom: 0;
     left: 0;
     right: 0;
+    z-index: 99999;
   }
   .progress-bar {
     width: 100%;
@@ -230,6 +250,7 @@
     align-items: stretch;
     align-content: flex-start;
     z-index: 9999;
+    max-height: 100px;
   }
   .preview-item {
     position: relative;

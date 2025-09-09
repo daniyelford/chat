@@ -381,12 +381,15 @@ class News_model extends CI_Model
         $this->just_news = false;
         $news_data_map = array_column($news_data_map, null, 'id');
         $report_data_map = $this->build_report_data($all_reports);
-        $result = [];
+        $result = $news_id_used = [];
         foreach ($all_reports as $report) {
-            $result[] = [
-                'report' => $report_data_map[$report['news_id']][0] ?? [],
-                'news'   => $news_data_map[$report['news_id']] ?? null,
-            ];
+            if(intval($report['news_id'])>0 && !in_array(intval($report['news_id']),$news_id_used)){
+                $news_id_used[]=intval($report['news_id']);
+                $result[] = [
+                    'report' => $report_data_map[$report['news_id']] ?? [],
+                    'news'   => $news_data_map[$report['news_id']] ?? null,
+                ];
+            }
         }
         return [
             'data' => $result,
@@ -404,9 +407,10 @@ class News_model extends CI_Model
                 'user_account_id'=>intval($user_account_id),
                 'target_table'=>'news',
                 'target_id'=>intval($news_id)
-            ]);
+            ])->result_array();
             if(!(!empty($relation) && !empty($relation['0']))) return [];
         }
+        $this->user_account_id=intval($user_account_id);
         $report_data = $this->build_report_data([$report]);
         $this->just_news = true;
         $news_data = $this->get_news_by_ids([$news_id], $user_account_id);

@@ -1,7 +1,7 @@
 <template>
     <form @submit.prevent="submitCode">
         <p class="msg" v-if="message">{{ message }}</p>
-        <OtpInput v-model="code" length="6" />
+        <OtpInput v-model="code" length="6" :reset="resetOtpInput"/>
         <button type="submit" :disabled="submited" class="submitBtn">تأیید کد</button>
         <button type="button" @click="editPhone" class="editPhone">
             ویرایش شماره
@@ -22,6 +22,7 @@
     import OtpInput from 'vue-otp-autofill'
     import router from '@/router'
     const emit = defineEmits(['back'])
+    const resetOtpInput=ref(0)
     const message=ref('')
     const code=ref('') 
     const resendDisabled=ref(false)
@@ -33,6 +34,7 @@
     const editPhone = () => {
         sessionStorage.setItem('login_step', '1')
         code.value=''
+        resetOtpInput.value++
         emit('back',true)
     }
     const submitCode=async()=>{

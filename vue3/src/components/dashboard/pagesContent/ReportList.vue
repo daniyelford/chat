@@ -1,3 +1,12 @@
+<template>
+  <jalaliCalendar
+    :show-date="safeToday"
+    :eventsList="store.events"
+    disablePastDays
+    @on-event-click="showEventModal"
+  />
+  <ReportListModal :show="showModal" :event="selectedEvent" @close="closeModal" />
+</template>
 <script setup>
   import { ref , defineAsyncComponent, onMounted } from 'vue'
   import { useNewsStore } from '@/stores/news'
@@ -24,15 +33,6 @@
     store.loadEvents()
   })
 </script>
-<template>
-  <jalaliCalendar
-    :show-date="safeToday"
-    :eventsList="store.events"
-    disablePastDays
-    @on-event-click="showEventModal"
-  />
-  <ReportListModal :show="showModal" :event="selectedEvent" @close="closeModal" />
-</template>
 <style>
   #persian-calendar #vpc_calendar .vpc_week .vpc_day.vpc_week-period-day , #persian-calendar #vpc_calendar .vpc_week .vpc_day{
     min-height: 250px !important;        

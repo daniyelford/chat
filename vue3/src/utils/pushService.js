@@ -1,6 +1,6 @@
 import { sendApi } from "@/utils/api";
 import { BASE_URL,NOTIFICATION_VAP_ID } from "@/config";
-import { urlBase64ToUint8Array } from '@/utils/urlBase64ToUint8Array';
+import { urlBase64ToUint8Array } from '@/utils/base64';
 export async function subscribeToPush() {
   if ('serviceWorker' in navigator && 'PushManager' in window) {
     navigator.serviceWorker.register(`${BASE_URL}/assets/sw.js`)

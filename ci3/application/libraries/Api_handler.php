@@ -40,4 +40,47 @@ class Api_handler{
         }
         exit(json_encode(['status' => 'error', 'message' => 'کنترل یا اکشن خالی است']));
     }
+    public function upload_video($files, $data) {
+        $info = json_decode($data['data'] ?? '', true);
+        if (!$info) {
+            exit(json_encode(['status' => 'error', 'message' => 'Invalid meta data']));
+        }
+        $uploadDir = FCPATH . 'storage/chunk/' ;
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+        $tempFile = $uploadDir . $info['id'] . '.part';
+        if (!empty($files)) {
+            $file = reset($files);
+            $chunkFile = $tempFile . "_chunk_" . $info['chunkIndex'];
+            if (!move_uploaded_file($file['tmp_name'], $chunkFile)) {
+                exit(json_encode(['status' => 'error', 'message' => 'Failed to save chunk']));
+            }
+        }
+        if (!empty($info['isLastChunk']) && $info['isLastChunk'] === true) {
+            $finalFilePath = $uploadDir . $info['fileName'];
+            $out = fopen($finalFilePath, 'wb');
+            for ($i = 0; $i < $info['total']; $i++) {
+                $chunkFile = $tempFile . "_chunk_" . $i;
+                if (!file_exists($chunkFile)) {
+                    fclose($out);
+                    exit(json_encode(['status' => 'error', 'message' => 'Missing chunk ' . $i]));
+                }
+                $in = fopen($chunkFile, 'rb');
+                stream_copy_to_stream($in, $out);
+                fclose($in);
+                unlink($chunkFile);
+            }
+            fclose($out);
+            $mimeType = mime_content_type($finalFilePath);
+            $base64File = 'data:' . $mimeType . ';base64,' . base64_encode(file_get_contents($finalFilePath));
+            $result = $this->handlers['upload']->upload_many_videos([
+                'data' => [$base64File],
+                'url' => $info['url'],
+                'toAction' => $info['toAction']
+            ]);
+            unlink($finalFilePath);
+            exit(json_encode(['status' => 'success', 'message' => 'File uploaded', 'result' => $result]));
+        } else {
+            exit(json_encode(['status' => 'progress']));
+        }
+    }
 }

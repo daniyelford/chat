@@ -48,7 +48,7 @@
           قرار ملاقات
         </a>
         <a class="choose" v-if="card.reports && card.reports.length" @click="toggleReports(card.id)">
-          {{ showReports[card.id] ? 'بستن گزارش‌ها' : 'نمایش گزارش‌ها' }}
+          {{ showReports[card.id] ? 'بستن پاسخ ها و ملاقات ها' : 'نمایش پاسخ ها و ملاقات ها' }}
         </a>
         <div class="report-block" v-if="card.reports && card.reports.length && showReports[card.id]">
           <div class="single-report" v-for="report in card.reports" :key="report.id">
@@ -219,6 +219,16 @@
         const newItem = newData[i]
         if (oldItem.id !== newItem.id) return true
         if (oldItem.show_status !== newItem.show_status) return true
+        if (oldItem.user.name !== newItem.user.name) return true
+        if (oldItem.user.family !== newItem.user.family) return true
+        if (oldItem.user.image !== newItem.user.image) return true
+        if (oldItem.location.address !== newItem.location.address) return true
+        if (oldItem.medias.length !== newItem.medias.length) return true
+        for (let a = 0; a < newItem.medias.length; a++) {
+          if(newItem.medias[a].id!==oldItem.medias[a].id) return true
+          if(newItem.medias[a].type!==oldItem.medias[a].type) return true
+          if(newItem.medias[a].url!==oldItem.medias[a].url) return true
+        }
         const oldReports = oldItem.reports || []
         const newReports = newItem.reports || []
         if (oldReports.length !== newReports.length) return true
@@ -227,11 +237,18 @@
           const newReport = newReports[j]
           if (
             oldReport.id !== newReport.id ||
-            oldReport.updated_at !== newReport.updated_at ||
             oldReport.status !== newReport.status ||
+            oldReport.description !== newReport.description ||
             oldReport.run_time !== newReport.run_time
-          ) {
-            return true
+          ) return true
+          if(oldReport.reporter.name !== newReport.reporter.name) return true
+          if(oldReport.reporter.family !== newReport.reporter.family) return true
+          if(oldReport.reporter.image !== newReport.reporter.image) return true
+          if (oldReport.media.length !== newReport.media.length) return true
+          for (let a = 0; a < newReport.media.length; a++) {
+            if(newReport.media[a].id!==oldReport.media[a].id) return true
+            if(newReport.media[a].type!==oldReport.media[a].type) return true
+            if(newReport.media[a].url!==oldReport.media[a].url) return true
           }
         }
       }
@@ -472,13 +489,14 @@
     gap: 10px;
     justify-content: flex-start;
     flex-direction: row;
+    align-items: stretch;
     overflow: auto;
   }
   .single-report {
     margin-top: 0.5rem;
     position: sticky;
     right: 7px;
-    width: 100%;
+    min-width: 68%;
     font-size: 0.9rem;
     background: #fafafa;
     padding: 15px;

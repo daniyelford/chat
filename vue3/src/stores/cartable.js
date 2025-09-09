@@ -75,14 +75,83 @@ export const useCartableStore = defineStore('cartable', () => {
       ],
     }
   }
+  const normalizeCartablesEntry = ({ report, news }) => {
+    return {
+      id: news?.id || null,
+      description: news?.description || '',
+      created_at: news?.created_at || '',
+      updated_at: news?.updated_at || '',
+      status: news?.status || '',
+      show_status: news?.show_status || '',
+      privacy: news?.privacy || '',
+      self: news?.self || false,
+      location: {
+        city: news?.city || null,
+        lat: news?.lat || null,
+        lon: news?.lon || null,
+        address: news?.address || null,
+      },
+      category: Array.isArray(news?.categories)
+        ? news.categories.map(c => ({
+            id: c.id,
+            title: c.title,
+          }))
+        : [],
+      user: {
+        id: news?.user_account_id || null,
+        name: news?.name || '',
+        family: news?.family || '',
+        phone: news?.phone || '',
+        image: news?.user_image_url || null,
+      },
+      medias: Array.isArray(news?.media)
+        ? news.media.map(m => ({
+            type: m.type,
+            url: m.url,
+          }))
+        : [],
+      reports: Array.isArray(report)
+        ? report.map(r => ({
+          id: r?.id || null,
+          news_id: r.report_info?.news_id || news?.id || null,
+          description: r.report_info?.description || '',
+          run_time: r.report_info?.run_time || null,
+          show_status: r.report_info?.show_status || null,
+          created_at: r.report_info?.created_at || '',
+          updated_at: r.report_info?.updated_at || '',
+          status: r.report_info?.status || '',
+          location: {
+            city: r?.location?.city || null,
+            address: r?.location?.address || null,
+            lat: r?.location?.lat || null,
+            lon: r?.location?.lon || null,
+          },
+          reporter: {
+            id: r?.reporter?.user_account_id || null,
+            self: r?.reporter?.self || false,
+            name: r?.reporter?.name || '',
+            family: r?.reporter?.family || '',
+            phone: r?.reporter?.phone || '',
+            image: r?.reporter?.user_image_url || null,
+          },
+          media: Array.isArray(r?.report_media) ? 
+            r.report_media.map(m => ({
+              id: m.id,
+              type: m.type,
+              url: m.url,
+            })) : [],
+          }))
+        : []
+    }
+  }
   const fetchCartables = async ({ limit = 10, offset = 0 } = {}) => {
     loading.value = true
     try {
       const res = await sendApi({ control: 'news' , action: 'get_cartables' , data: { limit, offset } })
       if (res.status === 'success'&& Array.isArray(res.data)) {
-        allItems.value = res.data.map(item => normalizeCartableEntry(item))
+        allItems.value = res.data.map(item => normalizeCartablesEntry(item))
         rule.value = !!res.rule
-        return
+        return 
       } else {
         alert('خطا در دریافت اطلاعات: ' + res.message)
       }

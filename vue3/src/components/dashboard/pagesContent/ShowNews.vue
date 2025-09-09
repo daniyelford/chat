@@ -142,7 +142,7 @@
         width: 100%;
         display: block;
         text-align: center;
-        padding: 6px 12px;
+        padding: 10px;
         border: none;
         background: #4e3a85;
         color: white;

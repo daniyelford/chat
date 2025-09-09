@@ -51,6 +51,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 */
 $route['default_controller'] = 'vue';
 $route['api'] = 'api/api';
+$route['video_api'] = 'api/video';
 $route['create_token'] = 'api/create_token';
 $route['404_override'] = 'vue/index';
 $route['translate_uri_dashes'] = FALSE;

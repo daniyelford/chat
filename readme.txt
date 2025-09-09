@@ -50,3 +50,6 @@ composer require minishlink/web-push
 npm install web-push
 npx web-push generate-vapid-keys
 test and firebase notif must be change
+
+// composer require aws/aws-sdk-php
+// npm install express twilio

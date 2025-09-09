@@ -100,7 +100,7 @@ export const useNewsStore = defineStore('news', ()=> {
       hasRule.value=res.rule === true
       return true
     }
-    return false
+    return false 
   }
   const fetchNewsById = async (id) => {
     const res = await sendApi({

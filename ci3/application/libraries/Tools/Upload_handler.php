@@ -1,7 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 class Upload_handler
 {
-    // url must be have / in the end
     private $CI;
     private Security_handler $security;
     private Media_model $media_model;
@@ -12,7 +11,6 @@ class Upload_handler
         $this->CI =& get_instance();
         $this->security = $security_handler;
         $this->media_model = $media_model;
-
     }
     private function add_retern_id($type,$filename,$url){
         $sing='';
@@ -42,6 +40,7 @@ class Upload_handler
             $result = [
                 'id'   => $id,
                 'url'  => base_url('storage/images/' . $url . $filename),
+                'type' => 'image'
             ];
         }
         return $result;
@@ -63,6 +62,7 @@ class Upload_handler
             $result = [
                 'id'  => $id,
                 'url' => base_url('storage/videos/' . $url . $filename),
+                'type' => 'video'
             ];
         }
         return $result;
