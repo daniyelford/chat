@@ -75,20 +75,20 @@
     progress.value = 0
     let count = 0
     for (const file of files) {
-      let processedFile = file
-      await new Promise(async (resolve) => {
+      try{
+        let processedFile = file
         if (file.type.startsWith('image/')) {
-          processedFile = await imageCompression(file, {
-            maxSizeMB: 0.5,
-            maxWidthOrHeight: 1280,
-            useWebWorker: true,
-            onProgress: (p) => {
-              progress.value = Math.round(p)
-            },
-          })
-          const base64 = await filesToBase64(processedFile)
-          const imageResult = await uploadImages([base64],props.url,props.toAction)
-          imageInfo.value.push(...imageResult)
+            processedFile = await imageCompression(file, {
+              maxSizeMB: 0.5,
+              maxWidthOrHeight: 1280,
+              useWebWorker: true,
+              onProgress: (p) => {
+                progress.value = Math.round(p)
+              },
+            })
+            const base64 = await filesToBase64(processedFile)
+            const imageResult = await uploadImages([base64],props.url,props.toAction)
+            imageInfo.value.push(...imageResult)
         } else if (file.type.startsWith('video/')) {
           const result = await uploadVideoInChunks(file , props.url , props.toAction , 1 , (ratio) => {
             progress.value = Math.round(ratio);
@@ -96,8 +96,10 @@
           videoInfo.value.push(...result)
         }
         count++
-        resolve()
-      })
+      } catch (err) {
+        console.error('Image compression failed:', err)
+        alert('فایل مشکل دارد یکی دیگر آپلود کنید')
+      }
     }
     uploading.value = false
     fileInput.value.value = null
