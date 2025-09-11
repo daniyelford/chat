@@ -1,5 +1,5 @@
 <template>
-    <button @click="getOtp">دریافت OTP</button>
+    <!-- <button @click="getOtp">دریافت OTP</button>
     <div v-if="otpResult">
         <h4>نتیجه:</h4>
         <pre>{{ otpResult }}</pre>
@@ -7,7 +7,7 @@
     <div v-if="errorMsg">
         <h4>خطا:</h4>
         <p>{{ errorMsg }}</p>
-    </div>
+    </div> -->
     <form @submit.prevent="submitCode">
         <p class="msg" v-if="message">{{ message }}</p>
         <OtpInput v-model="code" length="5" :reset="resetOtpInput"/>
@@ -33,23 +33,23 @@
 
 
 
-    const otpResult = ref(null)
-    const errorMsg = ref(null)
+    // const otpResult = ref(null)
+    // const errorMsg = ref(null)
 
-    async function getOtp() {
-        if (!("OTPCredential" in window) || !navigator.credentials?.get){
-            errorMsg.value = 'get:'+!navigator.credentials?.get+',window:'+!("OTPCredential" in window);
-            return;
-        } 
-        try {
-            const credential = await navigator.credentials.get({
-                otp: { transport: ["sms"] },
-            })
-            otpResult.value = credential
-        } catch (err) {
-            errorMsg.value = 'error'+err.message
-        }
-    }
+    // async function getOtp() {
+    //     if (!("OTPCredential" in window) || !navigator.credentials?.get){
+    //         errorMsg.value = 'get:'+!navigator.credentials?.get+',window:'+!("OTPCredential" in window);
+    //         return;
+    //     } 
+    //     try {
+    //         const credential = await navigator.credentials.get({
+    //             otp: { transport: ["sms"] },
+    //         })
+    //         otpResult.value = credential
+    //     } catch (err) {
+    //         errorMsg.value = 'error'+err.message
+    //     }
+    // }
 
 
 
