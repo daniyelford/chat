@@ -37,7 +37,7 @@ export const useNewsStore = defineStore('news', ()=> {
         name: item.name || '',
         family: item.family || '',
         phone: item.phone || '',
-        image: item.user_image_url || null,
+        image: item.user_image_url || '',
       },
       medias: Array.isArray(item.media)
         ? item.media.map(m => ({

@@ -151,7 +151,7 @@
   import { useNewsStore } from '@/stores/news'
   import { useUserStore } from '@/stores/user'
   const toastMsg = ref('')
-  const selectedNewsId = ref(null)
+  const selectedNewsId = ref(null) 
   const selectedReportId = ref(null)
   const showModal = ref(false)
   const modalRunTime = ref(null)
@@ -209,7 +209,7 @@
     loadMoreTrigger,
     setupObserver,
   } = useInfiniteScroll(fetchNews, { limit: 10, immediate: true })
-  usePollingWithCompare(() => newsStore.fetchLatestNewsRaw(10, 0), {
+  usePollingWithCompare(() => newsStore.fetchLatestNewsRaw(newsStore.cards.length>0?newsStore.cards.length:10, 0), {
     intervalMs: 6000,
     isDifferent: (oldData, newData) => {
       if (!Array.isArray(oldData) || !Array.isArray(newData)) return true
@@ -261,9 +261,7 @@
       for (const newItem of newCards) {
         const index = newsStore.cards.findIndex(c => Number(c.id) === Number(newItem.id))
         if (index !== -1) {
-          const card = newsStore.cards[index]
-          const updatedCard = { ...card, reports: newItem.reports }
-          newsStore.cards.splice(index, 1, updatedCard)
+          newsStore.cards.splice(index, 1, newItem)
         } else {
           newsStore.cards.push(newItem)
         }

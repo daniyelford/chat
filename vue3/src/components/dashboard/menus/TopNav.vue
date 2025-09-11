@@ -1,27 +1,3 @@
-<script setup>
-  import { onMounted, onBeforeUnmount, computed } from 'vue'
-  import DashboardSetting from '@/components/dashboard/menus/DashboardSetting.vue'
-  import { useUserStore } from '@/stores/user'
-  import FingerPrintRegister from '@/components/tooles/nav/FingerPrintRegister.vue'
-  import NotificationMenu from '@/components/tooles/nav/NotificationMenu.vue'
-  import { useMenuStore } from '@/stores/menu'
-  const menu = useMenuStore()
-  const user = useUserStore()
-  let pollingInterval = null
-  onMounted(() => {
-    user.fetchUserInfo()
-    pollingInterval = setInterval(() => {
-      user.fetchUserInfo()
-    }, 10000)
-  })
-  onBeforeUnmount(() => {
-    if (pollingInterval) clearInterval(pollingInterval)
-  })
-  const hasCategory1 = computed(() => {
-    if (!user.ruleInfo || !Array.isArray(user.ruleInfo)) return false
-    return user.ruleInfo.some(rule => String(rule.category_id) === '1')
-  })
-</script>
 <template>
   <div class="nav">
     <div class="user-info">
@@ -38,7 +14,7 @@
       <div class="other-info">
         <span>{{ user.fullName }}</span>
       </div>
-      <NotificationMenu v-if="user.isLoggedIn" />
+      <NotificationMenu v-if="security.isAuthenticated" />
     </div>
     <div class="logo">
       <FingerPrintRegister :hasFinger="false"/>
@@ -49,6 +25,32 @@
     </div>
   </div>
 </template>
+<script setup>
+  import { onMounted, onBeforeUnmount, computed } from 'vue'
+  import DashboardSetting from '@/components/dashboard/menus/DashboardSetting.vue'
+  import { useUserStore } from '@/stores/user'
+  import { useSecurityStore } from '@/stores/security'
+  import FingerPrintRegister from '@/components/tooles/nav/FingerPrintRegister.vue'
+  import NotificationMenu from '@/components/tooles/nav/NotificationMenu.vue'
+  import { useMenuStore } from '@/stores/menu'
+  const menu = useMenuStore()
+  const user = useUserStore()
+  const security = useSecurityStore()
+  let pollingInterval = null
+  onMounted(() => {
+    user.fetchUserInfo()
+    pollingInterval = setInterval(() => {
+      user.fetchUserInfo()
+    }, 15000)
+  })
+  onBeforeUnmount(() => {
+    if (pollingInterval) clearInterval(pollingInterval)
+  })
+  const hasCategory1 = computed(() => {
+    if (!user.ruleInfo || !Array.isArray(user.ruleInfo)) return false
+    return user.ruleInfo.some(rule => String(rule.category_id) === '1')
+  })
+</script>
 <style scoped >
   .hamburger {
     cursor: pointer;

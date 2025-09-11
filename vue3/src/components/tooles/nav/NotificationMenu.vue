@@ -1,3 +1,20 @@
+<template>
+  <div>
+    <div class="icon-wrapper" @click="tog">
+      🔔
+      <span class="badge" v-if="store.unreadCount > 0">{{ store.unreadCount }}</span>
+    </div>
+    <div class="dropdown" v-if="store.showList">
+      <NotificationList
+        :notifications="store.notifications"
+        :can-load-more="canLoadMore"
+        @update="store.markAsRead"
+        @loadMoreTriggerReady="onLoadMoreTriggerReady"
+      />
+    </div>
+    <audio ref="notifSound" :src="song" preload="auto" />
+  </div>
+</template>
 <script setup>
   import { ref, watch, onMounted } from 'vue'
   import NotificationList from '@/components/tooles/nav/NotificationList.vue'
@@ -113,23 +130,6 @@
     if (el) setupObserver()
   })
 </script>
-<template>
-  <div>
-    <div class="icon-wrapper" @click="tog">
-      🔔
-      <span class="badge" v-if="store.unreadCount > 0">{{ store.unreadCount }}</span>
-    </div>
-    <div class="dropdown" v-if="store.showList">
-      <NotificationList
-        :notifications="store.notifications"
-        :can-load-more="canLoadMore"
-        @update="store.markAsRead"
-        @loadMoreTriggerReady="onLoadMoreTriggerReady"
-      />
-    </div>
-    <audio ref="notifSound" :src="song" preload="auto" />
-  </div>
-</template>
 <style scoped>
   .icon-wrapper {
     font-size: 24px;
@@ -148,8 +148,8 @@
   }
   .dropdown {
     top: 60px;
-    left: 0;
-    width: 300px;
+    left: 40px;
+    width: calc(100% -80px);
     background: white;
     border-radius: 10px;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);

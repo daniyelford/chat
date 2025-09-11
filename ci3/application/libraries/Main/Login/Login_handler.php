@@ -146,7 +146,7 @@ class Login_handler
     }
     public function send_phone_login($data){
         if(!empty($data) && $this->security->validate_mobile_number($data) && $this->CI->session->has_userdata('phone_number') && !empty($this->CI->session->userdata('phone_number')) && $data===$this->CI->session->userdata('phone_number')){
-            $this->CI->session->set_userdata('login_code',['code'=>rand(100000,1000000),'phone'=>$data]);
+            $this->CI->session->set_userdata('login_code',['code'=>rand(10000,99999),'phone'=>$data]);
             if($this->send->send_sms_action($this->CI->session->userdata('login_code')['code'],$data))
                 return ($this->send_sms_code_in_login?['status' => 'success','code'=>$this->CI->session->userdata('login_code')['code']]:['status' => 'success']);
             else

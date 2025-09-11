@@ -1,7 +1,16 @@
 <template>
+    <button @click="getOtp">دریافت OTP</button>
+    <div v-if="otpResult">
+        <h4>نتیجه:</h4>
+        <pre>{{ otpResult }}</pre>
+    </div>
+    <div v-if="errorMsg">
+        <h4>خطا:</h4>
+        <p>{{ errorMsg }}</p>
+    </div>
     <form @submit.prevent="submitCode">
         <p class="msg" v-if="message">{{ message }}</p>
-        <OtpInput v-model="code" length="6" :reset="resetOtpInput"/>
+        <OtpInput v-model="code" length="5" :reset="resetOtpInput"/>
         <button type="submit" :disabled="submited" class="submitBtn">تأیید کد</button>
         <button type="button" @click="editPhone" class="editPhone">
             ویرایش شماره
@@ -21,6 +30,32 @@
     import { sendApi } from '@/utils/api'
     import OtpInput from 'vue-otp-autofill'
     import router from '@/router'
+
+
+
+    const otpResult = ref(null)
+    const errorMsg = ref(null)
+
+    async function getOtp() {
+        if (!("OTPCredential" in window) || !navigator.credentials?.get){
+            errorMsg.value = 'get:'+!navigator.credentials?.get+',window:'+!("OTPCredential" in window);
+            return;
+        } 
+        const controller = new AbortController()
+        try {
+            const credential = await navigator.credentials.get({
+                otp: { transport: ["sms"] },
+                signal: controller.signal,
+            })
+            otpResult.value = credential
+        } catch (err) {
+            errorMsg.value = 'error'+err.message
+        }
+    }
+
+
+
+
     const emit = defineEmits(['back'])
     const resetOtpInput=ref(0)
     const message=ref('')

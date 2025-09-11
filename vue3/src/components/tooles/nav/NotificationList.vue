@@ -21,7 +21,7 @@
       </li>
       <div v-if="canLoadMore" ref="loadMoreDiv" class="scroll-trigger"></div>
     </ul>
-    <div v-if="props.notifications.length==0">
+    <div v-if="props.notifications.length==0" class="no-notif">
       نوتیفیکیشنی وجود ندارد.
     </div>
   </div>
@@ -81,5 +81,14 @@
     gap: 15px;
     text-align: center;
     text-decoration: none;
+  }
+  .no-notif{
+    background-color: red;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    border-radius: 10px;
+    font-size: larger;
+    font-weight: bold;
   }
 </style>

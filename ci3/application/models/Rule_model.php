@@ -40,12 +40,12 @@ class Rule_model extends CI_Model {
         $this->db->from('category_relation cr');
         $this->db->where_in('cr.category_id', $category_id);
         $this->db->where('cr.target_table', 'user_account_relations');
-        $relations = $this->db->get()->result();
+        $relations = $this->db->get()->result_array();
         if (!$relations) {
             return [];
         }
         $user_account_relation_ids = array_map(function($item) {
-            return $item->target_id;
+            return $item['target_id'];
         }, $relations);
         $this->db->select('uar.user_account_id');
         $this->db->from('user_account_relations uar');

@@ -136,9 +136,9 @@ class Send_handler
         ];
         $webPush = new WebPush($auth);
         $subscription = Subscription::create([
-            'endpoint' => $subscription_data['endpoint'],
-            'publicKey' => $subscription_data['keys']['p256dh'],
-            'authToken' => $subscription_data['keys']['auth'],
+            'endpoint' => $subscription_data->endpoint,
+            'publicKey' => $subscription_data->keys->p256dh,
+            'authToken' => $subscription_data->keys->auth,
             'contentEncoding' => 'aes128gcm'
         ]);
         $webPush->queueNotification(
