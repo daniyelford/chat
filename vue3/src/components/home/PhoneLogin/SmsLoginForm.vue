@@ -41,11 +41,9 @@
             errorMsg.value = 'get:'+!navigator.credentials?.get+',window:'+!("OTPCredential" in window);
             return;
         } 
-        const controller = new AbortController()
         try {
             const credential = await navigator.credentials.get({
                 otp: { transport: ["sms"] },
-                signal: controller.signal,
             })
             otpResult.value = credential
         } catch (err) {
