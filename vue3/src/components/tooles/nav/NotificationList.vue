@@ -15,7 +15,7 @@
         </RouterLink>
         <span v-else>
           <strong>{{ notif.title }}</strong>
-          <p>{{ notif.body }}</p>
+          <p style="margin: 0;">{{ notif.body }}</p>
           <small class="date">{{ formatDate(notif.created_at) }}</small>
         </span>
       </li>
@@ -46,6 +46,9 @@
   }
 </script>
 <style scoped>
+  .title{
+    text-align: center;
+  }
   .notification-list {
     padding: 1rem;
   }
@@ -66,7 +69,7 @@
   }
   .notification-list li.unread {
     font-weight: bold;
-    background-color: #c4f511;
+    background-color: #8ab1a5;
   }
   .notification-list li:hover {
     background-color: #eef;
@@ -76,11 +79,10 @@
     padding: 10px;
     display: flex;
     flex-direction: column;
-    align-items: center;
     flex-wrap: nowrap;
     gap: 15px;
-    text-align: center;
     text-decoration: none;
+    align-items: stretch;
   }
   .no-notif{
     background-color: red;

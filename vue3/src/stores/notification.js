@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { sendApi } from '@/utils/api'
-import { useUserStore } from '@/stores/user'
+import { useSecurityStore } from '@/stores/security'
 export const useNotificationStore = defineStore('notification', {
   state: () => ({
     notifications: [],
@@ -10,8 +10,8 @@ export const useNotificationStore = defineStore('notification', {
   }),
   actions: {
     async fetchNotifications({ limit = 10, offset = 0 } = {}) {
-      const userStore = useUserStore()
-      if (!userStore.isLoggedIn) return { items: [], has_more: false }
+      const security = useSecurityStore()
+      if (!security.isAuthenticated) return { items: [], has_more: false }
       const res = await sendApi({
         action: 'get_notifications',
         control: 'user',
@@ -63,6 +63,5 @@ export const useNotificationStore = defineStore('notification', {
     close() {
       this.showList = false
     }
-  },
-  persist: true,
+  }
 })

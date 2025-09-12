@@ -94,10 +94,11 @@
       askNotificationPermission()
     }
   }
-  usePollingWithCompare(() => store.fetchNotifications({ limit: 10, offset: 0 }), {
+  usePollingWithCompare(async () => await store.fetchNotifications({ limit: store.notifications.length>0?store.notifications.length:10, offset: 0 }), {
     intervalMs: 10000,
     runOnStart: true,
     isDifferent: (old, fresh) => {
+      if (!old || !Array.isArray(old)) return true
       const oldArray = Array.isArray(old) ? old : []
       const freshArray = Array.isArray(fresh) ? fresh : []
       const oldIds = new Set(oldArray.map(n => n.id))
@@ -117,7 +118,7 @@
     canLoadMore,
     setupObserver,
   } = useInfiniteScroll(
-    ({ offset }) => store.fetchNotifications({ limit: 10, offset }),
+    async ({ offset }) => await store.fetchNotifications({ limit: 10, offset }),
     { immediate: false }
   )
   onMounted(() => {
