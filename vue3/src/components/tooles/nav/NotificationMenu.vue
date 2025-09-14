@@ -106,7 +106,7 @@
       return oldArray.length !== freshArray.length || [...freshIds].some(id => !oldIds.has(id))
     },
     onChange: (freshData) => {
-      const newOnes = freshData.filter(n => !store.notifications.find(o => o.id === n.id))
+      const newOnes = freshData?.items.filter(n => !store.notifications.find(o => o.id === n.id))
       newOnes.forEach(n => {
         playSound()
         showNativeNotification(n.title, n.body)

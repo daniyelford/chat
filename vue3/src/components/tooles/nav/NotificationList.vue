@@ -10,7 +10,7 @@
       >
         <RouterLink v-if="notif.url" :to="{ path: notif.url }">
           <strong>{{ notif.title }}</strong>
-          <p>{{ notif.body }}</p>
+          <p style="margin: 0;">{{ notif.body }}</p>
           <small>{{ formatDate(notif.created_at) }}</small>
         </RouterLink>
         <span v-else>

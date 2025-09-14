@@ -1,7 +1,7 @@
 <template>
     <form @submit.prevent="submitCode">
         <p class="msg" v-if="message">{{ message }}</p>
-        <OtpInput v-model="code" length="5" :reset="resetOtpInput"/>
+        <OtpInput v-model="code" length="5" :reset="resetOtpInput" :timer="17000"/>
         <button type="submit" :disabled="submited" class="submitBtn">تأیید کد</button>
         <button type="button" @click="editPhone" class="editPhone">
             ویرایش شماره
