@@ -7,26 +7,24 @@
     <div class="dropdown" v-if="store.showList">
       <NotificationList
         :notifications="store.notifications"
-        :can-load-more="canLoadMore"
         @update="store.markAsRead"
-        @loadMoreTriggerReady="onLoadMoreTriggerReady"
       />
+      <div v-if="notificationScroll.loadMore" :ref="notificationScroll.el"></div>
     </div>
     <audio ref="notifSound" :src="song" preload="auto" />
   </div>
 </template>
 <script setup>
-  import { ref, watch, onMounted } from 'vue'
+  import { ref, onMounted } from 'vue'
   import NotificationList from '@/components/tooles/nav/NotificationList.vue'
   import { BASE_URL } from '@/config'
   import { useNotificationStore } from '@/stores/notification'
-  import { usePollingWithCompare } from '@/composables/usePollingWithCompare'
-  import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+  import { polling } from '@/composables/polling'
+  import { scroll } from '@/composables/scroll'
   import { subscribeToPush } from '@/utils/pushService';
   const logo = BASE_URL + '/assets/images/fav.png'
   const song = BASE_URL + '/assets/song/notif.mp3'
   const notifSound = ref(null)
-  const loadMoreTrigger = ref(null)
   const hasAccess = ref(false)
   const store = useNotificationStore()
   function playSound() {
@@ -64,9 +62,6 @@
       }
     }
   }
-  function onLoadMoreTriggerReady(el) {
-    loadMoreTrigger.value = el
-  }
   function askNotificationPermission() {
     Notification.requestPermission().then(permission => {
       if (permission === "granted") {
@@ -94,9 +89,8 @@
       askNotificationPermission()
     }
   }
-  usePollingWithCompare(async () => await store.fetchNotifications({ limit: store.notifications.length>0?store.notifications.length:10, offset: 0 }), {
+  polling(async () => await store.fetchNotifications({ limit: store.notifications.length>0?store.notifications.length:10, offset: 0 }), {
     intervalMs: 10000,
-    runOnStart: true,
     isDifferent: (old, fresh) => {
       if (!old || !Array.isArray(old)) return true
       const oldArray = Array.isArray(old) ? old : []
@@ -114,12 +108,9 @@
       })
     }
   })
-  const {
-    canLoadMore,
-    setupObserver,
-  } = useInfiniteScroll(
+  const notificationScroll = scroll(
     async ({ offset }) => await store.fetchNotifications({ limit: 10, offset }),
-    { immediate: false }
+    { immediate: true }
   )
   onMounted(() => {
     if (!('Notification' in window)) {
@@ -127,9 +118,6 @@
       return;
     }
   });
-  watch(loadMoreTrigger, (el) => {
-    if (el) setupObserver()
-  })
 </script>
 <style scoped>
   .icon-wrapper {

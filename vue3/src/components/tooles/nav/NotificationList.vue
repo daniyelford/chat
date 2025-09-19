@@ -19,7 +19,6 @@
           <small class="date">{{ formatDate(notif.created_at) }}</small>
         </span>
       </li>
-      <div v-if="canLoadMore" ref="loadMoreDiv" class="scroll-trigger"></div>
     </ul>
     <div v-if="props.notifications.length==0" class="no-notif">
       نوتیفیکیشنی وجود ندارد.
@@ -27,19 +26,12 @@
   </div>
 </template>
 <script setup>
-  import { ref, onMounted, defineProps, defineEmits } from 'vue'
+  import { defineProps, defineEmits } from 'vue'
   import moment from 'moment-jalaali'
   const props = defineProps({
     notifications: { type: Array, required: true },
-    canLoadMore: { type: Boolean, default: false }
   })
-  const emit = defineEmits(['update', 'loadMoreTriggerReady'])
-  const loadMoreDiv = ref(null)
-  onMounted(() => {
-    if (loadMoreDiv.value) {
-      emit('loadMoreTriggerReady', loadMoreDiv.value)
-    }
-  })
+  const emit = defineEmits(['update'])
   function formatDate(date) {
     if (!date) return '-'
     return moment(date).format('jYYYY/jMM/jDD HH:mm')

@@ -6,7 +6,7 @@
       <input id="name" v-model="name" type="text" required />
       <label for="family">نام خانوادگی</label>
       <input id="family" v-model="family" type="text" required />
-      <button type="submit">ثبت‌ نام</button>
+      <button type="submit" :disable="loading">ثبت‌ نام</button>
     </form>
   </div>
 </template>
@@ -21,7 +21,9 @@
   const family = ref('')
   const message = ref('')
   const router = useRouter()
+  const loading = ref(false)
   const submitRegister = async () => {
+    loading.value=true
     try {
       const response = await sendApi(
         {
@@ -44,6 +46,8 @@
     } catch (error) {
       message.value = 'خطا در ثبت‌نام.'
       console.error(error)
+    }finally{
+      loading.value=false
     }
   }
 </script>
@@ -86,5 +90,10 @@
     border-radius: 10px;
     background-color: #edefff;
     border: none;
+  }
+  button[disabled] {
+    background-color: rgb(143, 141, 141);
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 </style>

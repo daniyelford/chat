@@ -91,7 +91,7 @@
   import { ref , defineProps , watch , computed, onMounted, toRaw } from 'vue'
   import { useCartableStore } from '@/stores/cartable'
   import { useUserStore } from '@/stores/user'
-  import { usePollingWithCompare } from '@/composables/usePollingWithCompare'
+  import { polling } from '@/composables/polling'
   import MediaSlider from '@/components/tooles/media/MediaSlider.vue'
   import UploaderManyMedia from '@/components/tooles/upload/UploaderManyMedia.vue'
   import moment from 'moment-jalaali'
@@ -130,9 +130,8 @@
       }
     }
   }
-  usePollingWithCompare(fetchSingleItem, {
+  polling(fetchSingleItem, {
     intervalMs: 6000,
-    runOnStart: true,
     onChange: (data) => {
       if (!item.value) {
         item.value = data

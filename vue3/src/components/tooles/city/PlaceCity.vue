@@ -20,14 +20,14 @@
       >
         {{ city.city }}
       </button>
-      <div ref="loadTrigger" class="load-trigger" style="margin-top: -10px;"></div>
+      <div :ref="cityScroll.el" v-if="cityScroll.loadMore" class="load-trigger" style="margin-top: -10px;"></div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, defineProps, defineEmits } from 'vue'
-import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+import { ref, computed, defineProps, defineEmits } from 'vue'
+import { scroll } from '@/composables/scroll'
 import { usePlaceStore } from '@/stores/place'
 
 const emit = defineEmits(['update:selectedCityId'])
@@ -48,16 +48,12 @@ const selectCity = (id) => {
   emit('update:selectedCityId', id)
 }
 
-const { loadMoreTrigger: loadTrigger, setupObserver } = useInfiniteScroll(async ({ offset }) => {
+const cityScroll = scroll(async ({ offset }) => {
   await placeStore.fetchCitiesPaginated(offset)
   return {
     items: placeStore.allCities,
     has_more: placeStore.hasMoreCities,
   }
-})
-
-onMounted(() => {
-  setupObserver()
 })
 </script>
 <style scoped>

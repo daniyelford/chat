@@ -58,7 +58,7 @@
               <button v-else @click="onEnableUser(u.user_id)">فعال</button>
             </td>
           </tr>
-          <tr ref="UsersLoadTrigger" style="height: 1px;"></tr>
+          <tr v-if="usersScroll.loadMore" :ref="usersScroll.el" style="height: 1px;"></tr>
         </tbody>
       </table>
     </div>
@@ -67,9 +67,9 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref } from 'vue'
   import { useUserStore } from '@/stores/user'
-  import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+  import { scroll } from '@/composables/scroll'
   const store = useUserStore()
   const showForm = ref(false)
   const editUser = ref(null)
@@ -123,18 +123,12 @@
     await store.submitUser(form.value, editUser.value ?? null)
     showForm.value = false
   }
-  const {
-    loadMoreTrigger: UsersLoadTrigger,
-    setupObserver:setupUsersObserver,
-  } = useInfiniteScroll(async (offset) => {
+  const usersScroll = scroll(async (offset) => {
     await store.fetchUsers({ limite: 10, ...offset })
     return {
       items: store.users,
       has_more: store.hasMore,
     }
-  })
-  onMounted(async () => {
-    setupUsersObserver()
   })
 </script>
 

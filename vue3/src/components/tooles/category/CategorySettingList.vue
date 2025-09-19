@@ -46,7 +46,7 @@
               <button @click="deleteCategory(cat.id)">حذف</button>
             </td>
           </tr>
-          <tr ref="CategoryLoadTrigger" style="height: 1px;"></tr>
+          <tr v-if="categoryScroll.loadMore" :ref="categoryScroll.el" style="height: 1px;"></tr>
         </tbody>
       </table>
     </div>
@@ -59,7 +59,7 @@
 <script setup>
   import { useCategoryStore } from '@/stores/category'
   import { onMounted, ref } from 'vue'
-  import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+  import { scroll } from '@/composables/scroll'
   const categoryStore = useCategoryStore()
   const editId = ref(null)
   const form = ref({
@@ -98,18 +98,12 @@
   const deleteCategory = async (id) => {
     await categoryStore.deleteCategory(id)
   }
-  const {
-    loadMoreTrigger: CategoryLoadTrigger,
-    setupObserver:setupCategoryObserver,
-  } = useInfiniteScroll(async ({offset}) => {
+  const categoryScroll= scroll(async ({offset}) => {
     await categoryStore.fetchCategoriesPaginated(offset,10)
     return {
       items: categoryStore.allCategories,
       has_more: categoryStore.hasMoreCategories,
     }
-  })
-  onMounted(() => {
-    setupCategoryObserver()
   })
 </script>
 

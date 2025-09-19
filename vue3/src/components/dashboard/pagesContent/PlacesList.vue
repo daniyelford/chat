@@ -22,7 +22,7 @@
       @deletePlace="deletePlace"
       @openMap="openMapModal"
       />
-      <div ref="placeLoadTrigger" class="load-trigger" style="margin-top: -750px;"></div>
+      <div v-if="placeScroll.loadMore" :ref="placeScroll.el" class="load-trigger" style="margin-top: -750px;"></div>
     </div>
   </div>
   <div v-else-if="placeStore.categoryListLoading || placeStore.placeListLoading">
@@ -54,9 +54,10 @@
   </BaseModal>
 </template>
 <script setup>
-  import {  computed, ref, watch, onMounted } from 'vue'
+  import {  computed, ref, watch } from 'vue'
   import { usePlaceStore } from '@/stores/place'
-  import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+  import { scroll } from '@/composables/scroll'
+  import { polling } from '@/composables/polling'
   import placesCard from '@/components/tooles/cards/placesCard.vue'
   import BaseModal from '@/components/tooles/modal/BaseModal.vue'
   import SinglePlaceMap from '@/components/tooles/places/SinglePlaceMap.vue'
@@ -109,7 +110,6 @@
   const handleCloseAddPlace = async () => {
     showAddPlace.value = false
     editingPlace.value = null
-    placeStore.resetPlaces()
     await placeStore.fetchPlacesPaginated({ offset: 0, category_id: selectedCategoryId.value, city_id: selectedCityId.value })
   }
   const editPlace = (place) => {
@@ -127,19 +127,33 @@
       alert("شما مجوز ویرایش این مکان را ندارید.")
     }
   }
-  const {
-    loadMoreTrigger: placeLoadTrigger,
-    setupObserver: setupPlaceObserver,
-    reset: resetPlaces
-  } = useInfiniteScroll(async () => {
+  const placeScroll = scroll(async () => {
     await placeStore.fetchPlacesPaginated({ category_id: selectedCategoryId.value })
     return {
       items: placeStore.allPlaces,
       has_more: placeStore.hasMorePlaces,
     }
   })
-  onMounted(() => {
-    setupPlaceObserver()
+  polling(() => placeStore.fetchLatestNewsRaw({limit:newsStore.cards.length>0?newsStore.cards.length:10, offset:0,category_id: selectedCategoryId.value}), {
+    intervalMs: 6000,
+    isDifferent: (oldData, newData) => {
+      if (!Array.isArray(oldData) || !Array.isArray(newData)) return true
+      if (oldData.length !== newData.length) return true
+      return false
+    },
+    onChange: async (newCards) => {
+      placeStore.allPlaces = placeStore.allPlaces.filter(card =>
+        newCards.some(newItem => Number(newItem.id) === Number(card.id))
+      )
+      for (const newItem of newCards) {
+        const index = placeStore.allPlaces.findIndex(c => Number(c.id) === Number(newItem.id))
+        if (index !== -1) {
+          placeStore.allPlaces.splice(index, 1, newItem)
+        } else {
+          placeStore.allPlaces.push(newItem)
+        }
+      }
+    }
   })
   watch(showAddPlace, (val) => {
     if (!val) {
@@ -147,15 +161,12 @@
     }
   })
   watch([selectedCategoryId, selectedCityId], async () => {
-    resetPlaces()
     await placeStore.fetchPlacesPaginated({ 
       offset: 0, 
       category_id: selectedCategoryId.value,
       city_id: selectedCityId.value
     })
-    setupPlaceObserver()
   })
-
 </script>
 <style scoped>
   .showCategoryBtn , .showCityBtn{

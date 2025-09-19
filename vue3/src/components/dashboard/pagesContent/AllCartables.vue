@@ -1,5 +1,5 @@
 <template>
-  <div v-if="loading" class="loading"> 
+  <div v-if="store.loading" class="loading"> 
     <div class="tiny-loader"></div>
   </div>
   <div v-else-if="items.length" class="cartable-inner">
@@ -54,7 +54,7 @@
         </div>
       </div>
     </div>
-    <div v-if="canLoadMore" ref="loadMoreTrigger" class="load-trigger"></div>
+    <div v-if="cartablesScroll.loadMore" :ref="cartablesScroll.el" class="load-trigger"></div>
   </div>
   <div v-else class="no-data">
     شما هیچ گزارشی در کارتابل خود ندارید
@@ -64,18 +64,13 @@
   import moment from 'moment-jalaali'
   import { computed, ref } from 'vue'
   import { useCartableStore } from '@/stores/cartable'
-  import { usePollingWithCompare } from '@/composables/usePollingWithCompare'
-  import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+  import { polling } from '@/composables/polling'
+  import { scroll } from '@/composables/scroll'
   import MediaSlider from '@/components/tooles/media/MediaSlider.vue'
   const store = useCartableStore()
   const all = ref([])
   const hasLoadedOnce = ref(false)
-  const {
-    loading,
-    canLoadMore,
-    loadMoreTrigger,
-    setupObserver,
-  } = useInfiniteScroll(async ({ offset, limit = 5 }) => {
+  const cartablesScroll = scroll(async ({ offset, limit = 5 }) => {
     if (!hasLoadedOnce.value) {
       await store.fetchCartables()
       hasLoadedOnce.value = true
@@ -89,13 +84,11 @@
       has_more: offset + newItems.length < store.allItems.length,
     }
   })
-  setupObserver()
-  usePollingWithCompare(async () => {
+  polling(async () => {
     await store.fetchCartables()
     return [...store.allItems]
   }, {
     intervalMs: 10000,
-    runOnStart: true,
     isDifferent: (oldList, newList) => {
       return JSON.stringify(oldList) !== JSON.stringify(newList)
     },

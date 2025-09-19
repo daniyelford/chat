@@ -3,14 +3,44 @@
     <div class="loading" v-if="!newsStore.isLoaded">
       <div class="tiny-loader"></div>
     </div>
-    <div class="card-inner" v-else-if="newsStore.cards.length > 0">
+    <div class="card-inner" v-if="newsStore.cards.length > 0">
       <div v-for="card in newsStore.cards" :key="card.id" class="card" :class="{ 'my-news': card.self }">
         <div class="user-info">
-          <img v-if="card.user?.image" :src="card.user.image" alt="user" />
-          <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#000000" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g><rect fill="none" height="24" width="24"/></g><g><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20z"/></g></svg>
-          <p v-if="card.user?.name || card.user?.family">
-            {{ card.user.name }} {{ card.user.family }}
-          </p>
+          <div class="user-data">
+            <img v-if="card.user?.image" :src="card.user.image" alt="user" />
+            <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#000000" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g><rect fill="none" height="24" width="24"/></g><g><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20z"/></g></svg>
+            <p v-if="card.user?.name || card.user?.family">
+              {{ card.user.name }} {{ card.user.family }}
+            </p>
+          </div>
+          <div class="inner-setting-menu">
+            <a @click="toggleSetting(card.id)" class="dropdown-settings-menu">
+              <svg v-if="activeSettingId === card.id" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="25px" height="25px" viewBox="0,0,256,256"><g fill="none" fill-rule="none" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(0.05905,0.05905)"><path d="M2222,152c1092,0 1978,885 1978,1977c0,1092 -885,1978 -1978,1978c-1092,0 -1978,-885 -1978,-1978c0,-1092 885,-1977 1978,-1977z" fill="#c91603" fill-rule="evenodd"></path><path d="M2736,3031c-8,-4 -16,-8 -26,-13c-98,-55 -180,-70 -251,-75c-46,53 -71,143 -101,250c-38,134 -120,120 -120,120h-86h-7h-86c0,0 -81,14 -120,-120c-31,-108 -56,-199 -104,-252c-70,5 -152,51 -248,105c-122,67 -169,0 -169,0l-61,-61l-5,-5l-61,-61c0,0 -67,-47 0,-169c55,-98 101,-180 105,-251c-53,-46 -143,-71 -250,-101c-134,-38 -120,-120 -120,-120v-86v-7v-86c0,0 -14,-81 120,-120c108,-31 199,-56 252,-104c-5,-70 -51,-152 -105,-248c-67,-122 0,-169 0,-169l61,-61l5,-5l61,-61c0,0 47,-67 169,0c98,55 180,101 251,105c46,-53 71,-143 101,-250c38,-134 120,-120 120,-120h86h7h86c0,0 81,-14 120,120c31,108 56,199 104,252c67,-5 83,-47 174,-97c12,347 127,1111 231,1339c10,22 24,39 43,51c-130,123 -157,154 -175,299v-1zM1805,1848l-1,-1c-87,87 -140,208 -140,341c0,268 217,485 485,485c268,0 485,-217 485,-485c0,-268 -217,-485 -485,-485c-132,0 -251,53 -339,138l1,1l-1,1l-4,4l-1,1v0v-1z" fill="#fcfcfc" fill-rule="evenodd"></path><path d="M2729,1229c0,-178 182,-301 344,-280c162,-21 344,102 344,280c0,316 -122,1150 -231,1390c-20,44 -56,68 -107,70v0h-2h-4h-4h-2v0c-51,-2 -87,-26 -107,-70c-109,-240 -231,-1074 -231,-1390h1zM3067,2839v1c-58,3 -107,26 -149,67c-45,45 -67,100 -67,163c0,73 23,131 70,171c42,36 90,57 146,61v1h5h5v-1c55,-4 104,-24 146,-61c47,-41 70,-98 70,-171c0,-64 -22,-118 -67,-163c-41,-41 -91,-64 -149,-67v-1h-5h-5h1z" fill="#fcfcfc" fill-rule="nonzero"></path><path d="M2150,1742c247,0 448,200 448,448c0,247 -200,448 -448,448c-247,0 -448,-200 -448,-448c0,-247 200,-448 448,-448zM2150,1849c188,0 341,152 341,341c0,188 -152,341 -341,341c-188,0 -341,-152 -341,-341c0,-188 152,-341 341,-341z" fill="#fcfcfc" fill-rule="evenodd"></path></g></g></svg>
+              <svg v-else version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32px" height="32px" viewBox="0,0,256,256"><g fill="#317070" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(8,8)"><path d="M28.89,9.58c-0.23,-0.4 -0.49,-0.77 -0.76,-1.12c0.27,-0.35 0.53,-0.73 0.76,-1.13c0.07,-0.11 0.08,-0.25 0.05,-0.37c-0.18,-1.06 -0.73,-2.01 -1.55,-2.7c0,0 0,0 -0.01,-0.01c-0.09,-0.09 -0.19,-0.16 -0.36,-0.14c-0.47,0 -0.92,0.04 -1.36,0.09c-0.17,-0.41 -0.37,-0.82 -0.6,-1.22c-0.06,-0.1 -0.15,-0.18 -0.26,-0.22c-1.03,-0.39 -2.17,-0.39 -3.21,0c-0.11,0.04 -0.2,0.12 -0.26,0.22c-0.23,0.4 -0.43,0.81 -0.6,1.22c-0.44,-0.06 -0.89,-0.09 -1.36,-0.09v0c-0.13,0 -0.26,0.05 -0.35,0.14c-0.82,0.68 -1.37,1.63 -1.56,2.68c-0.04,0.13 -0.03,0.28 0.05,0.4c0.23,0.39 0.49,0.77 0.76,1.13c-0.27,0.35 -0.53,0.73 -0.76,1.12c-0.07,0.12 -0.08,0.25 -0.05,0.38c0.18,1.06 0.73,2.02 1.55,2.7v0c0.09,0.1 0.22,0.15 0.35,0.15v0c0.46,0 0.92,-0.03 1.36,-0.09c0.17,0.42 0.37,0.82 0.6,1.22c0.06,0.1 0.15,0.18 0.26,0.22c0.52,0.2 1.06,0.29 1.6,0.29c0.54,0 1.09,-0.1 1.6,-0.29c0.11,-0.04 0.2,-0.12 0.26,-0.22c0.22,-0.4 0.42,-0.8 0.6,-1.22c0.44,0.06 0.9,0.09 1.36,0.09v0c0.13,0 0.25,-0.05 0.35,-0.14c0.82,-0.68 1.38,-1.64 1.56,-2.69c0.04,-0.13 0.02,-0.27 -0.05,-0.39zM23.21,10.22c-0.97,0 -1.76,-0.79 -1.76,-1.76c0,-0.97 0.79,-1.76 1.76,-1.76c0.97,0 1.76,0.79 1.76,1.76c0,0.97 -0.79,1.76 -1.76,1.76zM20.15,21.87c-0.39,-0.66 -0.82,-1.29 -1.28,-1.87c0.46,-0.58 0.89,-1.21 1.28,-1.87c0.07,-0.12 0.08,-0.25 0.05,-0.38c-0.27,-1.58 -1.08,-3 -2.31,-4.02c0,0 -0.01,-0.01 -0.02,-0.02c-0.09,-0.09 -0.22,-0.15 -0.35,-0.15v0c-0.77,0 -1.53,0.06 -2.26,0.17c-0.28,-0.7 -0.61,-1.38 -0.99,-2.04c-0.06,-0.1 -0.15,-0.18 -0.26,-0.22c-1.53,-0.58 -3.22,-0.58 -4.75,0c-0.11,0.04 -0.2,0.12 -0.26,0.22c-0.38,0.66 -0.71,1.35 -0.98,2.04c-0.73,-0.11 -1.49,-0.16 -2.26,-0.17v0c-0.13,0 -0.26,0.06 -0.35,0.15v0c-1.22,1.01 -2.04,2.43 -2.32,4c-0.04,0.13 -0.03,0.28 0.04,0.41c0.39,0.66 0.82,1.28 1.28,1.87c-0.46,0.59 -0.89,1.21 -1.28,1.87c-0.07,0.12 -0.08,0.26 -0.05,0.38c0.27,1.58 1.08,3 2.31,4.01c0,0 0.01,0.01 0.02,0.02c0.09,0.09 0.22,0.15 0.35,0.15v0c0.77,0 1.53,-0.06 2.26,-0.17c0.28,0.69 0.61,1.38 0.98,2.04c0.06,0.1 0.15,0.18 0.26,0.22c0.76,0.29 1.57,0.43 2.37,0.43c0.8,0 1.61,-0.14 2.37,-0.43c0.11,-0.04 0.2,-0.12 0.26,-0.22c0.38,-0.66 0.71,-1.35 0.99,-2.04c0.73,0.11 1.49,0.16 2.26,0.17v0c0.13,0 0.26,-0.06 0.35,-0.15v0c1.22,-1.01 2.04,-2.43 2.32,-4c0.04,-0.13 0.03,-0.28 -0.05,-0.41zM11.64,23c-1.66,0 -3,-1.34 -3,-3c0,-1.66 1.34,-3 3,-3c1.66,0 3,1.34 3,3c0,1.66 -1.34,3 -3,3z"></path></g></g></svg>
+            </a>
+            <div v-if="activeSettingId === card.id" class="settings-menu">
+              <RouterLink class="choose" :to="{ path: `/show-news/${card.id}` }">
+                مشاهده
+              </RouterLink>
+              <a v-if="card.self && userStore.status==='active'" class="choose" @click="handleEdit(card.id,null)">
+                ویرایش
+              </a>
+              <a
+                class="choose"
+                v-if="userStore.status==='active' && newsStore.hasRule && !card.self"
+                @click="handleReply(card.id)"
+              >
+                پاسخ
+              </a>
+              <a
+                class="choose"
+                v-if="newsStore.hasRule && !card.self && userStore.status==='active'"
+                @click="openCalendarModal(card.id,0)"
+              >
+                قرار ملاقات
+              </a>
+            </div>
+          </div>
         </div>
         <div class="media-inner">
           <MediaSlider v-if="Array.isArray(card.medias) && card.medias.length > 0" :medias="card.medias" />
@@ -27,26 +57,6 @@
         <div class="location" v-if="card.location?.city">📍 {{ card.location.city }}</div>
         <div style="clear: both;"></div>
         <div class="time">📅 {{ moment(card.created_at).format('jYYYY/jMM/jDD') }}</div>
-        <RouterLink class="choose" :to="{ path: `/show-news/${card.id}` }">
-          مشاهده
-        </RouterLink>
-        <a v-if="card.self && userStore.status==='active'" class="choose" @click="handleEdit(card.id,null)">
-          ویرایش
-        </a>
-        <a
-          class="choose"
-          v-if="userStore.status==='active' && newsStore.hasRule && !card.self"
-          @click="handleReply(card.id)"
-        >
-          پاسخ
-        </a>
-        <a
-          class="choose"
-          v-if="newsStore.hasRule && !card.self && userStore.status==='active'"
-          @click="openCalendarModal(card.id,0)"
-        >
-          قرار ملاقات
-        </a>
         <a class="choose" v-if="card.reports && card.reports.length" @click="toggleReports(card.id)">
           {{ showReports[card.id] ? 'بستن پاسخ ها و ملاقات ها' : 'نمایش پاسخ ها و ملاقات ها' }}
         </a>
@@ -97,7 +107,7 @@
           </div>
         </div>
       </div>
-      <div ref="loadMoreTrigger" class="scroll-trigger"></div>
+      <div :ref="newsScroll.el" v-if="newsScroll.loadMore" class="scroll-trigger"></div>
     </div>
     <div v-else class="none-cart-error">
       <span>
@@ -145,8 +155,8 @@
   import SinglePlaceMap from '@/components/tooles/places/SinglePlaceMap.vue'
   import MediaSlider from '@/components/tooles/media/MediaSlider.vue'
   import CalendarModal from '@/components/tooles/news/CalendarModal.vue'
-  import { usePollingWithCompare } from '@/composables/usePollingWithCompare'
-  import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+  import { polling } from '@/composables/polling'
+  import { scroll } from '@/composables/scroll'
   import AddNewsForm from '@/components/dashboard/pagesContent/AddNewsForm.vue'
   import { useNewsStore } from '@/stores/news'
   import { useUserStore } from '@/stores/user'
@@ -162,8 +172,12 @@
   const userCoordinate = ref(null)
   const showMapModal = ref(false)
   const selectedPlace = ref(null)
+  const activeSettingId = ref(null)
   const newsStore = useNewsStore()
   const userStore = useUserStore()
+  const toggleSetting = (id) => {
+    activeSettingId.value = activeSettingId.value === id ? null : id
+  }
   const truncateText = (text, max = 50) => {
     if (!text) return ''
     return text.length > max ? text.slice(0, max) + '...' : text
@@ -205,11 +219,11 @@
       has_more: false,
     }
   }
-  const {
-    loadMoreTrigger,
-    setupObserver,
-  } = useInfiniteScroll(fetchNews, { limit: 10, immediate: true })
-  usePollingWithCompare(() => newsStore.fetchLatestNewsRaw(newsStore.cards.length>0?newsStore.cards.length:10, 0), {
+  const newsScroll = scroll(fetchNews, {
+    limit: 10,
+    immediate: true,
+  })
+  polling(() => newsStore.fetchLatestNewsRaw(newsStore.cards.length>0?newsStore.cards.length:10, 0), {
     intervalMs: 6000,
     isDifferent: (oldData, newData) => {
       if (!Array.isArray(oldData) || !Array.isArray(newData)) return true
@@ -285,7 +299,6 @@
       } else {
         modalRunTime.value = null
       }
-
       showModal.value = true
   }
   async function onCalendarSubmit({ date }) {
@@ -331,9 +344,6 @@
   }
   onMounted(async () => {
     const res = await newsStore.fetchAddNewsData()
-    setTimeout(() => {
-      setupObserver()
-    }, 100)
     await userStore.fetchUserInfo()
     if (res?.coordinate?.lat && res?.coordinate?.lon) {
       userCoordinate.value = res.coordinate
@@ -387,13 +397,11 @@
   }
   .card {
     box-shadow: 0 5px 5px grey;
-    /* box-shadow: 0px 0px 125px #153c23; */
     border-left: 5px solid #e17cfd;
     box-sizing: border-box;
     width: 100%;
     padding: 0.5rem 2rem 2rem;
     border-radius: 0 50px 50px 50px;
-    /* border-radius: 0 50px 50px 0px; */
     background-color: #fff6c1;
     align-self: flex-start;
     position: sticky;
@@ -409,34 +417,42 @@
     border-left: unset;
     align-self: flex-end;
     border-radius: 50px 0 50px 50px;
-    /* border-radius: 50px 0px 0px 50px; */
     background-color: #b3ffd0;
   }
-  /* .card.my-news::before {
-    content: "";
-    position: absolute;
-    top: 12px;
-    right: -10px;
-    border-width: 10px;
-    border-style: solid;
-    border-color: transparent transparent transparent #d0f0ff;
-  }
-  .card:not(.my-news)::before {
-    content: "";
-    position: absolute;
-    top: 12px;
-    left: -10px;
-    border-width: 10px;
-    border-style: solid;
-    border-color: transparent #f1f1f1 transparent transparent;
-  } */
-  .user-info {
+  .user-data{
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 0.5rem;
   }
-  .user-info img ,.user-info svg {
+  .user-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    justify-content: space-between;
+  }
+  .inner-setting-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  .settings-menu {
+    display: flex;
+    box-sizing: border-box;
+    width: 100px;
+    gap: 5px;
+    background: #fff;
+    border-radius: 10px;
+    position: absolute;
+    top: 45px;
+    align-items: stretch;
+    padding: 10px 5px;
+    flex-direction: column;
+    text-align: center;
+  }
+  .settings-menu .choose{
+    margin: 0 !important;
+  }
+  .user-data img ,.user-data svg {
     width: 45px;
     height: 45px;
     object-fit: cover;

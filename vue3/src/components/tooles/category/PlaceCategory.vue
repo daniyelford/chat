@@ -16,13 +16,13 @@
         @click="selectCategory(cat.id)">
         {{ cat.title }}
       </button>
-      <div ref="loadTrigger" class="load-trigger" style="margin-top: -10px;"></div>
+      <div v-if="placeCategoryScroll.loadMore" :ref="placeCategoryScroll.el" class="load-trigger" style="margin-top: -10px;"></div>
     </div>
   </div>
 </template>
 <script setup>
-import { ref, computed, onMounted, defineProps, defineEmits } from 'vue'
-import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+import { ref, computed, defineProps, defineEmits } from 'vue'
+import { scroll } from '@/composables/scroll'
 import { usePlaceStore } from '@/stores/place'
 
 const emit = defineEmits(['update:selectedCategoryId'])
@@ -46,19 +46,12 @@ const selectCategory = (id) => {
   emit('update:selectedCategoryId', id)
 }
 
-const {
-  loadMoreTrigger: loadTrigger,
-  setupObserver
-} = useInfiniteScroll(async ({ offset }) => {
+const placeCategoryScroll = scroll(async ({ offset }) => {
   await placeStore.fetchCategoriesPaginated(offset)
   return {
     items: placeStore.allCategories,
     has_more: placeStore.hasMoreCategories,
   }
-})
-
-onMounted(() => {
-  setupObserver()
 })
 </script>
 <style scoped>
