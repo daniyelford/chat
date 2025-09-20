@@ -1,6 +1,6 @@
 <template>
   <div class="inner-posts">
-    <div class="loading" v-if="!newsStore.isLoaded">
+    <div class="loading" v-if="!newsStore.isLoaded && newsStore.cards.length == 0">
       <div class="tiny-loader"></div>
     </div>
     <div class="card-inner" v-if="newsStore.cards.length > 0">
@@ -44,6 +44,7 @@
         </div>
         <div class="media-inner">
           <MediaSlider v-if="Array.isArray(card.medias) && card.medias.length > 0" :medias="card.medias" />
+          <svg v-else version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0,0,256,256"><g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(2.56,2.56)"><path d="M73,80h-46c-6.075,0 -11,-4.925 -11,-11v-38c0,-6.075 4.925,-11 11,-11h46c6.075,0 11,4.925 11,11v38c0,6.075 -4.925,11 -11,11z" fill="#b2b1c2"></path><path d="M73,76h-46c-3.866,0 -7,-3.134 -7,-7v-38c0,-3.866 3.134,-7 7,-7h46c3.866,0 7,3.134 7,7v38c0,3.866 -3.134,7 -7,7z" fill="#94effe"></path><path d="M73,81h-46c-6.617,0 -12,-5.383 -12,-12v-38c0,-6.617 5.383,-12 12,-12h46c6.617,0 12,5.383 12,12v38c0,6.617 -5.383,12 -12,12zM27,21c-5.514,0 -10,4.486 -10,10v38c0,5.514 4.486,10 10,10h46c5.514,0 10,-4.486 10,-10v-38c0,-5.514 -4.486,-10 -10,-10z" fill="#1f212b"></path><path d="M79.5,69v-4.5l-13.294,-13.294c-0.471,-0.471 -1.089,-0.706 -1.706,-0.706c-0.617,0 -1.235,0.235 -1.706,0.706l-24.294,24.294h34.5c3.59,0 6.5,-2.91 6.5,-6.5z" fill="#52bea0"></path><path d="M73,76h-34.5c-0.202,0 -0.385,-0.122 -0.462,-0.309c-0.077,-0.187 -0.034,-0.402 0.108,-0.545l24.295,-24.294c1.098,-1.099 3.02,-1.099 4.117,0l13.295,13.294c0.094,0.094 0.147,0.221 0.147,0.354v4.5c0,3.86 -3.141,7 -7,7zM39.707,75h33.293c3.309,0 6,-2.691 6,-6v-4.293l-13.148,-13.148c-0.721,-0.721 -1.982,-0.721 -2.703,0z" fill="#1f212b"></path><path d="M27,75.5h40.5l-31.294,-31.294c-0.471,-0.471 -1.089,-0.706 -1.706,-0.706c-0.617,0 -1.235,0.235 -1.706,0.706l-12.294,12.294v12.5c0,3.59 2.91,6.5 6.5,6.5z" fill="#00a6a6"></path><path d="M67.5,76h-40.5c-3.859,0 -7,-3.14 -7,-7v-12.5c0,-0.133 0.053,-0.26 0.146,-0.354l12.295,-12.294c1.098,-1.099 3.02,-1.099 4.117,0l31.295,31.294c0.143,0.143 0.186,0.358 0.108,0.545c-0.078,0.187 -0.259,0.309 -0.461,0.309zM21,56.707v12.293c0,3.309 2.691,6 6,6h39.293l-30.441,-30.441c-0.721,-0.721 -1.982,-0.721 -2.703,0z" fill="#1f212b"></path><path d="M73,76h-46c-3.859,0 -7,-3.14 -7,-7v-38c0,-3.86 3.141,-7 7,-7h41.5c0.276,0 0.5,0.224 0.5,0.5c0,0.276 -0.224,0.5 -0.5,0.5h-41.5c-3.309,0 -6,2.691 -6,6v38c0,3.309 2.691,6 6,6h46c3.309,0 6,-2.691 6,-6v-15.5c0,-0.276 0.224,-0.5 0.5,-0.5c0.276,0 0.5,0.224 0.5,0.5v15.5c0,3.86 -3.141,7 -7,7z" fill="#1f212b"></path><path d="M79.5,44c-0.276,0 -0.5,-0.224 -0.5,-0.5v-2c0,-0.276 0.224,-0.5 0.5,-0.5c0.276,0 0.5,0.224 0.5,0.5v2c0,0.276 -0.224,0.5 -0.5,0.5z" fill="#1f212b"></path><path d="M79.5,51c-0.276,0 -0.5,-0.224 -0.5,-0.5v-4c0,-0.276 0.224,-0.5 0.5,-0.5c0.276,0 0.5,0.224 0.5,0.5v4c0,0.276 -0.224,0.5 -0.5,0.5z" fill="#1f212b"></path><circle cx="66.5" cy="37.5" r="5" fill="#ffe31c"></circle><path d="M66.5,43c-3.032,0 -5.5,-2.467 -5.5,-5.5c0,-3.033 2.468,-5.5 5.5,-5.5c3.032,0 5.5,2.467 5.5,5.5c0,3.033 -2.468,5.5 -5.5,5.5zM66.5,33c-2.481,0 -4.5,2.019 -4.5,4.5c0,2.481 2.019,4.5 4.5,4.5c2.481,0 4.5,-2.019 4.5,-4.5c0,-2.481 -2.019,-4.5 -4.5,-4.5z" fill="#1f212b"></path><path d="M94,95c-0.256,0 -0.512,-0.098 -0.707,-0.293l-88,-88c-0.391,-0.391 -0.391,-1.023 0,-1.414c0.391,-0.391 1.023,-0.391 1.414,0l88,88c0.391,0.391 0.391,1.023 0,1.414c-0.195,0.195 -0.451,0.293 -0.707,0.293z" fill="#1f212b"></path></g></g></svg>
         </div>
         <div class="card-category" v-if="Array.isArray(card.category) && card.category.length > 0">
           <span class="category" v-for="category in card.category" :key="category.id">
@@ -53,8 +54,9 @@
         <div class="description" v-if="card.description">
           {{ truncateText(card.description) }}
         </div>
-        <a class="choose" v-if="card.location?.lat && card.location?.lon" style="margin-top: 0; float: left;" @click="openMapModal(card)">نمایش روی نقشه</a>
-        <div class="location" v-if="card.location?.city">📍 {{ card.location.city }}</div>
+        <a class="choose" v-if="card.location?.lat && card.location?.lon" style="margin-top: 0; float: left;" @click="openMapModal(card)">
+          {{ card.location?.city?card.location.city:'نمایش روی نقشه' }}
+        </a>
         <div style="clear: both;"></div>
         <div class="time">📅 {{ moment(card.created_at).format('jYYYY/jMM/jDD') }}</div>
         <a class="choose" v-if="card.reports && card.reports.length" @click="toggleReports(card.id)">
@@ -63,12 +65,42 @@
         <div class="report-block" v-if="card.reports && card.reports.length && showReports[card.id]">
           <div class="single-report" v-for="report in card.reports" :key="report.id">
             <div class="reporter-user">
-              <img v-if="report.reporter.image" :src="report.reporter.image" alt="reporter image">
-              <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#000000" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g><rect fill="none" height="24" width="24"/></g><g><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20z"/></g></svg>
-              <p>{{ report.reporter.name }} {{ report.reporter.family }}</p>
+              <div class="user-data">
+                <img v-if="report.reporter.image" :src="report.reporter.image" alt="reporter image">
+                <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#000000" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g><rect fill="none" height="24" width="24"/></g><g><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20z"/></g></svg>
+                <p>{{ report.reporter.name }} {{ report.reporter.family }}</p>
+              </div>
+              <div class="inner-setting-menu">
+                <a @click="toggleReportSetting(report.id)" class="dropdown-settings-menu">
+                  <svg v-if="activeReportSettingId === report.id" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="25px" height="25px" viewBox="0,0,256,256"><g fill="none" fill-rule="none" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(0.05905,0.05905)"><path d="M2222,152c1092,0 1978,885 1978,1977c0,1092 -885,1978 -1978,1978c-1092,0 -1978,-885 -1978,-1978c0,-1092 885,-1977 1978,-1977z" fill="#c91603" fill-rule="evenodd"></path><path d="M2736,3031c-8,-4 -16,-8 -26,-13c-98,-55 -180,-70 -251,-75c-46,53 -71,143 -101,250c-38,134 -120,120 -120,120h-86h-7h-86c0,0 -81,14 -120,-120c-31,-108 -56,-199 -104,-252c-70,5 -152,51 -248,105c-122,67 -169,0 -169,0l-61,-61l-5,-5l-61,-61c0,0 -67,-47 0,-169c55,-98 101,-180 105,-251c-53,-46 -143,-71 -250,-101c-134,-38 -120,-120 -120,-120v-86v-7v-86c0,0 -14,-81 120,-120c108,-31 199,-56 252,-104c-5,-70 -51,-152 -105,-248c-67,-122 0,-169 0,-169l61,-61l5,-5l61,-61c0,0 47,-67 169,0c98,55 180,101 251,105c46,-53 71,-143 101,-250c38,-134 120,-120 120,-120h86h7h86c0,0 81,-14 120,120c31,108 56,199 104,252c67,-5 83,-47 174,-97c12,347 127,1111 231,1339c10,22 24,39 43,51c-130,123 -157,154 -175,299v-1zM1805,1848l-1,-1c-87,87 -140,208 -140,341c0,268 217,485 485,485c268,0 485,-217 485,-485c0,-268 -217,-485 -485,-485c-132,0 -251,53 -339,138l1,1l-1,1l-4,4l-1,1v0v-1z" fill="#fcfcfc" fill-rule="evenodd"></path><path d="M2729,1229c0,-178 182,-301 344,-280c162,-21 344,102 344,280c0,316 -122,1150 -231,1390c-20,44 -56,68 -107,70v0h-2h-4h-4h-2v0c-51,-2 -87,-26 -107,-70c-109,-240 -231,-1074 -231,-1390h1zM3067,2839v1c-58,3 -107,26 -149,67c-45,45 -67,100 -67,163c0,73 23,131 70,171c42,36 90,57 146,61v1h5h5v-1c55,-4 104,-24 146,-61c47,-41 70,-98 70,-171c0,-64 -22,-118 -67,-163c-41,-41 -91,-64 -149,-67v-1h-5h-5h1z" fill="#fcfcfc" fill-rule="nonzero"></path><path d="M2150,1742c247,0 448,200 448,448c0,247 -200,448 -448,448c-247,0 -448,-200 -448,-448c0,-247 200,-448 448,-448zM2150,1849c188,0 341,152 341,341c0,188 -152,341 -341,341c-188,0 -341,-152 -341,-341c0,-188 152,-341 341,-341z" fill="#fcfcfc" fill-rule="evenodd"></path></g></g></svg>
+                  <svg v-else version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32px" height="32px" viewBox="0,0,256,256"><g fill="#317070" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(8,8)"><path d="M28.89,9.58c-0.23,-0.4 -0.49,-0.77 -0.76,-1.12c0.27,-0.35 0.53,-0.73 0.76,-1.13c0.07,-0.11 0.08,-0.25 0.05,-0.37c-0.18,-1.06 -0.73,-2.01 -1.55,-2.7c0,0 0,0 -0.01,-0.01c-0.09,-0.09 -0.19,-0.16 -0.36,-0.14c-0.47,0 -0.92,0.04 -1.36,0.09c-0.17,-0.41 -0.37,-0.82 -0.6,-1.22c-0.06,-0.1 -0.15,-0.18 -0.26,-0.22c-1.03,-0.39 -2.17,-0.39 -3.21,0c-0.11,0.04 -0.2,0.12 -0.26,0.22c-0.23,0.4 -0.43,0.81 -0.6,1.22c-0.44,-0.06 -0.89,-0.09 -1.36,-0.09v0c-0.13,0 -0.26,0.05 -0.35,0.14c-0.82,0.68 -1.37,1.63 -1.56,2.68c-0.04,0.13 -0.03,0.28 0.05,0.4c0.23,0.39 0.49,0.77 0.76,1.13c-0.27,0.35 -0.53,0.73 -0.76,1.12c-0.07,0.12 -0.08,0.25 -0.05,0.38c0.18,1.06 0.73,2.02 1.55,2.7v0c0.09,0.1 0.22,0.15 0.35,0.15v0c0.46,0 0.92,-0.03 1.36,-0.09c0.17,0.42 0.37,0.82 0.6,1.22c0.06,0.1 0.15,0.18 0.26,0.22c0.52,0.2 1.06,0.29 1.6,0.29c0.54,0 1.09,-0.1 1.6,-0.29c0.11,-0.04 0.2,-0.12 0.26,-0.22c0.22,-0.4 0.42,-0.8 0.6,-1.22c0.44,0.06 0.9,0.09 1.36,0.09v0c0.13,0 0.25,-0.05 0.35,-0.14c0.82,-0.68 1.38,-1.64 1.56,-2.69c0.04,-0.13 0.02,-0.27 -0.05,-0.39zM23.21,10.22c-0.97,0 -1.76,-0.79 -1.76,-1.76c0,-0.97 0.79,-1.76 1.76,-1.76c0.97,0 1.76,0.79 1.76,1.76c0,0.97 -0.79,1.76 -1.76,1.76zM20.15,21.87c-0.39,-0.66 -0.82,-1.29 -1.28,-1.87c0.46,-0.58 0.89,-1.21 1.28,-1.87c0.07,-0.12 0.08,-0.25 0.05,-0.38c-0.27,-1.58 -1.08,-3 -2.31,-4.02c0,0 -0.01,-0.01 -0.02,-0.02c-0.09,-0.09 -0.22,-0.15 -0.35,-0.15v0c-0.77,0 -1.53,0.06 -2.26,0.17c-0.28,-0.7 -0.61,-1.38 -0.99,-2.04c-0.06,-0.1 -0.15,-0.18 -0.26,-0.22c-1.53,-0.58 -3.22,-0.58 -4.75,0c-0.11,0.04 -0.2,0.12 -0.26,0.22c-0.38,0.66 -0.71,1.35 -0.98,2.04c-0.73,-0.11 -1.49,-0.16 -2.26,-0.17v0c-0.13,0 -0.26,0.06 -0.35,0.15v0c-1.22,1.01 -2.04,2.43 -2.32,4c-0.04,0.13 -0.03,0.28 0.04,0.41c0.39,0.66 0.82,1.28 1.28,1.87c-0.46,0.59 -0.89,1.21 -1.28,1.87c-0.07,0.12 -0.08,0.26 -0.05,0.38c0.27,1.58 1.08,3 2.31,4.01c0,0 0.01,0.01 0.02,0.02c0.09,0.09 0.22,0.15 0.35,0.15v0c0.77,0 1.53,-0.06 2.26,-0.17c0.28,0.69 0.61,1.38 0.98,2.04c0.06,0.1 0.15,0.18 0.26,0.22c0.76,0.29 1.57,0.43 2.37,0.43c0.8,0 1.61,-0.14 2.37,-0.43c0.11,-0.04 0.2,-0.12 0.26,-0.22c0.38,-0.66 0.71,-1.35 0.99,-2.04c0.73,0.11 1.49,0.16 2.26,0.17v0c0.13,0 0.26,-0.06 0.35,-0.15v0c1.22,-1.01 2.04,-2.43 2.32,-4c0.04,-0.13 0.03,-0.28 -0.05,-0.41zM11.64,23c-1.66,0 -3,-1.34 -3,-3c0,-1.66 1.34,-3 3,-3c1.66,0 3,1.34 3,3c0,1.66 -1.34,3 -3,3z"></path></g></g></svg>
+                </a>
+                <div class="settings-menu" v-if="activeReportSettingId==report.id">
+                  <a v-if="userStore.status==='active' && report.reporter.self && report.description" class="choose" @click="handleEdit(card.id,report.id)">
+                    ویرایش
+                  </a>
+                  <a
+                  class="choose"
+                  v-if="userStore.status==='active' && report.reporter.self && report.run_time"
+                  @click="openCalendarModal(card.id,report.id)">
+                    ویرایش زمان ملاقات
+                  </a>
+                  <RouterLink class="choose" :to="{ path: `/show-cartable/${report.id}` }">
+                    مشاهده
+                  </RouterLink>
+                  <a
+                    class="choose"
+                    v-if="userStore.status==='active' && report.reporter.self && !report.run_time"
+                    @click="openCalendarModal(card.id,report.id)"
+                  >
+                    قرار ملاقات
+                  </a>
+                </div>
+              </div>
             </div>
-            <div class="media-inner" v-if="Array.isArray(report.media) && report.media.length > 0">
-              <MediaSlider :medias="report.media" />
+            <div class="media-inner">
+              <MediaSlider v-if="Array.isArray(report.media) && report.media.length > 0" :medias="report.media" />
+              <svg v-else version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0,0,256,256"><g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(2.56,2.56)"><path d="M73,80h-46c-6.075,0 -11,-4.925 -11,-11v-38c0,-6.075 4.925,-11 11,-11h46c6.075,0 11,4.925 11,11v38c0,6.075 -4.925,11 -11,11z" fill="#b2b1c2"></path><path d="M73,76h-46c-3.866,0 -7,-3.134 -7,-7v-38c0,-3.866 3.134,-7 7,-7h46c3.866,0 7,3.134 7,7v38c0,3.866 -3.134,7 -7,7z" fill="#94effe"></path><path d="M73,81h-46c-6.617,0 -12,-5.383 -12,-12v-38c0,-6.617 5.383,-12 12,-12h46c6.617,0 12,5.383 12,12v38c0,6.617 -5.383,12 -12,12zM27,21c-5.514,0 -10,4.486 -10,10v38c0,5.514 4.486,10 10,10h46c5.514,0 10,-4.486 10,-10v-38c0,-5.514 -4.486,-10 -10,-10z" fill="#1f212b"></path><path d="M79.5,69v-4.5l-13.294,-13.294c-0.471,-0.471 -1.089,-0.706 -1.706,-0.706c-0.617,0 -1.235,0.235 -1.706,0.706l-24.294,24.294h34.5c3.59,0 6.5,-2.91 6.5,-6.5z" fill="#52bea0"></path><path d="M73,76h-34.5c-0.202,0 -0.385,-0.122 -0.462,-0.309c-0.077,-0.187 -0.034,-0.402 0.108,-0.545l24.295,-24.294c1.098,-1.099 3.02,-1.099 4.117,0l13.295,13.294c0.094,0.094 0.147,0.221 0.147,0.354v4.5c0,3.86 -3.141,7 -7,7zM39.707,75h33.293c3.309,0 6,-2.691 6,-6v-4.293l-13.148,-13.148c-0.721,-0.721 -1.982,-0.721 -2.703,0z" fill="#1f212b"></path><path d="M27,75.5h40.5l-31.294,-31.294c-0.471,-0.471 -1.089,-0.706 -1.706,-0.706c-0.617,0 -1.235,0.235 -1.706,0.706l-12.294,12.294v12.5c0,3.59 2.91,6.5 6.5,6.5z" fill="#00a6a6"></path><path d="M67.5,76h-40.5c-3.859,0 -7,-3.14 -7,-7v-12.5c0,-0.133 0.053,-0.26 0.146,-0.354l12.295,-12.294c1.098,-1.099 3.02,-1.099 4.117,0l31.295,31.294c0.143,0.143 0.186,0.358 0.108,0.545c-0.078,0.187 -0.259,0.309 -0.461,0.309zM21,56.707v12.293c0,3.309 2.691,6 6,6h39.293l-30.441,-30.441c-0.721,-0.721 -1.982,-0.721 -2.703,0z" fill="#1f212b"></path><path d="M73,76h-46c-3.859,0 -7,-3.14 -7,-7v-38c0,-3.86 3.141,-7 7,-7h41.5c0.276,0 0.5,0.224 0.5,0.5c0,0.276 -0.224,0.5 -0.5,0.5h-41.5c-3.309,0 -6,2.691 -6,6v38c0,3.309 2.691,6 6,6h46c3.309,0 6,-2.691 6,-6v-15.5c0,-0.276 0.224,-0.5 0.5,-0.5c0.276,0 0.5,0.224 0.5,0.5v15.5c0,3.86 -3.141,7 -7,7z" fill="#1f212b"></path><path d="M79.5,44c-0.276,0 -0.5,-0.224 -0.5,-0.5v-2c0,-0.276 0.224,-0.5 0.5,-0.5c0.276,0 0.5,0.224 0.5,0.5v2c0,0.276 -0.224,0.5 -0.5,0.5z" fill="#1f212b"></path><path d="M79.5,51c-0.276,0 -0.5,-0.224 -0.5,-0.5v-4c0,-0.276 0.224,-0.5 0.5,-0.5c0.276,0 0.5,0.224 0.5,0.5v4c0,0.276 -0.224,0.5 -0.5,0.5z" fill="#1f212b"></path><circle cx="66.5" cy="37.5" r="5" fill="#ffe31c"></circle><path d="M66.5,43c-3.032,0 -5.5,-2.467 -5.5,-5.5c0,-3.033 2.468,-5.5 5.5,-5.5c3.032,0 5.5,2.467 5.5,5.5c0,3.033 -2.468,5.5 -5.5,5.5zM66.5,33c-2.481,0 -4.5,2.019 -4.5,4.5c0,2.481 2.019,4.5 4.5,4.5c2.481,0 4.5,-2.019 4.5,-4.5c0,-2.481 -2.019,-4.5 -4.5,-4.5z" fill="#1f212b"></path><path d="M94,95c-0.256,0 -0.512,-0.098 -0.707,-0.293l-88,-88c-0.391,-0.391 -0.391,-1.023 0,-1.414c0.391,-0.391 1.023,-0.391 1.414,0l88,88c0.391,0.391 0.391,1.023 0,1.414c-0.195,0.195 -0.451,0.293 -0.707,0.293z" fill="#1f212b"></path></g></g></svg>
             </div>
             <p v-if="report.description">📄 {{ truncateText(report.description) }}</p>
             <a
@@ -77,33 +109,13 @@
               @click="openMapModal(report, card)"
               style="margin-top: 0; float: left;"
               >
-              نمایش روی نقشه
+              {{ report.location?.city?report.location?.city:'نمایش روی نقشه' }}
             </a>
-            <div class="location" v-if="report.location?.city">📍 {{ report.location.city }}</div>
             <div style="clear: both;"></div>
             <p v-if="report.run_time">
               📅 تاریخ ملاقات {{ moment(report.run_time).format('jYYYY/jMM/jDD') }}
             </p>
             <div class="time">📅 {{ moment(report.created_at).format('jYYYY/jMM/jDD') }}</div>
-            <a v-if="userStore.status==='active' && report.reporter.self && report.description" class="choose" @click="handleEdit(card.id,report.id)">
-              ویرایش
-            </a>
-            <a
-            class="choose"
-            v-if="userStore.status==='active' && report.reporter.self && report.run_time"
-            @click="openCalendarModal(card.id,report.id)">
-              ویرایش زمان ملاقات
-            </a>
-            <RouterLink class="choose" :to="{ path: `/show-cartable/${report.id}` }">
-              مشاهده
-            </RouterLink>
-            <a
-              class="choose"
-              v-if="userStore.status==='active' && report.reporter.self && !report.run_time"
-              @click="openCalendarModal(card.id,report.id)"
-            >
-              قرار ملاقات
-            </a>
           </div>
         </div>
       </div>
@@ -173,10 +185,14 @@
   const showMapModal = ref(false)
   const selectedPlace = ref(null)
   const activeSettingId = ref(null)
+  const activeReportSettingId = ref(null)
   const newsStore = useNewsStore()
   const userStore = useUserStore()
   const toggleSetting = (id) => {
     activeSettingId.value = activeSettingId.value === id ? null : id
+  }
+  const toggleReportSetting = (id) => {
+    activeReportSettingId.value = activeReportSettingId.value === id ? null : id
   }
   const truncateText = (text, max = 50) => {
     if (!text) return ''

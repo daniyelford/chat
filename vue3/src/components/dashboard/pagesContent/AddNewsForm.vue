@@ -1,12 +1,13 @@
 <template>
+  <div class="voice-seconds" v-if="isRecording">⏱ {{ seconds }} s</div>
   <button class="voice-recorder" v-if="voiseSupport && !isRecording" @click="startRecording">
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0,0,256,256"><g fill="#0b0851" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(5.12,5.12)"><path d="M18,3c-1.654,0 -3,1.346 -3,3v18h20v-18c0,-1.654 -1.346,-3 -3,-3zM11.98438,17.98633c-0.55152,0.00862 -0.99193,0.46214 -0.98437,1.01367v15c0,3.30163 2.69838,6 6,6h5v6h-5c-0.36064,-0.0051 -0.69608,0.18438 -0.87789,0.49587c-0.18181,0.3115 -0.18181,0.69676 0,1.00825c0.18181,0.3115 0.51725,0.50097 0.87789,0.49587h16c0.36064,0.0051 0.69608,-0.18438 0.87789,-0.49587c0.18181,-0.3115 0.18181,-0.69676 0,-1.00825c-0.18181,-0.3115 -0.51725,-0.50097 -0.87789,-0.49587h-5v-6h5c3.30163,0 6,-2.69837 6,-6v-15c0.0051,-0.36064 -0.18438,-0.69608 -0.49587,-0.87789c-0.3115,-0.18181 -0.69676,-0.18181 -1.00825,0c-0.3115,0.18181 -0.50097,0.51725 -0.49587,0.87789v15c0,2.22037 -1.77963,4 -4,4h-16c-2.22038,0 -4,-1.77963 -4,-4v-15c0.0037,-0.2703 -0.10218,-0.53059 -0.29351,-0.72155c-0.19133,-0.19097 -0.45182,-0.29634 -0.72212,-0.29212zM15,26v7c0,1.654 1.346,3 3,3h14c1.654,0 3,-1.346 3,-3v-7zM25,29c1.105,0 2,0.895 2,2c0,1.105 -0.895,2 -2,2c-1.105,0 -2,-0.895 -2,-2c0,-1.105 0.895,-2 2,-2z"></path></g></g></svg>
   </button>
-  <button class="voice-recorder" v-if="voiseSupport && isRecording" @click="stopRecording">
+  <button class="voice-recorder Rec" v-if="voiseSupport && isRecording" @click="stopRecording">
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0,0,256,256"><g fill="#c93838" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(5.12,5.12)"><path d="M0.90625,-0.03125c-0.04297,0.00781 -0.08594,0.01953 -0.125,0.03125c-0.375,0.06641 -0.67578,0.33984 -0.78125,0.70313c-0.10547,0.36719 0.00391,0.75781 0.28125,1.01563l48,48c0.39844,0.39844 1.03906,0.39844 1.4375,0c0.39844,-0.39844 0.39844,-1.03906 0,-1.4375l-13.71875,-13.71875c3.11719,-2.91016 5,-7.04297 5,-11.5625v-5c0,-0.60156 -0.39844,-1 -1,-1c-0.60156,0 -1,0.39844 -1,1v5c0,4.00781 -1.71094,7.54688 -4.4375,10.125l-2.03125,-2.03125c2.17969,-1.94922 3.5625,-4.75391 3.5625,-7.90625v-2.1875h-7.59375c-0.55469,0 -1,-0.44922 -1,-1c0,-0.55078 0.44531,-1 1,-1h7.59375v-2h-7.59375c-0.55469,0 -1,-0.44922 -1,-1c0,-0.55078 0.44531,-1 1,-1h7.59375v-2h-7.59375c-0.55469,0 -1,-0.44922 -1,-1c0,-0.55078 0.44531,-1 1,-1h7.59375v-0.3125c-0.10156,-5.89844 -4.99219,-10.6875 -11.09375,-10.6875c-6.10156,0 -11,4.78906 -11,10.6875v0.3125h7.5c0.55078,0 1,0.44922 1,1c0,0.55078 -0.44922,1 -1,1h-7.0625l-12.71875,-12.71875c-0.20703,-0.22266 -0.50781,-0.33594 -0.8125,-0.3125zM16.4375,15h5.0625c0.55078,0 1,0.44922 1,1c0,0.55078 -0.44922,1 -1,1h-3.0625zM10,17c-0.60156,0 -1,0.39844 -1,1v5c0,7.77734 5.62109,14.30469 13,15.71875v4.28125h6v-4.28125c1.73828,-0.34375 3.35938,-0.97656 4.90625,-1.8125l-1.5,-1.5c-1.89844,1 -4.10547,1.59375 -6.40625,1.59375c-7.69922,0 -14,-6.30078 -14,-14v-5c0,-0.60156 -0.39844,-1 -1,-1zM14,18.09375v0.90625h0.90625zM20.4375,19h1.0625c0.60156,0 1,0.39844 1,1c0,0.31641 -0.11719,0.57422 -0.3125,0.75zM14,21v2.3125c0,5.89844 4.89844,10.6875 11,10.6875c1.5,0 2.89453,-0.3125 4.09375,-0.8125l-12.1875,-12.1875zM15.5,45c-1.96094,0 -3.5,1.53516 -3.5,3.5v1.5h25.90625v-1.5c0,-1.96484 -1.53516,-3.5 -3.5,-3.5z"></path></g></g></svg>
   </button>
   <form @submit.prevent="submitForm">
-    <textarea v-model="form.description" rows="4" required placeholder="متن خبر"></textarea>
+    <textarea :class="voiseSupport?'textarea':''" v-model="form.description" rows="4" required placeholder="متن خبر"></textarea>
     <BaseModal :show="showModal" @close="showModal = false">
       <button v-if="!showAllCategory && rule" @click="toggleShowAllCategory">
         برون سازمانی
@@ -77,6 +78,7 @@
   import { ref , onMounted , computed , defineProps , defineEmits , watch } from 'vue'
   import UploaderManyMedia from '@/components/tooles/upload/UploaderManyMedia.vue'
   import Multiselect from 'vue-multiselect'
+  import { useInterval } from "@vueuse/core"
   import 'vue-multiselect/dist/vue-multiselect.min.css'
   import AddressSelector from '@/components/tooles/news/AddressSelector .vue'
   import BaseModal from '@/components/tooles/modal/BaseModal.vue'
@@ -112,12 +114,20 @@
   const myCategory = ref([])
   const isRecording = ref(false)
   const voiseSupport=ref(false)
+  const seconds = ref(0)
   let recognition = null
   const form = ref({
     user_address: { type: 'location', value: '' },
     media_id: [],
     description: '',
     category_id: [],
+  })
+  const { pause, resume } = useInterval(1000, {
+    controls: true,
+    immediate: false,
+    callback: () => {
+      seconds.value++
+    },
   })
   const startRecording = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -131,6 +141,8 @@
     recognition.interimResults = false
     recognition.onstart = () => {
       isRecording.value = true
+      seconds.value=0
+      resume()
     }
     recognition.onresult = (event) => {
       let text = ''
@@ -144,6 +156,7 @@
     }
     recognition.onend = () => {
       isRecording.value = false
+      pause()
     }
     recognition.start()
   }
@@ -151,6 +164,7 @@
     if (recognition) {
       recognition.stop()
       isRecording.value = false
+      pause()
     }
   }
   const handleUploadResult = (uploadedData) => {
@@ -274,11 +288,43 @@
   })
 </script>
 <style scoped>
+  .voice-seconds{
+    bottom: 45px;
+    left: 45px;
+    right: 45px;
+    position: fixed;
+    height: 40px;
+    border-radius: 50px 50px 0 0;
+    background-color: green;
+    color: white;
+    text-align: center;
+    box-sizing: border-box;
+    padding-top: 6px;
+  }
+  .Rec{
+    animation-name: pulse;
+    animation-duration: 0.5s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
+  @keyframes pulse{
+    0%{
+      box-shadow: 0px 0px 5px 0px rgba(173,0,0,.3);
+    }
+    65%{
+      box-shadow: 0px 0px 5px 13px rgba(173,0,0,.3);
+    }
+    90%{
+      box-shadow: 0px 0px 5px 13px rgba(173,0,0,0);
+    }
+  }
   .voice-recorder{
     position: fixed;
-    left: 47px;
+    left: 46px;
     bottom: 0px;
+    border-radius: 5px;
     z-index: 999999;
+    background: #c1c7f9;
   }
   .edit{
     background: beige;
@@ -299,8 +345,8 @@
   }
   .top-send {
     bottom: 45px;
-    left: 0;
-    right: 0;
+    left: 20px;
+    right: 20px;
     height: auto;
     position: fixed;
   }
@@ -364,6 +410,11 @@
     z-index: 9999;
     left: 45px;
     right: 45px;
+  }
+  textarea.textarea{
+    left: 91px !important;
+    width: calc(100% - 136px);
+    max-width: calc(100% - 136px);
   }
   label{
     margin-bottom: 0.5rem;
