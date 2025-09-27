@@ -6,11 +6,18 @@ import NotFoundPage from '@/components/NotFoundPage.vue';
 import { useMenuStore } from '@/stores/menu'
 import { useNotificationStore } from '@/stores/notification'
 import { useSecurityStore } from '@/stores/security';
+import Welcome from '@/Welcome.vue'
 import { BASE_URL } from '@/config';
 const icon=BASE_URL+'/assets/images/fav.png'
 const routes = [
+
   {
     path: '/',
+    name: 'welcome',
+    component: Welcome,
+  },
+  {
+    path: '/login',
     name: 'login',
     component: LoginView,
     meta:{onlyAuth:true}
@@ -96,11 +103,11 @@ router.beforeEach(async (to, from, next) => {
   link.href = icon;
   if (to.meta.requiresAuth) {
     const ok = await security.checkAuth()
-    if (!ok) return next('/')
+    if (!ok) return next('/login')
   }
   if (to.meta.checkHasMobileId) {
     const ok = await security.checkHasMobile()
-    if (!ok) return next('/')
+    if (!ok) return next('/login')
   }
   if (to.meta.onlyAuth) {
     const ok = await security.checkOnlyAuth()

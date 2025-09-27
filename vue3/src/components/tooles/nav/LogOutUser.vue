@@ -19,7 +19,7 @@
           security.reset()
           const notificationStore = useNotificationStore()
           notificationStore.$reset()
-          this.$router.push("/")
+          this.$router.push("/login")
         } else {
           alert('خطا در خروج از حساب');
         }

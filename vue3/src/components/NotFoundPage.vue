@@ -11,7 +11,7 @@
   <div class="error">
     <div class="error__title">404</div>
     <div class="error__subtitle">هیچی نیست...</div>
-    <RouterLink :to="{path:'/'}" class="error__button error__button--active">بریم</RouterLink>
+    <RouterLink :to="{path:'/login'}" class="error__button error__button--active">بریم</RouterLink>
   </div>
   <div class="astronaut">
     <div class="astronaut__backpack"></div>

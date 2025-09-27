@@ -21,7 +21,7 @@ export async function sendApi(data = {}) {
       if (!isLoggingOut) {
         isLoggingOut = true
         localStorage.clear()
-        router.push('/')
+        router.push('/login')
       }
       window.location.reload()
       throw new Error('Unauthorized')
@@ -55,7 +55,7 @@ export function sendApiWithProgress(data = {}, onProgress = null) {
             if (!isLoggingOut) {
               isLoggingOut = true;
               localStorage.clear();
-              router.push('/');
+              router.push('/login');
             }
             window.location.reload();
             reject(new Error('Unauthorized'));
@@ -98,7 +98,7 @@ export function sendApiWithProgressVideos(files = [], data = {}, onProgress = nu
               if (!isLoggingOut) {
                 isLoggingOut = true;
                 localStorage.clear();
-                router.push('/');
+                router.push('/login');
               }
               window.location.reload();
               reject(new Error('Unauthorized'));
