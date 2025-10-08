@@ -7,6 +7,7 @@
     :pagination="{ clickable: true }"
     :loop="false"
     class="slider-box"
+    @reachEnd="goToLogin"
     >
       <SwiperSlide v-for="(card, index) in cards" :key="index">
         <div class="card">
@@ -14,9 +15,9 @@
           <h2 class="card-title">{{ card.title }}</h2>
           <p class="card-text">{{ card.long }}</p>
           <div v-if="index === cards.length - 1" class="login-btn-box">
-            <router-link :to="{path:'/login'}" class="login-btn">
+            <!-- <router-link :to="{path:'/login'}" class="login-btn">
               ورود
-            </router-link>
+            </router-link> -->
           </div>
         </div>
       </SwiperSlide>
@@ -29,6 +30,7 @@ import { BASE_URL } from "./config"
 import { Navigation, Pagination, Autoplay } from "swiper/modules"
 import "swiper/css"
 import "swiper/css/navigation"
+import router from "./router"
 const cards = [
   {
       title: "خوش آمدید",
@@ -95,8 +97,16 @@ const cards = [
     long: "مکان‌ها را بر اساس دسته‌بندی (خدمات، فروش، ادارات و...) و انتخاب شهر یا موقعیت خود فیلتر کن و نزدیک‌ترین‌ها را مشاهده و تماس بگیر یا مراجعه کن.",
     image: "/assets/images/places.png",
   },
-]
+  {
+    title: ":)",
+    long: 'آماده ام',
+    image: "/assets/images/fav.png",
 
+  },
+]
+const goToLogin = () => {
+  router.push('/login')
+}
 </script>
 <style>
 .swiper-pagination {
