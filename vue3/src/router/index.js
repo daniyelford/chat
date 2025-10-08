@@ -6,6 +6,7 @@ import NotFoundPage from '@/components/NotFoundPage.vue';
 import { useMenuStore } from '@/stores/menu'
 import { useNotificationStore } from '@/stores/notification'
 import { useSecurityStore } from '@/stores/security';
+import Support from '@/Support.vue';
 import Welcome from '@/Welcome.vue'
 import { BASE_URL } from '@/config';
 const icon=BASE_URL+'/assets/images/fav.png'
@@ -15,6 +16,12 @@ const routes = [
     path: '/',
     name: 'welcome',
     component: Welcome,
+  },
+  {
+    path: '/support',
+    name: 'support',
+    component: Support,
+    meta: { requiresAuth: true }
   },
   {
     path: '/login',
