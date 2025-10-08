@@ -1,18 +1,5 @@
 <template>
   <div class="inner-posts">
-    <div class="loading" v-if="newsStore.isLoaded || newsStore.cards.length == 0" style="
-    font-style: italic;
-    text-align: center;
-    padding: 20px;
-    font-weight: 700;
-    color: #888;
-    border-radius: 10px;
-    box-shadow: 0 0 10px grey;
-    background: #e0d4e3;
-    margin-top: 10px;">
-      <!-- <div class="tiny-loader"></div> -->
-       <RadarAnimation/>
-    </div>
     <div class="card-inner" v-if="newsStore.cards.length > 0">
       <div v-for="card in newsStore.cards" :key="card.id" class="card" :class="{ 'my-news': card.self }">
         <div class="user-info">
@@ -130,6 +117,19 @@
         </div>
       </div>
       <div :ref="newsScroll.el" v-if="newsScroll.loadMore" class="scroll-trigger"></div>
+    </div>
+    <div class="loading" v-else style="
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+    font-weight: 700;
+    color: #888;
+    border-radius: 10px;
+    box-shadow: 0 0 10px grey;
+    background: #e0d4e3;
+    margin-top: 10px;">
+      <!-- <div class="tiny-loader"></div> -->
+       <RadarAnimation/>
     </div>
     <!-- <div v-else class="none-cart-error">
       <span>

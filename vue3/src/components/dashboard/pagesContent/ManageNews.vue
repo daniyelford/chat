@@ -1,11 +1,6 @@
 <template>
   <div class="news-wrapper">
-    <div v-if="store.loading || store.newsList.length === 0" class="loading">
-      <!-- <div class="tiny-loader"></div> -->
-       <RadarAnimation/>
-
-    </div>
-    <div v-else-if="store.newsList.length > 0">
+    <div v-if="store.newsList.length > 0">
       <ul class="news-list">
         <li
           v-for="news in store.newsList"
@@ -83,6 +78,11 @@
           </div>
         </li>
       </ul>
+    </div>
+    <div v-else class="loading">
+      <!-- <div class="tiny-loader"></div> -->
+       <RadarAnimation/>
+
     </div>
     <!-- <div v-else class="no-news">
       شما هنوز خبری ثبت نکردید.

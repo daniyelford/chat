@@ -1,9 +1,5 @@
 <template>
-  <div v-if="store.loading || items?.length == 0" class="loading"> 
-    <!-- <div class="tiny-loader"></div> -->
-     <RadarAnimation/>
-  </div>
-  <div v-else-if="items?.length > 0" class="cartable-inner">
+  <div v-if="items?.length > 0" class="cartable-inner">
     <div
       v-for="item in items" :key="item.id" class="cartable">
       <div class="news">
@@ -58,6 +54,10 @@
       </div>
     </div>
     <div v-if="cartablesScroll.loadMore" :ref="cartablesScroll.el" class="load-trigger"></div>
+  </div>
+  <div v-else class="loading"> 
+    <!-- <div class="tiny-loader"></div> -->
+     <RadarAnimation/>
   </div>
   <!-- <div v-else class="no-data">
     شما هیچ گزارشی در کارتابل خود ندارید
