@@ -5,10 +5,8 @@
       direction="vertical"
       :mousewheel="true"
       :pagination="{ clickable: true }"
-      class="intro-swiper"
-    >
-      <!-- کارت معرفی خودت -->
-      <SwiperSlide>
+      class="intro-swiper">
+            <SwiperSlide>
         <div class="intro-card">
           <img :src="`${BASE_URL}/assets/images/me.jpg`" alt="Me" class="intro-img" />
           <h2>سلام! من دانیال فرد 👋</h2>
@@ -35,16 +33,10 @@
             هر موقع سوال، مشکل یا پیشنهادی داشتی، از طریق پیام به ادمین با ما در ارتباط باش.
             ما همیشه پاسخ‌ گو هستیم.
           </p>
-        </div>
-      </SwiperSlide>
-      <SwiperSlide>
-        <div class="intro-card">
-          <img :src="`${BASE_URL}/assets/images/fav.png`" alt="Thanks" class="intro-img" />
-          <h2>آماده‌ای شروع کنی؟ 🚀</h2>
-          <p>به صفحه‌ی ورود برو و هرچی میخوای به مسِول بگی رو بگو.</p>
           <RouterLink :to="{ path: '/login' }" class="login-btn">
-            ورود
+            شروع
           </RouterLink>
+          
         </div>
       </SwiperSlide>
     </Swiper>

@@ -157,7 +157,7 @@
         text-align: center;
     }
     li{
-        height: 50px;
+        height: 45px;
         width: 100%;
         box-shadow: 0 0 5px grey;
     }

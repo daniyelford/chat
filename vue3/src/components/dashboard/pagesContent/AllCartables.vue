@@ -1,6 +1,7 @@
 <template>
-  <div v-if="store.loading && items?.length == 0" class="loading"> 
-    <div class="tiny-loader"></div>
+  <div v-if="store.loading || items?.length == 0" class="loading"> 
+    <!-- <div class="tiny-loader"></div> -->
+     <RadarAnimation/>
   </div>
   <div v-else-if="items?.length > 0" class="cartable-inner">
     <div
@@ -58,9 +59,9 @@
     </div>
     <div v-if="cartablesScroll.loadMore" :ref="cartablesScroll.el" class="load-trigger"></div>
   </div>
-  <div v-else class="no-data">
+  <!-- <div v-else class="no-data">
     شما هیچ گزارشی در کارتابل خود ندارید
-  </div>
+  </div> -->
 </template>
 <script setup>
   import moment from 'moment-jalaali'
@@ -69,6 +70,7 @@
   import { polling } from '@/composables/polling'
   import { scroll } from '@/composables/scroll'
   import MediaSlider from '@/components/tooles/media/MediaSlider.vue'
+  import RadarAnimation from '@/components/tooles/RadarAnimation.vue'
   const store = useCartableStore()
   const all = ref([])
   const hasLoadedOnce = ref(false)
@@ -119,6 +121,14 @@
     padding: 2rem;
     text-align: center;
     color: #555;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+    font-weight: 700;
+    color: #888;
+    border-radius: 10px;
+    box-shadow: 0 0 10px grey;
+    background: #e0d4e3;
   }
   .no-data{
     padding: 20px;

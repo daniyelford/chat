@@ -1,7 +1,9 @@
 <template>
   <div class="news-wrapper">
-    <div v-if="store.loading && store.newsList.length === 0" class="loading">
-      <div class="tiny-loader"></div>
+    <div v-if="store.loading || store.newsList.length === 0" class="loading">
+      <!-- <div class="tiny-loader"></div> -->
+       <RadarAnimation/>
+
     </div>
     <div v-else-if="store.newsList.length > 0">
       <ul class="news-list">
@@ -82,9 +84,9 @@
         </li>
       </ul>
     </div>
-    <div v-else class="no-news">
+    <!-- <div v-else class="no-news">
       شما هنوز خبری ثبت نکردید.
-    </div>
+    </div> -->
   </div>
 </template>
 <script setup>
@@ -93,6 +95,7 @@
   import MediaSlider from '@/components/tooles/media/MediaSlider.vue'
   import moment from 'moment-jalaali'
   import { useUserStore } from '@/stores/user'
+  import RadarAnimation from '@/components/tooles/RadarAnimation.vue'
   const store = useManageNewsStore()
   const user = useUserStore()
   const restoreNews = async (id) => {
