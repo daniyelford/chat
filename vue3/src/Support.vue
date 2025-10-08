@@ -10,7 +10,7 @@
       <!-- کارت معرفی خودت -->
       <SwiperSlide>
         <div class="intro-card">
-          <img src="/assets/images/me.jpg" alt="Me" class="intro-img" />
+          <img :src="`${BASE_URL}/assets/images/me.jpg`" alt="Me" class="intro-img" />
           <h2>سلام! من دانیال فرد 👋</h2>
           <p>
             برنامه نویس تحت وب و فعال اجتماعی با هدف ساخت سامانه‌هایی که کار رو برای مردم ساده‌تر کنه 
@@ -39,7 +39,7 @@
       </SwiperSlide>
       <SwiperSlide>
         <div class="intro-card">
-          <img src="/assets/images/fav.png" alt="Thanks" class="intro-img" />
+          <img :src="`${BASE_URL}/assets/images/fav.png`" alt="Thanks" class="intro-img" />
           <h2>آماده‌ای شروع کنی؟ 🚀</h2>
           <p>به صفحه‌ی ورود برو و هرچی میخوای به مسِول بگی رو بگو.</p>
           <RouterLink :to="{ path: '/login' }" class="login-btn">
@@ -57,6 +57,7 @@ import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css'
 import 'swiper/css/pagination'
 import { Pagination } from 'swiper/modules'
+import { BASE_URL } from './config'
 
 const router = useRouter()
 
