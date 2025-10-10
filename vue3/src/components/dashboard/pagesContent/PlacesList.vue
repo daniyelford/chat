@@ -134,7 +134,7 @@
       has_more: placeStore.hasMorePlaces,
     }
   })
-  polling(() => placeStore.fetchLatestNewsRaw({limit:placeStore?.allPlaces?.length>0?placeStore?.allPlaces?.length:10, offset:0,category_id: selectedCategoryId.value}), {
+  polling(() => placeStore.fetchPlacesPaginated({limit:placeStore?.allPlaces?.length>0?placeStore?.allPlaces?.length:10, offset:0,category_id: selectedCategoryId.value}), {
     intervalMs: 6000,
     isDifferent: (oldData, newData) => {
       if (!Array.isArray(oldData) || !Array.isArray(newData)) return true
