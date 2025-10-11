@@ -1,7 +1,17 @@
 <template>
     <form @submit.prevent="submitCode">
         <p class="msg" v-if="message">{{ message }}</p>
-        <OtpInput v-model="code" length="5" :reset="resetOtpInput" :timer="17000"/>
+        <Vue3OtpInput
+        ref="otpInput"
+        :num-inputs="5"
+        separator="-"
+        input-classes="otp-input"
+        :input-props="{
+            autocomplete: 'one-time-code',
+            inputmode: 'numeric'
+        }"
+        @on-complete="complateCode"
+        />
         <button type="submit" :disabled="submited" class="submitBtn">تأیید کد</button>
         <button type="button" @click="editPhone" class="editPhone">
             ویرایش شماره
@@ -19,10 +29,10 @@
 <script setup>
     import { ref,onMounted,onUnmounted,defineProps,defineEmits } from 'vue'
     import { sendApi } from '@/utils/api'
-    import OtpInput from 'vue-otp-autofill'
+    import Vue3OtpInput from 'vue3-otp-input'
     import router from '@/router'
     const emit = defineEmits(['back'])
-    const resetOtpInput=ref(0)
+    const otpInput=ref(null)
     const message=ref('')
     const code=ref('') 
     const resendDisabled=ref(false)
@@ -31,10 +41,13 @@
     const props = defineProps({
         phone: String
     })
+    const complateCode = (cd) => {
+        code.value=cd
+        submitCode()
+    };
     const editPhone = () => {
         sessionStorage.setItem('login_step', '1')
         code.value=''
-        resetOtpInput.value++
         emit('back',true)
     }
     const submitCode=async()=>{
@@ -46,9 +59,7 @@
                 control:'login'
             })
             if (response.status === 'success') {
-                sessionStorage.setItem('login_step', '2')
                 sessionStorage.removeItem('submit_phone_timer')
-                sessionStorage.removeItem('phone')
                 if (response.url === 'dashboard') {
                     sessionStorage.setItem('isLogin', true);
                     window.dispatchEvent(new Event("storage"));
@@ -114,8 +125,48 @@
     onMounted(() => {
         updatecountdown()
         interval = setInterval(updatecountdown, 1000)
+        if ('OTPCredential' in window) {
+            window.addEventListener('DOMContentLoaded', async () => {
+                try {
+                    const content = await navigator.credentials.get({
+                        otp: { transport: ['sms'] },
+                        signal: AbortSignal.timeout(60000)
+                    })
+                    if (content && content.code) {
+                        code.value = content.code
+                        otpInput.value?.setValue(content.code)
+                        submitCode()
+                        message.value = 'کد خودکار از SMS خوانده شد:'+content.code
+                    }
+                } catch (err) {
+                    message.value = 'کد به صورت خودکار قابل خواندن نیست  دستی وارد کنید'
+                    console.log('OTP autofill timeout یا خطا:', err)
+                }
+            })
+        } else {
+            console.warn('Web OTP API در این مرورگر پشتیبانی نمی‌شود 😕')
+        }
     })
 </script>
+<style>
+    .otp-input {
+        width: 40px;
+        height: 50px;
+        text-align: center;
+        font-size: 20px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        outline: none;
+    }
+    .otp-input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 5px #3b82f6;
+    }
+    .otp-input-container{
+        justify-content: center;
+        direction: ltr;
+    }
+</style>
 <style scoped>
     form {
         width: 100%;

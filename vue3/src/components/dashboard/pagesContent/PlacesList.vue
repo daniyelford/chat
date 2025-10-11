@@ -25,15 +25,16 @@
       <div v-if="placeScroll.loadMore" :ref="placeScroll.el" class="load-trigger" style="margin-top: -750px;"></div>
     </div>
   </div>
-  <div v-else-if="placeStore.categoryListLoading || placeStore.placeListLoading">
-      <div class="tiny-loader"></div>
-  </div>
-  <div v-else class="errorp">
-    <span>
+  <!-- <div v-else-if="placeStore.categoryListLoading || placeStore.placeListLoading">
+    <div class="tiny-loader"></div>
+  </div> -->
+  <div v-else style="padding: 20px;background: #71c1c2;margin-top: 35px;border-radius: 10px;">
+    <RadarAnimation/>
+    <!-- <span>
       محل نزدیکی برای ارائه به شما وجود ندارد
     </span>
     <br>
-    <a v-if="placeStore?.highRule" @click="showAddPlace=true" class="addP">افزودن محل</a>
+    <a v-if="placeStore?.highRule" @click="showAddPlace=true" class="addP">افزودن محل</a> -->
   </div>
   <button class="showCityBtn" @click="showCity = true">انتخاب شهر</button>
   <transition name="slide-up">
@@ -64,6 +65,7 @@
   import AddPlaceForm from '@/components/dashboard/pagesContent/AddPlaceForm.vue'
   import PlaceCategory from '@/components/tooles/category/PlaceCategory.vue'
   import PlaceCity from '@/components/tooles/city/PlaceCity.vue'
+  import RadarAnimation from '@/components/tooles/RadarAnimation.vue'
   const placeStore = usePlaceStore()
   const showMapModal = ref(false)
   const showAddPlace = ref(false)
@@ -171,6 +173,7 @@
 <style scoped>
   .showCategoryBtn , .showCityBtn{
     width: auto;
+    z-index: 9;
     position: fixed;
     left: 0;
     right: 0;

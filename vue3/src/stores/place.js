@@ -84,6 +84,7 @@ export const usePlaceStore = defineStore('place', () => {
           hasMorePlaces.value = res.has_more
         }
       }
+      return allPlaces.value
     }catch(error) {
       console.error('submitPlace error:', error)
     }finally{

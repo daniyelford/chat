@@ -38,7 +38,7 @@
       </div>
 
       <div class="loading-info">
-        <div class="loading-text">Scanning System</div>
+        <div class="loading-text">در حال جستجو</div>
         <div class="progress-bar">
           <div class="progress-fill"></div>
         </div>
@@ -89,6 +89,7 @@ onUnmounted(() => {
   align-items: center;
   min-height: 70vh;
   position: relative;
+  z-index: 1;
 }
 .bodyA::before {
   content: '';
