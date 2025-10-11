@@ -1,9 +1,9 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 class Login_handler
 {
-    private bool $fack_ip_used = true;
-    private bool $send_sms_code_in_login = true;
-    private bool $send_sms_example = true;
+    private bool $fack_ip_used = false;
+    private bool $send_sms_code_in_login = false;
+    private bool $send_sms_example = false;
     // in product must be false
     private $CI;
     private Send_handler $send;
