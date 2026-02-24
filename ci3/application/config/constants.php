@@ -84,24 +84,16 @@ defined('EXIT_DATABASE')       OR define('EXIT_DATABASE', 8); // database error
 defined('EXIT__AUTO_MIN')      OR define('EXIT__AUTO_MIN', 9); // lowest automatically-assigned error code
 defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest automatically-assigned error code
 define('HOST','localhost');
-define('USERNAME','myhomeir_usr');
-define('PASSWORD','[J91S:6eOsXid2');
-define('DBNAME','myhomeir_tbl');
+
+
+
+define('HOST','localhost');
+define('USERNAME','root');
+define('PASSWORD','');
+define('DBNAME','chat');
 // sms.ir
-// define('SMSIRTEMPID','763111');
- define('SMSIRTEMPID','904491');
-define('SMSIRKEY','01ZtycjQXUQFlarNuAVGMRmaJHFQilUrKSbGeIUBaeD2ZI6Q');
-define('WEATHER_API','YCC2W5RH259642CZEHCF9JN4S');
-
-
-
-// define('HOST','localhost');
-// define('USERNAME','root');
-// define('PASSWORD','');
-// define('DBNAME','chat');
-// // sms.ir
-// define('SMSIRTEMPID','');
-// define('SMSIRKEY','');
-// define('WEATHER_API','');
+define('SMSIRTEMPID','');
+define('SMSIRKEY','');
+define('WEATHER_API','');
 define('WEBPUSHPUBLIC','BCqO9cq0iSx7R9EDVULhIo7MmNVvTjFnX4KxouSlzNvU9aY56i6hWXt6_DHeJw9YSQjQw_c-_B9_1I6ImTMGavI');
 define('WEBPUSHPRIVATE','5kn5H7MxZxaSENWki-wkpLZJkoW6Mt-dYN0yiZFvHfM');
